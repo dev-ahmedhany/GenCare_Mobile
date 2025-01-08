@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
-    "jsx": "react-native",
+    "strict": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/backend/*": [
+        "./backend/*"
       ]
     }
   },
