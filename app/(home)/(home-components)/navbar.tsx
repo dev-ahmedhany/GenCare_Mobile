@@ -2,16 +2,23 @@ import { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Modal, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
+import { router, useRouter } from 'expo-router';
 
 export default function Navbar() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const menuItems: { icon: keyof typeof Ionicons.glyphMap; title: string }[] = [
+  const menuItems: { 
+    icon: keyof typeof Ionicons.glyphMap; 
+    title: string; 
+    route?: string 
+  }[] = [
     { icon: 'calendar-outline', title: 'Weeks' },
     { icon: 'medical-outline', title: 'Baby Names' },
     { icon: 'chatbubbles-outline', title: 'AI Page' },
     { icon: 'person-outline', title: 'Diseases' },
+    { icon: 'man-outline', title: 'Management', route: '/(management)/management' as const },
   ];
 
   const authButtons: { icon: keyof typeof Ionicons.glyphMap; title: string; onPress: () => void }[] = isLoggedIn ? [
@@ -68,7 +75,9 @@ export default function Navbar() {
                 key={index}
                 style={styles.menuItem}
                 onPress={() => {
-                  // Handle navigation here
+                  if (item.route) {
+                    router.push(item.route as any);
+                  }
                   setIsMenuOpen(false);
                 }}
               >
