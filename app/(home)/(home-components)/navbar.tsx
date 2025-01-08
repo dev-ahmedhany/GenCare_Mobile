@@ -2,50 +2,57 @@ import { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Modal, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
-<<<<<<< HEAD
+
 
 export default function Navbar() {
-=======
+
 import { useRouter } from 'expo-router';
 
 export default function Navbar() {
   const router = useRouter();
->>>>>>> master
+
+import { router, useRouter } from 'expo-router';
+
+export default function Navbar() {
+  const router = useRouter();
+ 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const menuItems: { icon: keyof typeof Ionicons.glyphMap; title: string }[] = [
+  const menuItems: { 
+    icon: keyof typeof Ionicons.glyphMap; 
+    title: string; 
+    route?: string 
+  }[] = [
     { icon: 'calendar-outline', title: 'Weeks' },
     { icon: 'medical-outline', title: 'Baby Names' },
     { icon: 'chatbubbles-outline', title: 'AI Page' },
     { icon: 'person-outline', title: 'Diseases' },
+    { icon: 'man-outline', title: 'Management', route: '/(management)/management' as const },
   ];
 
   const authButtons: { icon: keyof typeof Ionicons.glyphMap; title: string; onPress: () => void }[] = isLoggedIn ? [
-<<<<<<< HEAD
+ 
     { icon: 'log-out-outline' as keyof typeof Ionicons.glyphMap, title: 'Logout', onPress: () => {
-=======
+
     { icon: 'log-out-outline', title: 'Logout', onPress: () => {
->>>>>>> master
+ 
       setIsLoggedIn(false);
       setIsMenuOpen(false);
     }}
   ] : [
-<<<<<<< HEAD
     { icon: 'log-in-outline' as keyof typeof Ionicons.glyphMap, title: 'Login', onPress: () => {
       setIsLoggedIn(true);
       setIsMenuOpen(false);
     }},
     { icon: 'person-add-outline' as keyof typeof Ionicons.glyphMap, title: 'Sign Up', onPress: () => {
       setIsLoggedIn(true);
-=======
     { icon: 'log-in-outline', title: 'Login', onPress: () => {
       router.push('/(auth)/login');
       setIsMenuOpen(false);
     }},
     { icon: 'person-add-outline', title: 'Sign Up', onPress: () => {
       router.push('/(auth)/signup');
->>>>>>> master
       setIsMenuOpen(false);
     }}
   ];
@@ -88,7 +95,9 @@ export default function Navbar() {
                 key={index}
                 style={styles.menuItem}
                 onPress={() => {
-                  // Handle navigation here
+                  if (item.route) {
+                    router.push(item.route as any);
+                  }
                   setIsMenuOpen(false);
                 }}
               >

@@ -13,7 +13,7 @@ import { InputField } from '@/components/InputField';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() ?? 'light';
 
   return (
     <KeyboardAvoidingView 
