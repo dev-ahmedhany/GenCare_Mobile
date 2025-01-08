@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
@@ -8,6 +9,14 @@
       ],
       "@/backend/*": [
         "./backend/*"
+=======
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+>>>>>>> master
       ]
     }
   },
@@ -16,6 +25,10 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+<<<<<<< HEAD
   ],
   "extends": "expo/tsconfig.base"
+=======
+  ]
+>>>>>>> master
 }
