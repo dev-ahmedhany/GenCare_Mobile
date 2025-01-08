@@ -2,20 +2,11 @@ import { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Modal, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
-
-
-export default function Navbar() {
-
 import { useRouter } from 'expo-router';
 
 export default function Navbar() {
   const router = useRouter();
 
-import { router, useRouter } from 'expo-router';
-
-export default function Navbar() {
-  const router = useRouter();
- 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -32,26 +23,16 @@ export default function Navbar() {
   ];
 
   const authButtons: { icon: keyof typeof Ionicons.glyphMap; title: string; onPress: () => void }[] = isLoggedIn ? [
- 
     { icon: 'log-out-outline' as keyof typeof Ionicons.glyphMap, title: 'Logout', onPress: () => {
-
-    { icon: 'log-out-outline', title: 'Logout', onPress: () => {
- 
       setIsLoggedIn(false);
       setIsMenuOpen(false);
     }}
   ] : [
     { icon: 'log-in-outline' as keyof typeof Ionicons.glyphMap, title: 'Login', onPress: () => {
-      setIsLoggedIn(true);
-      setIsMenuOpen(false);
-    }},
-    { icon: 'person-add-outline' as keyof typeof Ionicons.glyphMap, title: 'Sign Up', onPress: () => {
-      setIsLoggedIn(true);
-    { icon: 'log-in-outline', title: 'Login', onPress: () => {
       router.push('/(auth)/login');
       setIsMenuOpen(false);
     }},
-    { icon: 'person-add-outline', title: 'Sign Up', onPress: () => {
+    { icon: 'person-add-outline' as keyof typeof Ionicons.glyphMap, title: 'Sign Up', onPress: () => {
       router.push('/(auth)/signup');
       setIsMenuOpen(false);
     }}

@@ -73,7 +73,7 @@ const ForgotPasswordScreen = () => {
                 ]}
             >
                 <Image
-                    source={require("D:/Gencare/Gencare/assets/images/topVector.png")}
+                    source={require("@/assets/images/topVector.png")}
                     style={styles.topImage}
                 />
             </Animated.View>
@@ -116,7 +116,7 @@ const ForgotPasswordScreen = () => {
                 ]}
             >
                 <ImageBackground
-                    source={require("D:/Gencare/Gencare/assets/images/Vector 2.png")}
+                    source={require("@/assets/images/Vector2.png")}
                     style={styles.leftVectorImage}
                 />
             </Animated.View>

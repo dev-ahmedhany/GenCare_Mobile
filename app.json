@@ -1,6 +1,5 @@
 {
   "expo": {
-<<<<<<< HEAD
     "name": "GenCare",
     "slug": "gen-care",
     "version": "1.0.0",
@@ -12,29 +11,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.gencare"
-=======
-    "name": "Gencare",
-    "slug": "Gencare",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
->>>>>>> master
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-<<<<<<< HEAD
       },
       "package": "com.anonymous.gencare"
-=======
-      }
->>>>>>> master
     },
     "web": {
       "bundler": "metro",
@@ -55,7 +38,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-<<<<<<< HEAD
     },
     "extra": {
       "router": {
@@ -64,8 +46,6 @@
       "eas": {
         "projectId": "adbf0acd-f3da-4e6e-80ce-620c7f72c2f5"
       }
-=======
->>>>>>> master
     }
   }
 }
