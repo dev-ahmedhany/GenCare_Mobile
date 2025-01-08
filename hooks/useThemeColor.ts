@@ -3,7 +3,11 @@
  * https://docs.expo.dev/guides/color-schemes/
  */
 
+<<<<<<< HEAD
 import Colors from '@/constants/Colors';
+=======
+import { Colors } from '@/constants/Colors';
+>>>>>>> master
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export function useThemeColor(

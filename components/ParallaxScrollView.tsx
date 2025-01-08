@@ -27,7 +27,11 @@ export default function ParallaxScrollView({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
+<<<<<<< HEAD
   const headerAnimatedStyle = useAnimatedStyle<any>(() => {
+=======
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+>>>>>>> master
     return {
       transform: [
         {
@@ -53,9 +57,15 @@ export default function ParallaxScrollView({
         contentContainerStyle={{ paddingBottom: bottom }}>
         <Animated.View
           style={[
+<<<<<<< HEAD
             headerAnimatedStyle,
             styles.header,
             { backgroundColor: headerBackgroundColor[colorScheme] },
+=======
+            styles.header,
+            { backgroundColor: headerBackgroundColor[colorScheme] },
+            headerAnimatedStyle,
+>>>>>>> master
           ]}>
           {headerImage}
         </Animated.View>
