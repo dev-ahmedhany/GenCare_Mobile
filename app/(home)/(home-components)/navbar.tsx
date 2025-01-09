@@ -1,12 +1,10 @@
-import { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Image, Modal, Text } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, TouchableOpacity, StyleSheet, Image, Animated, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 
 export default function Navbar() {
   const router = useRouter();
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -23,104 +21,185 @@ export default function Navbar() {
   ];
 
   const authButtons: { icon: keyof typeof Ionicons.glyphMap; title: string; onPress: () => void }[] = isLoggedIn ? [
-    { icon: 'log-out-outline' as keyof typeof Ionicons.glyphMap, title: 'Logout', onPress: () => {
+    { icon: 'log-out-outline', title: 'Logout', onPress: () => {
       setIsLoggedIn(false);
       setIsMenuOpen(false);
     }}
   ] : [
-    { icon: 'log-in-outline' as keyof typeof Ionicons.glyphMap, title: 'Login', onPress: () => {
+    { icon: 'log-in-outline', title: 'Login', onPress: () => {
       router.push('/(auth)/login');
       setIsMenuOpen(false);
     }},
-    { icon: 'person-add-outline' as keyof typeof Ionicons.glyphMap, title: 'Sign Up', onPress: () => {
+    { icon: 'person-add-outline', title: 'Sign Up', onPress: () => {
       router.push('/(auth)/signup');
       setIsMenuOpen(false);
     }}
   ];
+  
+  const rotateAnimation = useRef(new Animated.Value(0)).current;
+  const scaleAnimation = useRef(new Animated.Value(1)).current;
+  const menuItemsAnimation = useRef(menuItems.map(() => new Animated.Value(0))).current;
+  const authButtonsAnimation = useRef(authButtons.map(() => new Animated.Value(0))).current;
+
+  const toggleMenu = () => {
+    const toValue = isMenuOpen ? 0 : 1;
+    
+    Animated.parallel([
+      Animated.timing(rotateAnimation, {
+        toValue,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnimation, {
+        toValue: isMenuOpen ? 1 : 1.2,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+      ...menuItemsAnimation.map((anim, index) =>
+        Animated.timing(anim, {
+          toValue,
+          duration: 200,
+          delay: isMenuOpen ? 0 : index * 100,
+          useNativeDriver: true,
+        })
+      ),
+      ...authButtonsAnimation.map((anim, index) =>
+        Animated.timing(anim, {
+          toValue,
+          duration: 200,
+          delay: isMenuOpen ? 0 : (menuItems.length + index) * 100,
+          useNativeDriver: true,
+        })
+      ),
+    ]).start();
+
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const spin = rotateAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Image 
-          source={require('@/assets/Logo/Web-Logo-removebg-preview.png')} 
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <TouchableOpacity 
-          onPress={() => setIsMenuOpen(!isMenuOpen)} 
-          style={styles.menuButton}
-        >
-          <Ionicons 
-            name={isMenuOpen ? "close-outline" : "menu-outline"} 
-            size={50} 
-            color="#007AFF" 
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Dropdown Menu */}
-      <Modal
-        visible={isMenuOpen}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setIsMenuOpen(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsMenuOpen(false)}
-        >
-          <View style={styles.menuContainer}>
+    <View style={styles.mainContainer}>
+      <View style={styles.navbar}>
+        <View style={styles.container}>
+          <Text style={styles.title}>GenCare</Text>
+          <Animated.View style={[
+            styles.menuItemsContainer,
+            { display: isMenuOpen ? 'flex' : 'none' }
+          ]}>
             {menuItems.map((item, index) => (
-              <TouchableOpacity 
+              <Animated.View
                 key={index}
-                style={styles.menuItem}
-                onPress={() => {
-                  if (item.route) {
-                    router.push(item.route as any);
-                  }
-                  setIsMenuOpen(false);
-                }}
+                style={[
+                  styles.menuItemWrapper,
+                  {
+                    opacity: menuItemsAnimation[index],
+                    transform: [{
+                      translateX: menuItemsAnimation[index].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-20, 0],
+                      }),
+                    }],
+                  },
+                ]}
               >
-                <Ionicons name={item.icon} size={24} color="#007AFF" />
-                <Text style={styles.menuText}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.menuItem}
+                  onPress={() => {
+                    if (item.route) {
+                      router.push(item.route as any);
+                    }
+                    toggleMenu();
+                  }}
+                >
+                  <Ionicons name={item.icon} size={20} color="#623AA2" />
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </TouchableOpacity>
+              </Animated.View>
             ))}
             
             <View style={styles.divider} />
             
             {authButtons.map((item, index) => (
-              <TouchableOpacity 
+              <Animated.View
                 key={`auth-${index}`}
-                style={styles.menuItem}
-                onPress={item.onPress}
+                style={[
+                  styles.menuItemWrapper,
+                  {
+                    opacity: authButtonsAnimation[index],
+                    transform: [{
+                      translateX: authButtonsAnimation[index].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-20, 0],
+                      }),
+                    }],
+                  },
+                ]}
               >
-                <Ionicons name={item.icon} size={24} color="#007AFF" />
-                <Text style={styles.menuText}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.menuItem}
+                  onPress={item.onPress}
+                >
+                  <Ionicons name={item.icon} size={20} color="#623AA2" />
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </TouchableOpacity>
+              </Animated.View>
             ))}
-          </View>
-        </TouchableOpacity>
-      </Modal>
+          </Animated.View>
+
+          <TouchableOpacity 
+            onPress={toggleMenu} 
+            style={styles.logoButton}
+            activeOpacity={0.7}
+          >
+            <Animated.View 
+              style={[
+                styles.logoCircle,
+                {
+                  transform: [
+                    { rotate: spin },
+                    { scale: scaleAnimation }
+                  ]
+                }
+              ]}
+            >
+              <Image 
+                source={require('@/assets/Logo/Mob-Logo-removebg-preview.png')} 
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     position: 'absolute',
-    top: 20,
+    top: 10,
     left: 0,
     right: 0,
     zIndex: 1000,
-    backgroundColor: '#fff',
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#E0E0E0',
+  },
+  navbar: {
+    backgroundColor: '#FFFFFF',
+    height: 70,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    borderRadius: 20,
+    marginTop: 20,
     elevation: 4,
+    opacity: 0.9,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -129,32 +208,49 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  header: {
-    backgroundColor: 'rgba(137, 207, 240, 0.7)',
-    borderBottomWidth: 3,
-    borderBottomColor: 'rgba(255,192,203, 0.8)',
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
+  container: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 10,
-    height: 70,
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 15,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#623AA2',
+    letterSpacing: 1,
+    flex: 1,
+  },
+  logoButton: {
+    zIndex: 2,
+  },
+  logoCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    borderWidth: 1.5,
+    borderColor: '#F97794',
   },
   logo: {
-    paddingRight: 10,
-    width: 250,
+    width: 90,
     height: 400,
   },
-  menuButton: {
-    paddingRight: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  menuContainer: {
+  menuItemsContainer: {
     position: 'absolute',
-    top: 70,
-    left: 20,
+    right: 50,
+    top: 50,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 8,
@@ -166,23 +262,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    minWidth: 200,
-    zIndex: 1001,
+    minWidth: 180,
+  },
+  menuItemWrapper: {
+    overflow: 'hidden',
   },
   menuItem: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    padding: 10,
+    borderRadius: 6,
+    marginVertical: 2,
   },
   menuText: {
-    marginLeft: 12,
-    fontSize: 16,
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 10,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 8,
+    backgroundColor: '#F0F0F0',
+    marginVertical: 6,
   },
+
 });

@@ -105,7 +105,7 @@ const SignupScreen = () => {
                 ]}
             >
                 <Image
-                    source={require("@/assets/images/topVector.png")}
+                    source={require("@/assets/images/svg.png")}
                     style={styles.topImage}
                 />
             </Animated.View>
@@ -130,12 +130,11 @@ const SignupScreen = () => {
             </View>
 
             <View style={styles.createButtonContainer}>
-                <Text style={styles.signIn}>Create</Text>
-                <TouchableOpacity onPress={handleCreate}>
+                <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
                     <LinearGradient
-                        colors = {["#F97794", "#623AA2"]}
-                        style={styles.linearGradient}>
-                        <AntDesign name="arrowright" size={24} color="#FFFFFF" />
+                        colors={["#8ED1FC", "#F78DA7"]}
+                        style={styles.createButtonGradient}>
+                        <Text style={styles.createButtonText}>Create Account</Text>
                     </LinearGradient>
                 </TouchableOpacity>
             </View>
@@ -148,23 +147,6 @@ const SignupScreen = () => {
                 </View>
             </View>
         </ScrollView>
-
-        <Animated.View 
-            style={[
-                styles.leftVectorContainer,
-                {
-                    opacity: fadeAnim,
-                    transform: [{ scale: scaleAnim },
-                      { translateY: slideBottomAnim }
-                    ]
-                }
-            ]}
-        >
-            <ImageBackground
-                source={require("@/assets/images/Vector2.png")}
-                style={styles.leftVectorImage}
-            />
-        </Animated.View>
     </View>
   );
 };
@@ -215,11 +197,11 @@ const styles = StyleSheet.create({
   },
 
     createButtonContainer: {
-        flexDirection: "row",
-        marginTop: 20,
-        justifyContent: "flex-end",
-        width: "90%",
-
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        paddingHorizontal: 20,
     },
     signIn:{
         color: "#262626",
@@ -240,19 +222,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginTop: 20,
     },
-    leftVectorContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        
-    },
-    leftVectorImage: {
-        width: 200,
-        height: 350,
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-    },
 
     footerContainer: {
         marginTop: 20,
@@ -268,6 +237,20 @@ socialMediaIcon: {
     margin: 10,
     padding: 10,
     borderRadius: 50,
+},
+createButton: {
+    width: '60%',
+},
+createButtonGradient: {
+    borderRadius: 25,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+},
+createButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
 },
 
 });

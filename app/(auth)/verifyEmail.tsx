@@ -89,12 +89,12 @@ const VerifyEmailScreen = () => {
                 ]}
             >
                 <Image
-                    source={require("@/assets/images/topVector.png")}
+                    source={require("@/assets/images/svg.png")}
                     style={styles.topImage}
                 />
             </Animated.View>
 
-            <Animated.View style={{ opacity: fadeAnim }}>
+            <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Verify Your Email</Text>
                 </View>
@@ -114,33 +114,17 @@ const VerifyEmailScreen = () => {
                     ))}
                 </View>
 
-                <View style={styles.verifyButtonContainer}>
-                    <Text style={styles.verifyText}>Verify</Text>
+                <TouchableOpacity style={styles.verifyButton}>
                     <LinearGradient
-                        colors={["#F97794", "#623AA2"]}
-                        style={styles.linearGradient}>
-                        <AntDesign name="arrowright" size={24} color="#FFFFFF" />
+                        colors={["#8ED1FC", "#8ED1FC"]}
+                        style={styles.verifyButtonGradient}>
+                        <Text style={styles.verifyButtonText}>Verify</Text>
                     </LinearGradient>
-                </View>
+                </TouchableOpacity>
 
                 <TouchableOpacity style={styles.resendContainer}>
                     <Text style={styles.resendText}>Didn't receive the code? Resend</Text>
                 </TouchableOpacity>
-            </Animated.View>
-
-            <Animated.View 
-                style={[
-                    styles.leftVectorContainer,
-                    {
-                        opacity: fadeAnim,
-                        transform: [{ translateY: slideBottomAnim }]
-                    }
-                ]}
-            >
-                <ImageBackground
-                    source={require("@/assets/images/Vector2.png")}
-                    style={styles.leftVectorImage}
-                />
             </Animated.View>
         </View>
     );
@@ -152,12 +136,21 @@ const styles = StyleSheet.create({
         flex: 1,
         position: "relative",
     },
-    topImageContainer: {},
+    contentContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 20,
+    },
+    topImageContainer: {
+        alignItems: 'center',
+    },
     topImage: {
         width: "100%",
-        height: 130,
+        height: 150,
     },
-    titleContainer: {},
+    titleContainer: {
+        marginBottom: 10,
+    },
     title: {
         textAlign: "center",
         fontSize: 40,
@@ -189,24 +182,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: "#262626",
     },
-    verifyButtonContainer: {
-        flexDirection: "row",
-        marginTop: 80,
-        justifyContent: "flex-end",
-        width: "90%",
+    verifyButton: {
+        marginTop: 30,
+        alignSelf: 'center',
+        width: '60%',
     },
-    verifyText: {
-        color: "#262626",
-        fontSize: 25,
-        fontWeight: "bold",
+    verifyButtonGradient: {
+        borderRadius: 25,
+        padding: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    linearGradient: {
-        width: 56,
-        height: 34,
-        borderRadius: 17,
-        justifyContent: "center",
-        alignItems: "center",
-        marginHorizontal: 10,
+    verifyButtonText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     resendContainer: {
         marginTop: 20,
@@ -216,18 +206,6 @@ const styles = StyleSheet.create({
         color: "#623AA2",
         fontSize: 16,
         textDecorationLine: 'underline',
-    },
-    leftVectorContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-    },
-    leftVectorImage: {
-        width: 250,
-        height: 500,
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
     },
 });
 
