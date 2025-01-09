@@ -9,43 +9,46 @@ export default function AiPage() {
 
   return (
     <View style={styles.pageContainer}>
+      {/* Title Section */}
+      <ThemedText style={styles.mainTitle}>Fetal's Brain Disease Test</ThemedText>
+
       <View style={styles.container}>
-        {/* Box 1 - Top Left */}
-        <View style={[styles.box, { alignSelf: 'flex-start' }]}>
-          <Image 
-            source={require('@/assets/images/favicon.png')} 
-            style={styles.boxImage} 
-          />
-          <View style={styles.contentContainer}>
-            <ThemedText style={styles.boxTitle}>First Title</ThemedText>
-            <ThemedText style={styles.boxDescription}>First Line</ThemedText>
-            <ThemedText style={styles.boxDescription}>Second Line</ThemedText>
+        {/* Cards Row */}
+        <View style={styles.cardsContainer}>
+          {/* Step 1 Card */}
+          <View style={styles.box}>
+            <Image 
+              source={require('@/assets/ai_components/home/card1.jpg')} 
+              style={styles.boxImage} 
+            />
+            <View style={styles.contentContainer}>
+              <ThemedText style={styles.boxTitle}>Step 1</ThemedText>
+              <ThemedText style={styles.boxDescription}>Sonographic Image</ThemedText>
+            </View>
           </View>
-        </View>
 
-        {/* Box 2 - Middle Center */}
-        <View style={[styles.box, { alignSelf: 'center' }]}>
-          <Image 
-            source={require('@/assets/images/favicon.png')} 
-            style={styles.boxImage} 
-          />
-          <View style={styles.contentContainer}>
-            <ThemedText style={styles.boxTitle}>Second Title</ThemedText>
-            <ThemedText style={styles.boxDescription}>First Line</ThemedText>
-            <ThemedText style={styles.boxDescription}>Second Line</ThemedText>
+          {/* Step 2 Card */}
+          <View style={styles.box}>
+            <Image 
+              source={require('@/assets/ai_components/home/card2.jpg')} 
+              style={styles.boxImage} 
+            />
+            <View style={styles.contentContainer}>
+              <ThemedText style={styles.boxTitle}>Step 2</ThemedText>
+              <ThemedText style={styles.boxDescription}>Upload Image</ThemedText>
+            </View>
           </View>
-        </View>
 
-        {/* Box 3 - Bottom Right */}
-        <View style={[styles.box, { alignSelf: 'flex-end' }]}>
-          <Image 
-            source={require('@/assets/images/favicon.png')} 
-            style={styles.boxImage} 
-          />
-          <View style={styles.contentContainer}>
-            <ThemedText style={styles.boxTitle}>Third Title</ThemedText>
-            <ThemedText style={styles.boxDescription}>First Line</ThemedText>
-            <ThemedText style={styles.boxDescription}>Second Line</ThemedText>
+          {/* Step 3 Card */}
+          <View style={styles.box}>
+            <Image 
+              source={require('@/assets/ai_components/home/card3.jpg')} 
+              style={styles.boxImage} 
+            />
+            <View style={styles.contentContainer}>
+              <ThemedText style={styles.boxTitle}>Step 3</ThemedText>
+              <ThemedText style={styles.boxDescription}>AI Result</ThemedText>
+            </View>
           </View>
         </View>
       </View>
@@ -54,7 +57,7 @@ export default function AiPage() {
         style={styles.aiButton}
         onPress={handleAITest}
       >
-        <ThemedText style={styles.buttonText}>AI Test</ThemedText>
+        <ThemedText style={styles.buttonText}>Test</ThemedText>
       </TouchableOpacity>
     </View>
   );
@@ -64,55 +67,67 @@ const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 5,
+    paddingTop: 20,
+  },
+  mainTitle: {
+    marginTop: -5,
+    fontSize: 24,
+    color: '#4C2F96',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
   },
   container: {
     flex: 1,
     width: '100%',
-    padding: 20,
-    gap: 20,
+  },
+  cardsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 20,
+    height: '100%',
   },
   box: {
-    width: '60%',
-    aspectRatio: 1.2,
+    flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    overflow: 'hidden',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderLeftWidth: 8,
+    borderLeftColor: '#4C2F96',
   },
   contentContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    marginLeft: 8,
+    alignItems: 'center',
+    marginTop: 8,
   },
   boxImage: {
-    width: '45%',
-    height: '100%',
+    width: '100%',
+    height: 100,
     resizeMode: 'contain',
   },
   boxTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#4C2F96',
     marginBottom: 8,
-    color: '#000',
   },
   boxDescription: {
-    fontSize: 14,
+    fontSize: 18,
     color: '#666',
-    marginBottom: 4,
+    textAlign: 'center',
   },
   aiButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#4C2F96',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 25,
-    marginBottom: 30,
+    marginVertical: 30,
+    marginTop: 40,
   },
   buttonText: {
     color: '#fff',

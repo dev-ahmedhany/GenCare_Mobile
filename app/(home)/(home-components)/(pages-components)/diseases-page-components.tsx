@@ -3,7 +3,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
-// ... interface Disease يبقى كما هو
 interface Disease {
   id: number;
   name: string;
@@ -102,7 +101,7 @@ export default function DiseasesPage() {
   return (
     <ScrollView style={styles.container}>
       <Image 
-        source={{ uri: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2000' }}
+        source={{ uri: 'https://cdn.svgator.com/images/2022/06/background-svg-image-pattern.svg' }}
         style={styles.backgroundImage}
       />
       
@@ -152,25 +151,25 @@ export default function DiseasesPage() {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#fff',
     flex: 1,
     position: 'relative',
-    paddingTop: 0,
   },
   backgroundImage: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    opacity: .8,
     zIndex: -1,
   },
   scrollViewContent: {
-    padding: 16
+    paddingTop: 50,
+    padding: 16,
     },
   card: {
     width: 300,
     marginRight: 16,
     marginVertical: 16,
-    backgroundColor: '#bfb1a6',
+    backgroundColor: '#fff',
   },
   cardContent: {
     padding: 0,
@@ -212,7 +211,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detailsContainer: {
-    backgroundColor: '#bfb1a6',
+    backgroundColor: '#fff',
     width: '100%',
     marginHorizontal: 0,
     marginTop: 20,
@@ -225,7 +224,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 16,
     textAlign: 'center',
-    color: '#fff',
+    color: '#000',
   },
   detailsImage: {
     width: '100%',
@@ -233,7 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   detailsText: {
-    color: '#fff',
+    color: '#aaa',
     lineHeight: 24,
     fontSize: 16,
   },

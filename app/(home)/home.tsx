@@ -12,7 +12,7 @@ import Footer from './(home-components)/footer';
 
 
 export default function HomeScreen() {
-  const handleScroll = (event) => {
+  const handleScroll = (event: any) => {
     // يمكن إزالة هذه الدالة إذا لم تعد مطلوبة
   };
 
