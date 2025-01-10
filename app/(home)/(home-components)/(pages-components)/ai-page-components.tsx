@@ -3,7 +3,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { Video, ResizeMode } from 'expo-av';
+import ExpoVideo from 'expo-video';
+import { Video } from 'expo-av';
+
+const BackgroundVideo = (props: any) => (
+  <Video {...props} />
+);
 
 export default function AIChatPage() {
   const [isEnvelopeClosed, setIsEnvelopeClosed] = useState(false);
@@ -111,17 +116,13 @@ export default function AIChatPage() {
 
   return (
     <View style={styles.container}>
-      <Video
+      <BackgroundVideo 
         source={require('@/assets/ai_components/background.mp4')}
         style={styles.backgroundVideo}
-        resizeMode={ResizeMode.COVER}
+        resizeMode="cover"
         shouldPlay
         isLooping
         isMuted
-        useNativeControls={false}
-        posterSource={require('@/assets/ai_components/background.mp4')}
-        rate={1.0}
-        volume={1.0}
       />
 
       <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
