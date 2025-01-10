@@ -1,16 +1,15 @@
-const { getDefaultConfig } = require('expo/metro-config');
+const { getDefaultConfig } = require('metro-config');
 
-const config = getDefaultConfig(__dirname);
-
-// تكوين معالجة الأصول
-config.resolver = {
-  ...config.resolver,
-  assetExts: [...config.resolver.assetExts],
-  sourceExts: [...config.resolver.sourceExts],
-  // إضافة معالجة خاصة للأصول المفقودة
-  extraNodeModules: {
-    'missing-asset-registry-path': __dirname + '/assets'
-  }
-};
-
-module.exports = config; 
+module.exports = (async () => {
+  const {
+    resolver: { sourceExts }
+  } = await getDefaultConfig();
+  return {
+    transformer: {
+      babelTransformerPath: require.resolve('react-native-css-transformer')
+    },
+    resolver: {
+      sourceExts: [...sourceExts, 'css']
+    }
+  };
+})(); 

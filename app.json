@@ -34,16 +34,11 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      "expo-video"
+      ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
+      "typedRoutes": true
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "extra": {
       "router": {
         "origin": false
