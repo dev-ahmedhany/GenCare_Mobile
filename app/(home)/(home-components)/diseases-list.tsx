@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,52 +10,44 @@ export default function DiseasesList() {
 
   return (
     <View style={styles.pageContainer}>
-      {/* Left Side Image */}
-      <View style={styles.leftSection}>
-        <Image 
-          source={require('@/assets/images/favicon.png')}
-          style={styles.mainImage}
-        />
-        <TouchableOpacity 
-          style={styles.exploreButton}
-          onPress={handleDiseaseClick}
-        >
-          <View style={styles.buttonContent}>
-            <Ionicons name="medical-outline" size={24} color="#fff" />
-            <ThemedText style={styles.exploreButtonText}>
-              Explore Diseases
-            </ThemedText>
-            <Ionicons name="chevron-forward" size={24} color="#fff" />
+      <ThemedText style={styles.mainTitle}>Common Pregnancy Diseases</ThemedText>
+
+      <View style={styles.container}>
+        <View style={styles.cardsContainer}>
+          {/* Disease 1 */}
+          <View style={styles.box}>
+            <View style={styles.contentContainer}>
+              <ThemedText style={styles.boxTitle}>First Disease</ThemedText>
+              <ThemedText style={styles.boxDescription}>Common in early pregnancy</ThemedText>
+            </View>
           </View>
-        </TouchableOpacity>
-      </View>
 
-      {/* Right Side Boxes */}
-      <View style={styles.rightSection}>
-        {/* Box 1 */}
-        <View style={styles.box}>
-          <ThemedText style={styles.boxTitle}>First Disease</ThemedText>
-          <ThemedText style={styles.boxDescription}>
-            Common in early pregnancy
-          </ThemedText>
-        </View>
+          {/* Disease 2 */}
+          <View style={styles.box}>
+            <View style={styles.contentContainer}>
+              <ThemedText style={styles.boxTitle}>Second Disease</ThemedText>
+              <ThemedText style={styles.boxDescription}>Monitor blood sugar levels</ThemedText>
+            </View>
+          </View>
 
-        {/* Box 2 */}
-        <View style={styles.box}>
-          <ThemedText style={styles.boxTitle}>Second Disease</ThemedText>
-          <ThemedText style={styles.boxDescription}>
-            Monitor blood sugar levels
-          </ThemedText>
-        </View>
-
-        {/* Box 3 */}
-        <View style={styles.box}>
-          <ThemedText style={styles.boxTitle}>Third Disease</ThemedText>
-          <ThemedText style={styles.boxDescription}>
-            High blood pressure during pregnancy
-          </ThemedText>
+          {/* Disease 3 */}
+          <View style={styles.box}>
+            <View style={styles.contentContainer}>
+              <ThemedText style={styles.boxTitle}>Third Disease</ThemedText>
+              <ThemedText style={styles.boxDescription}>High blood pressure during pregnancy</ThemedText>
+            </View>
+          </View>
         </View>
       </View>
+      
+      <TouchableOpacity 
+        style={styles.exploreButton}
+        onPress={handleDiseaseClick}
+      >
+        <View style={styles.buttonContent}>
+          <ThemedText style={styles.buttonText}>See More</ThemedText>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -63,62 +55,63 @@ export default function DiseasesList() {
 const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
-    flexDirection: 'row',
-    padding: 20,
-  },
-  leftSection: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 5,
+    paddingTop: 20,
   },
-  rightSection: {
-    width: '40%',
-    gap: 15,
+  mainTitle: {
+    marginTop: -5,
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#4C2F96',
+    marginVertical: 20,
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+  },
+  cardsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 20,
+    height: '100%',
   },
   box: {
+    flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderLeftWidth: 8,
+    borderLeftColor: '#4C2F96',
+  },
+  contentContainer: {
+    alignItems: 'center',
+    marginTop: 8,
   },
   boxTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#4C2F96',
     marginBottom: 8,
-    color: '#000',
   },
   boxDescription: {
-    fontSize: 14,
+    fontSize: 18,
     color: '#666',
-  },
-  mainImage: {
-    width: '80%',
-    height: '80%',
-    resizeMode: 'contain',
-  },
-  mainImageText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
+    textAlign: 'left',
   },
   exploreButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 15,
-    padding: 15,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    width: '80%',
+    backgroundColor: '#4C2F96',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginVertical: 30,
+    marginTop: 40,
   },
   buttonContent: {
     flexDirection: 'row',
@@ -126,9 +119,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
   },
-  exploreButtonText: {
+  buttonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
+  

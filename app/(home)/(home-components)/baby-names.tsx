@@ -9,7 +9,7 @@ export default function BabyNames() {
     <View style={styles.container}>
       {/* Header Overlay Image */}
       <Image 
-        source={require('../../../assets/images/svg.png')}
+        source={require('@/assets/images/svg1.png')}
         style={styles.headerOverlay}
         resizeMode="contain"
       />
