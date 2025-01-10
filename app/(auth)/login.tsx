@@ -84,7 +84,7 @@ const LoginScreen = () => {
         ]}
       >
         <Image
-          source={require("@/assets/images/topVector.png")}
+          source={require("@/assets/images/svg.png")}
           style={styles.topImage}
         />
       </Animated.View>
@@ -111,31 +111,17 @@ const LoginScreen = () => {
           <Text style={styles.forgotPasswordText}>Forgot your Password?</Text>
         </TouchableOpacity>
 
-        <View style={styles.signinButtonContainer}>
-          <Text style={styles.signIn}>Sign in</Text>
-          <LinearGradient
-              colors = {["#F97794", "#623AA2"]}
-              style={styles.linearGradient}>
-              <AntDesign name="arrowright" size={24} color="#FFFFFF" />
-          </LinearGradient>
-        </View>
+        <TouchableOpacity style={styles.signinButton}>
+            <LinearGradient
+                colors={["#8ED1FC", "#0693E3"]}
+                style={styles.signinButtonGradient}>
+                <Text style={styles.signinButtonText}>Sign in</Text>
+            </LinearGradient>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleRegister}>
           <Text style={styles.footerText}>Don't have an account?{" "} <Text style={{textDecorationLine: "underline"}}>Create</Text>
           </Text>
         </TouchableOpacity>
-      </Animated.View>
-      <Animated.View 
-        style={[
-            styles.leftVectorContainer,
-            {
-                opacity: fadeAnim,
-                transform: [{ translateY: slideBottomAnim }]
-            }
-        ]}
-      >
-        <ImageBackground
-          source={require("@/assets/images/Vector 2.png")}
-          style={styles.leftVectorImage}/>
       </Animated.View>
     </View>
   );
@@ -191,43 +177,27 @@ const styles = StyleSheet.create({
         marginRight: 40,
         width: "90%",
     },
-    signinButtonContainer: {
-        flexDirection: "row",
-        marginTop: 80,
-        justifyContent: "flex-end",
-        width: "90%",
-
+    signinButton: {
+        marginTop: 30,
+        alignSelf: 'center',
+        width: '40%',
     },
-    signIn:{
-        color: "#262626",
-        fontSize: 25,
-        fontWeight: "bold",
+    signinButtonGradient: {
+        borderRadius: 25,
+        padding: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    linearGradient: {
-        width: 56,
-        height: 34,
-        borderRadius: 17,
-        justifyContent: "center",
-        alignItems: "center",
-        marginHorizontal: 10,
+    signinButtonText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     footerText: {
         textAlign: "center",
         color: "#262626",
         fontSize: 18,
-        marginTop: 80,
-    },
-    leftVectorContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-    },
-    leftVectorImage: {
-        width: 250,
-        height: 500,
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
+        marginTop: 70,
     },
     
 
