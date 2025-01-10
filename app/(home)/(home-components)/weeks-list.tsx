@@ -1,88 +1,155 @@
-import { View, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
+import { 
+  SafeAreaView, 
+  ScrollView, 
+  View, 
+  Text, 
+  StyleSheet,
+  TouchableOpacity,
+  Image 
+} from "react-native";
+import React from "react";
+import { router } from 'expo-router';
+import Spacing from "../../../constants/Spacing";
+import { NewsList } from "../../../data/pregnancyweeks";
+import FontSize from "../../../constants/FontSize";
+import { theme } from "../../../constants/Colors1";
 
-export default function WeeksList() {
-  // Array من 5 أسابيع
-  const weeks = Array.from({ length: 5 }, (_, i) => i + 1);
-
+const HomeScreen = () => {
   return (
-    <View style={styles.container}>
-      <ThemedText style={styles.title}>Pregnancy Weeks</ThemedText>
-      <ThemedText style={styles.subtitle}>
-        Pregnancy Weeks 
-      </ThemedText>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        style={{
+          padding: Spacing.padding.base,
+        }}
       >
-        {weeks.map((week) => (
-          <TouchableOpacity key={week} style={styles.weekCard}>
-            <ThemedText style={styles.weekNumber}>Week {week}</ThemedText>
-            <Image 
-              source={require('@/assets/images/favicon.png')}
-              style={styles.babyIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        ))}
+        <Text style={[styles.headerText, { color: theme.colors.secondary}]}>
+          Pregnancy Week By Week
+        </Text>
+
+        <View style={styles.sliderContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: Spacing.margin.base,
+            }}
+          >
+            {NewsList.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => {
+                  router.push({
+                    pathname: "/(home)/(home-components)/(pages-components)/pregnancyPage",
+                    params: { news: JSON.stringify(item) }
+                  });
+                }}
+                style={{
+                  width: 150,
+                  alignItems: 'center',
+                  overflow: 'hidden',
+                }}
+              >
+                <View style={{
+                  width: "100%",
+                  height: 250,
+                  position: 'relative',
+                  backgroundColor: '#efefef',
+                  borderRadius: Spacing.borderRadius.lg,
+                  padding: Spacing.padding.sm,
+                  alignItems: 'center',
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 3,
+                  elevation: 3,
+                  overflow: 'hidden',
+                }}>
+                  {/* Top half circle */}
+                  <View style={{
+                    position: 'absolute',
+                    top: -40,
+                    left: -60,
+                    width: '90%',
+                    height: 60,
+                    backgroundColor: '#95cae4',
+                    borderBottomLeftRadius: 100,
+                    borderBottomRightRadius: 100,
+                    transform: [{ scale: 2 }],
+                    zIndex: 1,
+                  }} />
+
+                  <Text
+                    style={{
+                      fontSize: FontSize.xl,
+                      color: theme.colors.text,
+                      marginTop: Spacing.margin.lg,
+                      marginBottom: Spacing.margin.sm,
+                      zIndex: 2,
+                    }}
+                  >
+                    {item.id}
+                  </Text>
+                  
+                  <Text
+                    style={{
+                      fontSize: FontSize.sm,
+                      color: theme.colors.secondary,
+                      textAlign: 'center',
+                      marginBottom: Spacing.margin.sm,
+                      zIndex: 2,
+                    }}
+                  >
+                    Weeks{'\n'}Pregnant
+                  </Text>
+
+                  <Image
+                    source={item.image}
+                    style={{
+                      height: 120,
+                      width: "90%",
+                      marginTop: 'auto',
+                      zIndex: 2,
+                    }}
+                    resizeMode="contain"
+                  />
+
+                  {/* Bottom half circle */}
+                  <View style={{
+                    position: 'absolute',
+                    bottom: -40,
+                    right: -60,
+                    width: '90%',
+                    height: 60,
+                    backgroundColor: '#ffb9cc',
+                    borderTopLeftRadius: 100,
+                    borderTopRightRadius: 100,
+                    transform: [{ scale: 2 }],
+                    zIndex: 1,
+                  }} />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    flex: 1,
   },
-  scrollContainer: {
-    paddingRight: 0,
-    paddingLeft: 0,
-    gap: 0, // المسافة بين الـ cards
+  headerText: {
+    fontSize: FontSize.xl,
+    textAlign: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  weekCard: {
-    backgroundColor: 'rgb(37, 207, 240)',
-    width: 200,
-    height: 250,
-    borderRadius: 16,
-    padding: 26,
-    justifyContent: 'space-between',
-    marginLeft: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  weekNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    alignSelf: 'flex-start',
-    marginTop: 8,
-  },
-  babyIcon: {
-    width: 80,
-    height: 80,
-    alignSelf: 'flex-end',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontFamily: 'sans-serif',
-    fontWeight: 'bold',
-    paddingLeft: 20,
-    paddingTop: 5,
-    fontSize: 26,
-    color: '#000',
-    marginBottom: 12,
-    textAlign: 'left',
+  sliderContainer: {
+    marginTop: Spacing.margin.lg,
   },
 });
+
+export default HomeScreen;
