@@ -14,7 +14,7 @@ export default function Navbar() {
     route?: string 
   }[] = [
     { icon: 'calendar-outline', title: 'Weeks' },
-    { icon: 'medical-outline', title: 'Baby Names' },
+    { icon: 'medical-outline', title: 'Baby Names', route: '../BabyNames' },
     { icon: 'chatbubbles-outline', title: 'AI Page' },
     { icon: 'person-outline', title: 'Diseases' },
     { icon: 'man-outline', title: 'Management', route: '/(management)/management' as const },
