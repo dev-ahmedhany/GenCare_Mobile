@@ -1,36 +1,37 @@
-import { View, StyleSheet, Image, Animated, FlatList, Dimensions, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Image, Animated, FlatList, Dimensions, useWindowDimensions, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useEffect, useRef, useState } from 'react';
 
 const slides = [
   {
     id: '1',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Welcome to GenCare',
-    subtitle: 'Your pregnancy journey starts here'
+    image: require('@/assets/home_swiper/swiper_card1.jpeg'),
+    title: 'Check Posssibilities Of Fetal Diseases ',
+    button: 'AI Test'
   },
   {
     id: '2',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Track Your Progress',
-    subtitle: 'Week by week pregnancy guide'
+    image: require('@/assets/home_swiper/swiper_card2.jpeg'),
+    title: 'Want Baby Name ? Check Out Our Baby Names Lists',
+    button: 'Baby Names'
   },
   {
     id: '3',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Expert Advice',
-    subtitle: 'Get support from professionals'
-  },
-  {
-    id: '4',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Stay Healthy',
-    subtitle: 'Tips for a healthy pregnancy'
-  },
+    image: require('@/assets/home_swiper/swiper_card3.jpeg'),
+    title: 'What Does Your Baby Look Like Now?',
+    button: 'Show My Baby'
+  }
 ];
 
-export default function UpperSwiper() {
-  const flatListRef = useRef(null);
+type Slide = {
+  id: string;
+  image: any;
+  title: string;
+  button: string;
+};
+
+export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.RefObject<ScrollView> }) {
+  const flatListRef = useRef<FlatList>(null);
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -61,7 +62,32 @@ export default function UpperSwiper() {
     return () => clearInterval(timer);
   }, [currentIndex]);
 
-  const renderItem = ({ item }) => (
+  const handleButtonPress = (buttonType: string) => {
+    if (scrollViewRef?.current) {
+      switch (buttonType) {
+        case 'AI Test':
+          scrollViewRef.current?.scrollTo({
+            y: 1200, // المسافة للقسم الأول
+            animated: true
+          });
+          break;
+        case 'Baby Names':
+          scrollViewRef.current?.scrollTo({
+            y: 1800, // المسافة للقسم الثاني
+            animated: true
+          });
+          break;
+        case 'Show My Baby':
+          scrollViewRef.current?.scrollTo({
+            y: 2400, // المسافة للقسم الثالث
+            animated: true
+          });
+          break;
+      }
+    }
+  };
+
+  const renderItem = ({ item }: { item: Slide }) => (
     <View style={[styles.slide, { width }]}>
       <View style={styles.contentContainer}>
         <Image 
@@ -72,7 +98,13 @@ export default function UpperSwiper() {
         
         <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
           <ThemedText style={styles.title}>{item.title}</ThemedText>
-          <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
+          
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={() => handleButtonPress(item.button)}
+          >
+            <ThemedText style={styles.buttonText}>{item.button}</ThemedText>
+          </TouchableOpacity>
         </Animated.View>
       </View>
     </View>
@@ -94,6 +126,10 @@ export default function UpperSwiper() {
 
   return (
     <View style={styles.container}>
+      <Image 
+        source={require('@/assets/home_swiper/blueTopLeft.jpeg')}
+        style={styles.topLeftImage}
+      />
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -113,8 +149,9 @@ export default function UpperSwiper() {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 10,
     alignItems: 'center',
-    height: 350,
+    height: 550,
     backgroundColor: '#fff',
     width: '100%',
   },
@@ -123,36 +160,41 @@ const styles = StyleSheet.create({
     height: '100%'
     },
   contentContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
     height: '100%',
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 350,
+    height: 300,
+    marginBottom: -50,
+    zIndex: 1,
   },
   textContainer: {
-    flex: 1,
-    marginLeft: 20,
+    alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+    flex: 1,
+    width: '100%',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    paddingTop: 10,
-    marginBottom: 12,
-    color: '#000',
+    marginBottom: 40,
+    color: '#89CFF0',
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#000',
+    color: '#89CFF0',
+    textAlign: 'center',
   },
   pagination: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: 20,
+    bottom: 10,
     alignSelf: 'center',
   },
   dot: {
@@ -160,5 +202,37 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     marginHorizontal: 5,
+  },
+  topLeftImage: {
+    position: 'absolute',
+    marginTop: -180,
+    left: -30,
+    width: 200,
+    height: 250,
+    zIndex: 0,
+  },
+  button: {
+    backgroundColor: '#89CFF0',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 25,
+    elevation: 3,
+    shadowColor: '#000',
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Animated, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { BlurView } from 'expo-blur';
 
 export default function Navbar() {
   const router = useRouter();
@@ -83,8 +84,15 @@ export default function Navbar() {
 
   return (
     <View style={styles.mainContainer}>
-      <View style={styles.navbar}>
-        <View style={styles.container}>
+      <BlurView
+        intensity={100}
+        tint="default"
+        style={[
+          styles.navbar,
+          { backgroundColor: 'rgba(255, 255, 255, 0.6)' }
+        ]}
+      >
+        <View style={[styles.container, { backgroundColor: 'transparent' }]}>
           <Text style={styles.title}>GenCare</Text>
           <Animated.View style={[
             styles.menuItemsContainer,
@@ -174,7 +182,7 @@ export default function Navbar() {
             </Animated.View>
           </TouchableOpacity>
         </View>
-      </View>
+      </BlurView>
     </View>
   );
 }
@@ -182,31 +190,18 @@ export default function Navbar() {
 const styles = StyleSheet.create({
   mainContainer: {
     position: 'absolute',
-    top: 10,
+    top: 0,
     left: 0,
     right: 0,
     zIndex: 1000,
   },
   navbar: {
-    backgroundColor: '#FFFFFF',
     height: 70,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    borderRadius: 20,
     marginTop: 20,
-    elevation: 4,
-    opacity: 0.9,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   container: {
     flexDirection: 'row',
@@ -251,8 +246,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 50,
     top: 50,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backdropFilter: 'blur(10px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 0,
     padding: 8,
     shadowColor: '#000',
     shadowOffset: {
@@ -271,7 +267,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    borderRadius: 6,
+    borderRadius: 0,
     marginVertical: 2,
   },
   menuText: {
