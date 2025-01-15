@@ -105,7 +105,7 @@ const SignupScreen = () => {
                 ]}
             >
                 <Image
-                    source={require("@/assets/images/svg.png")}
+                    source={require("@/assets/auth_imgs/svg.png")}
                     style={styles.topImage}
                 />
             </Animated.View>
