@@ -3,7 +3,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { Video, ResizeMode } from 'expo-av';
 
 export default function AIChatPage() {
   const [isEnvelopeClosed, setIsEnvelopeClosed] = useState(false);
@@ -111,17 +110,9 @@ export default function AIChatPage() {
 
   return (
     <View style={styles.container}>
-      <Video
-        source={require('@/assets/ai_components/background.mp4')}
+      <Image
+        source={require('@/assets/ai_components/background.png')}
         style={styles.backgroundVideo}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping
-        isMuted
-        useNativeControls={false}
-        posterSource={require('@/assets/ai_components/background.mp4')}
-        rate={1.0}
-        volume={1.0}
       />
 
       <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
@@ -226,117 +217,52 @@ export default function AIChatPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
-    height: '100%',
-    overflow: 'hidden',
   },
   backgroundVideo: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
     width: '100%',
     height: '100%',
-    transform: [{ 
-      scale: Dimensions.get('window').width > 768 ? 1.5 : 1.9
-    }],
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
-    height: '100%',
-    paddingTop: '70%',
   },
   centerContent: {
-    flex: 1,
-    alignItems: 'center',
-    width: '100%',
-  },
-  loaderContainer: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: 30,
-    borderRadius: 15,
-    height: '56%',
     width: '90%',
+    maxWidth: 400,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  loaderText: {
-    fontSize: 18,
-    color: '#666',
-    marginTop: 15,
-  },
-  successContainer: {
-    padding: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 15,
-    width: '90%',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,  
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginVertical: 15,
-    color: '#9C92CE',
-  },
-  successText: {
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
-  resetButton: {
-    backgroundColor: '#9C92CE',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-  },
-  resetButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   envelopeContainer: {
-    position: 'relative',
-    width: '85%',
-    aspectRatio: 16 / 9,
-    height: '55%',
-    maxHeight: '70%',
+    width: '90%',
+    maxWidth: 400,
+    aspectRatio: 16/9,
   },
   envelope: {
     width: '100%',
     height: '100%',
     backgroundColor: '#9C92CE',
     borderRadius: 24,
-    position: 'relative',
     overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  },
+  loaderContainer: {
+    width: '90%',
+    maxWidth: 400,
+    aspectRatio: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successContainer: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
   },
   envelopeFront: {
     flex: 1,
@@ -416,23 +342,41 @@ const styles = StyleSheet.create({
     height: '80%',
     marginBottom: 15,
   },
-  // outerFlap: {
-  //   position: 'absolute',
-  //   top: -20,
-  //   left: '50%',
-  //   width: 0,
-  //   height: 0,
-  //   borderStyle: 'solid',
-  //   borderLeftWidth: 100,
-  //   borderRightWidth: 100,
-  //   borderTopWidth: 60,
-  //   borderLeftColor: 'transparent',
-  //   borderRightColor: 'transparent',
-  //   borderTopColor: '#8a80b9',
-  //   transform: [
-  //     { translateX: -100 },
-  //     { rotate: '180deg' }
-  //   ],
-  //   zIndex: 1,
-  // },
+  loaderText: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 15,
+  },
+  successTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginVertical: 15,
+    color: '#9C92CE',
+  },
+  successText: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  resetButton: {
+    backgroundColor: '#9C92CE',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });

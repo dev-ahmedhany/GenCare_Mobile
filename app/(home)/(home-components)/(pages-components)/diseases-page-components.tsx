@@ -8,90 +8,277 @@ interface Disease {
   name: string;
   date: string;
   summary: string;
-  image: string;
+  image: any;
   details: string;
 }
 
 const diseases: Disease[] = [
     {
         id: 1,
-        name: "Type 2 Diabetes",
-        date: "2024-03-20",
-        summary: "A chronic condition affecting how your body metabolizes sugar (glucose)...",
-        image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118",
-        details: "Type 2 diabetes is a chronic condition that affects the way your body metabolizes sugar (glucose). With type 2 diabetes, your body either resists the effects of insulin — a hormone that regulates the movement of sugar into your cells — or doesn't produce enough insulin to maintain normal glucose levels..."
+        name: "Arachnoid Cyst",
+        date: "Weeks 10-12",
+        summary: "A fluid-filled sac that forms in the brain or spinal cord, within the arachnoid membrane surrounding the central nervous system.",
+        image: require('../../../../assets/diseases/Arachnoid_Cyst_Treated_using_a_VP_Shunt.png'),
+        details: `Arachnoid Cyst is a fluid-filled sac that usually forms in the brain or spinal cord, within the arachnoid membrane surrounding the central nervous system. Often, it is congenital (present from birth), but it can also develop due to brain injury or infection.
+
+Symptoms:
+Most arachnoid cysts are asymptomatic and are discovered incidentally. However, if the cyst is large or exerts pressure on brain tissue, it may lead to:
+- Persistent headache
+- Dizziness or balance issues
+- Visual or hearing impairment
+- Concentration difficulties or memory issues
+
+Treatment:
+- Monitoring: If the cyst does not cause symptoms, doctors may prefer regular monitoring.
+- Surgical Intervention: If symptoms significantly impact the patient's quality of life, surgery may be performed to drain the cyst fluid or partially or fully remove it to relieve pressure on the brain.
+
+Awareness:
+- Early diagnosis is important, especially if symptoms appear.
+- Most arachnoid cysts are benign and often harmless, though they may need regular check-ups.
+- Individuals with symptoms should seek specialist help if they experience unusual symptoms like persistent headaches or balance problems.`
     },
     {
         id: 2,
-        name: "Hypertension",
-        date: "2024-03-19",
-        summary: "High blood pressure that can lead to severe health complications...",
-        image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef",
-        details: "Hypertension is a common condition in which the long-term force of the blood against your artery walls is high enough that it may eventually cause health problems, such as heart disease. Blood pressure is determined both by the amount of blood your heart pumps and the amount of resistance to blood flow in your arteries..."
+        name: "Cerebellar Hypoplasia",
+        date: "Weeks 10-12",
+        summary: "A condition where the cerebellum does not develop properly, affecting coordination, balance, and motor control.",
+        image: require('../../../../assets/diseases/Clinical-impression-of-siblings-of-family-1-a-patient-1-b-patient-2.png'),
+        details: `Cerebellar Hypoplasia is a condition where the cerebellum (the part of the brain responsible for coordination, balance, and motor control) does not develop properly. It can be congenital (present at birth) or acquired (due to brain damage after birth).
+
+Causes:
+- Congenital: Genetic disorders, prenatal infections (e.g., rubella), or lack of oxygen during pregnancy
+- Acquired: Brain damage due to lack of oxygen at birth, trauma, or infections like meningitis
+
+Symptoms:
+- Coordination issues (ataxia), difficulty walking, and muscle weakness
+- Speech problems (slurred speech)
+- Balance difficulties and possible seizures
+- Cognitive delays or developmental problems in some cases
+
+Diagnosis:
+- MRI scans to visualize the cerebellum and assess its development
+- Genetic testing to identify underlying genetic causes
+- Neurological exams to assess coordination and motor function
+
+Treatment:
+- Physical Therapy to improve coordination, balance, and strength
+- Occupational Therapy to help with daily tasks
+- Speech Therapy if speech is affected
+- Medications to manage symptoms like muscle spasms or seizures
+- Surgical interventions are rare but may be needed for certain complications
+
+Prevention:
+- Good prenatal care to monitor fetal development
+- Vaccinations (e.g., rubella) before pregnancy to avoid infections
+- Genetic counseling for families with a history of genetic disorders
+
+Prognosis:
+The outcome depends on the severity of the condition. Some individuals may lead independent lives with therapy, while others may need lifelong support for mobility and daily activities.`
     },
     {
         id: 3,
-        name: "Asthma",
-        date: "2024-03-18",
-        summary: "A condition in which airways narrow and swell and produce extra mucus...",
-        image: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2",
-        details: "Asthma is a condition in which your airways narrow and swell and produce extra mucus. This can make breathing difficult and trigger coughing, wheezing and shortness of breath. For some people, asthma is a minor nuisance. For others, it can be a major problem that interferes with daily activities..."
+        name: "Colphocephaly",
+        date: "Months 3-4",
+        summary: "A rare congenital brain abnormality with enlarged occipital horns of the brain's lateral ventricles.",
+        image: require('@/assets/diseases/767679ab89a64fa5285bea4d60f36dce.jpg'),
+        details: `Colpocephaly is a rare congenital brain abnormality characterized by the disproportionate enlargement of the occipital horns of the brain's lateral ventricles. This occurs due to abnormal brain development, often associated with issues in the white matter.
+
+Causes:
+- Developmental Brain Abnormalities: Problems in neuronal migration during fetal development
+- Associated Conditions: Corpus callosum agenesis or hypoplasia (underdevelopment or absence of the corpus callosum)
+- Genetic or Environmental Factors: Chromosomal abnormalities, prenatal infections, or injuries
+
+Symptoms:
+Varies depending on severity; common symptoms include:
+- Developmental delays: Slower milestones in motor and cognitive skills
+- Seizures: Common in severe cases
+- Intellectual disabilities: Ranging from mild to severe
+- Muscle weakness: Spasticity or lack of coordination
+
+Diagnosis:
+- Imaging Studies: MRI or CT scans show enlarged occipital horns and reduced white matter
+- Prenatal Ultrasound: Sometimes identifies abnormalities during pregnancy
+- Genetic Testing: To investigate potential chromosomal issues
+
+Treatment:
+No cure; management focuses on symptoms:
+- Physical therapy: For motor skills
+- Medications: For seizures
+- Special education: To address learning disabilities
+- Speech therapy: For communication difficulties
+
+Prognosis:
+Varies by severity:
+- Mild cases may lead relatively normal lives with support
+- Severe cases may require lifelong care and face significant neurological challenges`
     },
     {
         id: 4,
-        name: "Arthritis",
-        date: "2024-03-17",
-        summary: "Inflammation of one or more joints, causing pain and stiffness...",
-        image: "https://images.unsplash.com/photo-1578496781985-452d4a934d50",
-        details: "Arthritis is the swelling and tenderness of one or more joints. The main symptoms of arthritis are joint pain and stiffness, which typically worsen with age. The most common types of arthritis are osteoarthritis and rheumatoid arthritis..."
+        name: "Encephalocele",
+        date: "Weeks 18-24",
+        summary: "A rare congenital defect where part of the brain or its surrounding tissues protrude through an opening in the skull.",
+        image: require('@/assets/diseases/3rd.jpg'),
+        details: `Encephalocele is a rare congenital defect where part of the brain or its surrounding tissues protrude through an opening in the skull. This occurs during fetal development, resulting in a sac or bulge containing brain tissue.
+
+Definition:
+Encephalocele is a condition where brain tissue or fluid pushes through an abnormal opening in the skull, forming a visible protrusion. The sac may be covered by skin or open, depending on the severity.
+
+Symptoms:
+- Visible bulge on the skull (usually at the front or back of the head)
+- Developmental delays (motor and cognitive)
+- Vision problems due to pressure on the optic nerves
+- Seizures (in some cases)
+- Movement or coordination issues
+- Intellectual disabilities depending on the extent of brain involvement
+
+Treatment:
+- Surgical repair: The primary treatment is surgery to close the skull defect and return brain tissue to its proper position. This may involve reconstructing part of the skull
+- Supportive care: Post-surgery, children may need physical, occupational, and speech therapy to help with development
+- Long-term follow-up: Ongoing monitoring for any neurological or developmental issues is necessary
+
+Prevention:
+- Prenatal care: Taking folic acid before and during pregnancy can help reduce the risk of neural tube defects like encephalocele
+- Early diagnosis: Prenatal ultrasounds and genetic testing can detect encephalocele early, allowing for early intervention
+- Postnatal care: Early diagnosis and surgery after birth improve outcomes
+
+Prognosis:
+Outcomes depend on the size and location of the encephalocele and how much of the brain is affected. With early treatment, children can lead relatively normal lives, though some may have lifelong developmental or neurological challenges.`
     },
     {
         id: 5,
-        name: "Depression",
-        date: "2024-03-16",
-        summary: "A mental health disorder characterized by persistently depressed mood...",
-        image: "https://images.unsplash.com/photo-1541199249251-f713e6145474",
-        details: "Depression is a mood disorder that causes a persistent feeling of sadness and loss of interest. Also called major depressive disorder or clinical depression, it affects how you feel, think and behave and can lead to a variety of emotional and physical problems..."
+        name: "Mild Ventriculomegaly",
+        date: "Weeks 18-24",
+        summary: "A condition where brain ventricles are slightly enlarged, containing more cerebrospinal fluid than usual.",
+        image: require('@/assets/diseases/Ventriculomegaly-Illustration_2021-05-04-152710.png'),
+        details: `Mild Ventriculomegaly is a condition characterized by a slight enlargement of the brain's ventricles, which are fluid-filled spaces containing cerebrospinal fluid (CSF). This condition can be detected through prenatal ultrasounds or postnatally via imaging techniques like MRI or CT scans.
+
+Causes:
+- Genetic conditions: Associated with certain genetic disorders or brain abnormalities
+- Developmental brain issues: May result from abnormal brain development during pregnancy
+- Brain injuries or infections: Brain damage or infections can sometimes lead to ventricular enlargement
+- Increased intracranial pressure: Elevated pressure within the skull can cause the ventricles to expand
+
+When It Occurs During Pregnancy:
+Mild ventriculomegaly is often detected during routine ultrasound scans in the second trimester (18th–22nd week). It is diagnosed when the ventricles measure between 10–15 millimeters. In many cases, it is a benign finding, particularly when no other abnormalities are present.
+
+Effects and Symptoms:
+- Often asymptomatic and resolves over time
+- If associated with other conditions, it may cause developmental delays or neurological issues, though this is not common
+
+Diagnosis:
+- Typically identified through prenatal ultrasound
+- Additional imaging (e.g., MRI) may be required to monitor progression or resolution
+
+Treatment:
+- In most cases, no treatment is necessary, only regular monitoring via follow-up ultrasounds
+- If linked to an underlying condition (e.g., genetic disorder or brain abnormality), treatment targets the root cause
+
+Prognosis:
+Mild ventriculomegaly is often not a cause for concern, and with proper monitoring, pregnancies proceed normally. Developmental outcomes are typically positive when the condition resolves on its own or occurs in isolation.`
     },
     {
         id: 6,
-        name: "Heart Disease",
-        date: "2024-03-15",
-        summary: "Various conditions that affect the heart's structure and function...",
-        image: "https://images.unsplash.com/photo-1559757175-5700dde675bc",
-        details: "Heart disease describes a range of conditions that affect your heart. Diseases under the heart disease umbrella include blood vessel diseases, such as coronary artery disease, heart rhythm problems (arrhythmias) and heart defects you're born with (congenital heart defects)..."
+        name: "Moderate Ventriculomegaly",
+        date: "Weeks 18-22",
+        summary: "A condition where brain ventricles are moderately enlarged, measuring between 15-20 millimeters.",
+        image: require('@/assets/diseases/WhatsApp Image 2025-01-09 at 19.20.59_2ddd5092.jpg'),
+        details: `Moderate Ventriculomegaly is a condition where the brain's ventricles are enlarged more than in mild ventriculomegaly but not as severely as in more serious cases. The ventricles are fluid-filled spaces that contain cerebrospinal fluid (CSF), which helps protect and nourish the brain. Ventricular enlargement can indicate underlying issues with brain development or function.
+
+Causes:
+- Genetic disorders: Conditions like Down syndrome, Edwards syndrome, or other chromosomal abnormalities
+- Brain development problems: Abnormal brain development during pregnancy, such as hydrocephalus
+- Infections during pregnancy: Infections like toxoplasmosis or cytomegalovirus (CMV)
+- Traumatic brain injuries: Brain damage from trauma or infection
+- Obstructions in cerebrospinal fluid flow: Blockages like tumors or cysts
+
+When It Occurs During Pregnancy:
+Moderate ventriculomegaly is usually diagnosed through ultrasound scans between the 18th and 22nd weeks of pregnancy. Ventricles measuring between 15 and 20 millimeters are considered enlarged. Detailed anatomical scans often detect this condition.
+
+Effects and Symptoms:
+- During pregnancy: May not show immediate symptoms but can signal underlying brain development issues
+- At birth: Effects depend on underlying cause; some children show no impact, others may have developmental delays
+
+Diagnosis:
+- Detected via prenatal ultrasound
+- Further imaging like MRI for clearer brain and ventricle view
+- Genetic testing (amniocentesis or CVS) to check for chromosomal abnormalities
+
+Treatment:
+- Surgery (shunt insertion) may be needed for hydrocephalus cases
+- Specialized care and developmental support for genetic disorders
+- Regular monitoring through follow-up imaging if no major abnormalities present
+
+Prognosis:
+The outcome depends on the underlying cause. Some children may develop normally, while others might face cognitive or physical delays. Early detection, close monitoring, and timely intervention can significantly improve the prognosis.
+
+Expecting parents should work closely with their healthcare provider to understand the condition and its implications. Regular follow-ups and additional testing are essential to monitor the baby's development and health.`
     },
     {
         id: 7,
-        name: "Multiple Sclerosis",
-        date: "2024-03-14",
-        summary: "A disease in which the immune system eats away at the protective covering of nerves...",
-        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56",
-        details: "Multiple sclerosis (MS) is a potentially disabling disease of the brain and spinal cord (central nervous system). In MS, the immune system attacks the protective sheath (myelin) that covers nerve fibers and causes communication problems between your brain and the rest of your body..."
+        name: "Polencephaly",
+        date: "Weeks 8-24",
+        summary: "A rare brain malformation characterized by abnormal cortical development and irregular brain folds.",
+        image: require('@/assets/diseases/Porencephaly-1.png'),
+        details: `Polencephaly is a rare brain malformation where the cortex develops abnormally, leading to small, irregular folds instead of the normal structure. This condition can cause developmental delays, seizures, intellectual disabilities, and motor issues.
+
+Causes:
+- Genetic Mutations: (e.g., TUBA1A, DCX)
+- Infections During Pregnancy: (e.g., Zika virus, CMV)
+- Oxygen Deprivation: during fetal development
+- Toxic Exposures: during pregnancy
+
+Symptoms:
+- Developmental delays
+- Seizures
+- Muscle weakness or spasticity
+- Cognitive and speech impairments
+
+Diagnosis:
+- MRI: for brain imaging
+- Genetic Testing: to identify mutations
+
+Treatment:
+- Medications for seizures
+- Physical, speech, and occupational therapy
+- Supportive care for mobility and learning challenges
+
+Prognosis:
+Varies by severity; supportive therapies improve quality of life, but no cure exists.`
     },
     {
         id: 8,
-        name: "Alzheimer's Disease",
-        date: "2024-03-13",
-        summary: "A progressive disorder that causes brain cells to degenerate and die...",
-        image: "https://images.unsplash.com/photo-1559757152-0ce691b45704",
-        details: "Alzheimer's disease is a progressive neurologic disorder that causes the brain to shrink (atrophy) and brain cells to die. Alzheimer's disease is the most common cause of dementia — a continuous decline in thinking, behavioral and social skills that affects a person's ability to function independently..."
-    },
-    {
-        id: 9,
-        name: "Celiac Disease",
-        date: "2024-03-12",
-        summary: "An immune reaction to eating gluten, a protein found in wheat, barley, and rye...",
-        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff",
-        details: "Celiac disease is an immune reaction to eating gluten, a protein found in wheat, barley and rye. If you have celiac disease, eating gluten triggers an immune response in your small intestine. Over time, this reaction damages your small intestine's lining and prevents absorption of some nutrients..."
-    },
-    {
-        id: 10,
-        name: "Parkinson's Disease",
-        date: "2024-03-11",
-        summary: "A progressive nervous system disorder affecting movement...",
-        image: "https://images.unsplash.com/photo-1559757175-5700dde675bc",
-        details: "Parkinson's disease is a progressive nervous system disorder that affects movement. Symptoms start gradually, sometimes starting with a barely noticeable tremor in just one hand. Tremors are common, but the disorder also commonly causes stiffness or slowing of movement..."
+        name: "Severe Ventriculomegaly",
+        date: "Weeks 8-24",
+        summary: "A condition where the brain's ventricles become abnormally enlarged, measuring ≥15 mm on ultrasound.",
+        image: require('@/assets/diseases/ventriculmegaly.gif'),
+        details: `Severe Ventriculomegaly is a condition where the brain's ventricles (fluid-filled spaces) become abnormally enlarged. It is classified as severe when the ventricles measure ≥15 mm on ultrasound.
+
+Causes:
+- Obstruction of CSF Flow: Conditions like hydrocephalus
+- Brain Abnormalities: Polencephaly, neural tube defects, or brain malformations
+- Infections: Congenital infections like Cytomegalovirus (CMV) or Toxoplasmosis
+- Chromosomal Abnormalities: Linked to syndromes like Down or Edwards syndrome
+
+Symptoms:
+May not be apparent in utero, but postnatal symptoms can include:
+- Increased head size
+- Developmental delays
+- Neurological impairments
+
+Diagnosis:
+- Prenatal Ultrasound: Identifies ventricle size
+- MRI: Provides detailed brain imaging
+- Amniocentesis: To detect infections or genetic abnormalities
+
+Treatment:
+Depends on the cause:
+- Surgical Intervention: Ventriculoperitoneal (VP) shunt for hydrocephalus
+- Supportive Therapies: Physical, occupational, and speech therapy
+
+Prognosis:
+Varies widely:
+- Mild cases may resolve spontaneously
+- Severe cases depend on underlying causes and associated conditions`
     }
 ];
 
@@ -119,7 +306,7 @@ export default function DiseasesPage() {
             <CardContent style={styles.cardContent}>
               <View style={styles.imageContainer}>
                 <Image
-                  source={{ uri: disease.image }}
+                  source={disease.image}
                   style={styles.image}
                   resizeMode="cover"
                 />
@@ -137,7 +324,7 @@ export default function DiseasesPage() {
       {selectedDisease && (
         <View style={styles.detailsContainer}>
           <Image
-            source={{ uri: selectedDisease.image }}
+            source={selectedDisease.image}
             style={styles.detailsImage}
             resizeMode="cover"
           />
@@ -206,7 +393,7 @@ const styles = StyleSheet.create({
   },
   summary: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
     marginHorizontal: 10,
     marginBottom: 10,
   },
@@ -232,7 +419,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   detailsText: {
-    color: '#aaa',
+    color: '#000',
     lineHeight: 24,
     fontSize: 16,
   },

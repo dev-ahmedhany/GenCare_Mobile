@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.gencare"
+      "package": "com.anonymous.gencare",
+      "permissions": ["INTERNET"]
     },
     "web": {
       "bundler": "metro",
@@ -46,6 +47,10 @@
       "eas": {
         "projectId": "adbf0acd-f3da-4e6e-80ce-620c7f72c2f5"
       }
+    },
+    "owner": "ahmed_shams2",
+    "updates": {
+      "url": "https://u.expo.dev/adbf0acd-f3da-4e6e-80ce-620c7f72c2f5"
     }
   }
 }

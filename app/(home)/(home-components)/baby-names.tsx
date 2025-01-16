@@ -1,150 +1,192 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Image, Pressable, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import Svg, { Path } from 'react-native-svg';
+import { Link } from 'expo-router';
+import { theme } from '@/constants/Colors1';
+import { Image as ExpoImage } from 'expo-image';
 
-export default function AnimatedBoxes() {
-  const animatedValues = useRef({
-    box1: new Animated.Value(0),
-    box2: new Animated.Value(0),
-    box3: new Animated.Value(0),
-  }).current;
+const { width, height } = Dimensions.get('window');
 
-  useEffect(() => {
-    const animate = () => {
-      const animation = Animated.loop(
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(animatedValues.box1, {
-              toValue: 1,
-              duration: 1500,
-              useNativeDriver: true,
-            }),
-            Animated.timing(animatedValues.box2, {
-              toValue: 1,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(animatedValues.box3, {
-              toValue: 1,
-              duration: 2500,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(animatedValues.box1, {
-              toValue: 0,
-              duration: 1500,
-              useNativeDriver: true,
-            }),
-            Animated.timing(animatedValues.box2, {
-              toValue: 0,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(animatedValues.box3, {
-              toValue: 0,
-              duration: 2500,
-              useNativeDriver: true,
-            }),
-          ]),
-        ])
-      );
-
-      animation.start();
-      return () => animation.stop();
-    };
-
-    animate();
-  }, []);
-
-  const getAnimatedStyle = (animatedValue: Animated.Value) => ({
-    transform: [{
-      rotate: animatedValue.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '360deg']
-      })
-    }],
-    opacity: animatedValue
-  });
-
-  const SpiralLine = () => {
-    const spiral = Array.from({ length: 50 }).map((_, i) => {
-      const angle = 0.5 * i;
-      const radius = 2 * i;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      return { x, y };
-    });
-
-    return (
-      <Svg style={StyleSheet.absoluteFill}>
-        <Path
-          d={`M ${spiral.map(p => `${p.x + 150} ${p.y + 150}`).join(' L ')}`}
-          stroke="rgba(137, 207, 240, 0.3)"
-          strokeWidth="2"
-          fill="none"
-        />
-      </Svg>
-    );
-  };
-
+export default function BabyNames() {
   return (
     <View style={styles.container}>
-      <ThemedText type="title" style={styles.title}>Baby Names</ThemedText>
-      <ThemedText style={styles.subtitle}>
-        Baby Names 
-      </ThemedText>
-      <View style={styles.boxesContainer}>
-        <SpiralLine />
-        <Animated.View 
-          style={[styles.box, styles.box1, getAnimatedStyle(animatedValues.box1)]}
-          collapsable={false}
-        >
-          <ThemedText style={styles.boxText}>A</ThemedText>
-        </Animated.View>
-        
-        <Animated.View 
-          style={[styles.box, styles.box2, getAnimatedStyle(animatedValues.box2)]}
-          collapsable={false}
-        >
-          <ThemedText style={styles.boxText}>B</ThemedText>
-        </Animated.View>
-        
-        <Animated.View 
-          style={[styles.box, styles.box3, getAnimatedStyle(animatedValues.box3)]}
-          collapsable={false}
-        >
-          <ThemedText style={styles.boxText}>C</ThemedText>
-        </Animated.View>
-      </View>
+      <View style={styles.cardContainer}>
+        <View style={styles.contentContainer}>
+          {/* Header Image */}
+          <View style={styles.imageContainer}>
+            <Image 
+              source={require('@/assets/images/svg1.png')}
+              style={styles.headerOverlay}
+              resizeMode="contain"
+            />
+          </View>
 
-      <TouchableOpacity style={styles.button}>
-        <ThemedText style={styles.buttonText}>See More</ThemedText>
-      </TouchableOpacity>
+          {/* Title Section */}
+          <View style={styles.titleContainer}>
+            <ThemedText style={styles.title}>Baby Names</ThemedText>
+            <ThemedText style={styles.subtitle}>A-Z</ThemedText>
+          </View>
+
+          {/* Blobs Container */}
+          <View style={styles.blobsContainer}>
+            {/* Letter Blobs */}
+            <View style={[styles.blob, styles.blobA]}>
+              <ThemedText style={styles.blobText}>A</ThemedText>
+            </View>
+
+            <View style={[styles.blob, styles.blobB]}>
+              <ThemedText style={styles.blobText}>B</ThemedText>
+            </View>
+
+            <View style={[styles.blob, styles.blobC]}>
+              <ThemedText style={styles.blobText}>C</ThemedText>
+            </View>
+
+            {/* Decorative GIFs */}
+            <ExpoImage 
+              source={require('../../../assets/gif/Birth.gif')}
+              style={[styles.blobGif, styles.gifTopRight]}
+              contentFit="cover"
+              transition={300}
+            />
+            <ExpoImage 
+              source={require('../../../assets/gif/baby1.gif')}
+              style={[styles.blobGif, styles.gifBottomLeft]}
+              contentFit="cover"
+              transition={300}
+            />
+          </View>
+
+          {/* See More Button */}
+          <Link href="/(home)/(home-components)/(pages-components)/BabyNames" asChild>
+            <Pressable style={styles.button}>
+              <ThemedText style={styles.buttonText}>See More</ThemedText>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    alignItems: 'flex-start',
     width: '100%',
-    paddingTop: 0,
-  } as ViewStyle,
-  boxesContainer: {
+    height: height * 0.9, // Adjust based on screen height
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+  },
+  cardContainer: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    height: '95%',
     width: '100%',
-    height: 300,
+    alignSelf: 'center',
     position: 'relative',
-  } as ViewStyle,
-  box: {
-    width: 100,
-    height: 100,
-    backgroundColor: 'rgb(137, 207, 240)',
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 15,
+  },
+  imageContainer: {
+    width: '100%',
+    height: height * 0.15, // Adjust based on screen height
+    marginBottom: 10,
+  },
+  headerOverlay: {
+    width: '100%',
+    height: '120%',
+    top: -18,
+    left: 40,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
     position: 'absolute',
+    top: 30,
+    left: 10,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: theme.colors.secondary,
+  },
+  subtitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: theme.colors.secondary,
+  },
+  blobsContainer: {
+    flex: 1,
+    position: 'relative',
+    width: '100%',
+    marginBottom: 20,
+  },
+  blob: {
+    position: 'absolute',
+    width: width * 0.28, // Responsive size
+    height: width * 0.28,
+    borderRadius: width * 0.15,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  blobText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  blobA: {
+    backgroundColor: theme.colors.ligthblue,
+    top: '1%',
+    left: '5%',
+  },
+  blobB: {
+    backgroundColor: theme.colors.lightpink,
+    top: '31%',
+    left: '35%',
+  },
+  blobC: {
+    backgroundColor: theme.colors.ligthblue,
+    bottom: '10%',
+    right: '5%',
+  },
+  blobGif: {
+    position: 'absolute',
+    width: width * 0.35,
+    height: width * 0.35,
+    borderRadius: width * 0.175,
+  },
+  gifTopRight: {
+    top: '-3%',
+    right: '-3%',
+  },
+  gifBottomLeft: {
+    bottom: '0%',
+    left: '-3%',
+  },
+  button: {
+    backgroundColor: theme.colors.secondary,
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 25,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -152,55 +194,12 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
-  } as ViewStyle,
-  box1: {
-    top: 0,
-    left: 20,
-  } as ViewStyle,
-  box2: {
-    top: '32%',
-    left: '40%',
-    transform: [{ translateX: -25 }, { translateY: -25 }],
-    zIndex: 2,
-  } as ViewStyle,
-  box3: {
-    bottom: 0,
-    right: 20,
-  } as ViewStyle,
-  boxText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  } as TextStyle,
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 20,
     alignSelf: 'center',
-  } as ViewStyle,
+    marginBottom: 20, // Added space at bottom
+  },
   buttonText: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 16,
-    fontWeight: 'bold',
-  } as TextStyle,
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    alignSelf: 'flex-start',
-    paddingLeft: 20,
-  } as TextStyle,
-  subtitle: {
-    fontFamily: 'sans-serif',
-    fontWeight: 'bold',
-    paddingLeft: 10,
-    paddingBottom: 50,
-    paddingTop: 5,
-    fontSize: 26,
-    color: '#000',
-    marginBottom: 12,
-    textAlign: 'left',
-  } as TextStyle,
+    textAlign: 'center',
+  },
 });

@@ -1,36 +1,37 @@
-import { View, StyleSheet, Image, Animated, FlatList, Dimensions, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Image, Animated, FlatList, Dimensions, useWindowDimensions, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useEffect, useRef, useState } from 'react';
 
 const slides = [
   {
     id: '1',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Welcome to GenCare',
-    subtitle: 'Your pregnancy journey starts here'
+    image: require('@/assets/home_swiper/swiper_card1.jpeg'),
+    title: 'Check Posssibilities Of Fetal Diseases ',
+    button: 'AI Test'
   },
   {
     id: '2',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Track Your Progress',
-    subtitle: 'Week by week pregnancy guide'
+    image: require('@/assets/home_swiper/swiper_card2.jpeg'),
+    title: 'Want Baby Name ? Check Out Our Baby Names Lists',
+    button: 'Baby Names'
   },
   {
     id: '3',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Expert Advice',
-    subtitle: 'Get support from professionals'
-  },
-  {
-    id: '4',
-    image: require('@/assets/images/favicon.png'),
-    title: 'Stay Healthy',
-    subtitle: 'Tips for a healthy pregnancy'
-  },
+    image: require('@/assets/home_swiper/swiper_card3.jpeg'),
+    title: 'What Does Your Baby Look Like Now?',
+    button: 'Show My Baby'
+  }
 ];
 
-export default function UpperSwiper() {
-  const flatListRef = useRef(null);
+type Slide = {
+  id: string;
+  image: any;
+  title: string;
+  button: string;
+};
+
+export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.RefObject<ScrollView> }) {
+  const flatListRef = useRef<FlatList>(null);
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -61,19 +62,54 @@ export default function UpperSwiper() {
     return () => clearInterval(timer);
   }, [currentIndex]);
 
-  const renderItem = ({ item }) => (
+  const handleButtonPress = (buttonType: string) => {
+    if (scrollViewRef?.current) {
+      switch (buttonType) {
+        case 'AI Test':
+          scrollViewRef.current?.scrollTo({
+            y: 1200, // المسافة للقسم الأول
+            animated: true
+          });
+          break;
+        case 'Baby Names':
+          scrollViewRef.current?.scrollTo({
+            y: 1800, // المسافة للقسم الثاني
+            animated: true
+          });
+          break;
+        case 'Show My Baby':
+          scrollViewRef.current?.scrollTo({
+            y: 2400, // المسافة للقسم الثالث
+            animated: true
+          });
+          break;
+      }
+    }
+  };
+
+  const renderItem = ({ item }: { item: Slide }) => (
     <View style={[styles.slide, { width }]}>
-      <View style={styles.contentContainer}>
-        <Image 
-          source={item.image}
-          style={styles.image}
-          resizeMode="contain"
-        />
-        
-        <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
-          <ThemedText style={styles.title}>{item.title}</ThemedText>
-          <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
-        </Animated.View>
+      <View style={styles.cardContainer}>
+        <View style={styles.contentContainer}>
+          <View style={styles.imageContainer}>
+            <Image 
+              source={item.image}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          </View>
+          
+          <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
+            <ThemedText style={styles.title}>{item.title}</ThemedText>
+            
+            <TouchableOpacity 
+              style={styles.button}
+              onPress={() => handleButtonPress(item.button)}
+            >
+              <ThemedText style={styles.buttonText}>{item.button}</ThemedText>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       </View>
     </View>
   );
@@ -114,51 +150,117 @@ export default function UpperSwiper() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    height: 350,
-    backgroundColor: '#fff',
+    height: 550,
+    backgroundColor: '#FFFFFF',
     width: '100%',
   },
   slide: {
     padding: 20,
-    height: '100%'
+    height: '100%',
+    justifyContent: 'center',
+  },
+  cardContainer: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
     },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    height: '80%',
+    width: '95%',
+    alignSelf: 'center',
+    position: 'relative',
+    marginBottom: 80,
+    padding: 15,
+  },
   contentContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    height: '100%',
+    zIndex: 1,
+  },
+  imageContainer: {
+    width: 250,
+    height: 200,
+    marginTop: 20,
+    marginBottom: 20,
+    borderRadius: 30,
+    overflow: 'hidden',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    backgroundColor: 'white',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+  },
+  textContainer: {
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    height: '100%',
-  },
-  image: {
-    width: 200,
-    height: 200,
-  },
-  textContainer: {
     flex: 1,
-    marginLeft: 20,
-    justifyContent: 'center',
+    paddingVertical: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
-    paddingTop: 10,
-    marginBottom: 12,
-    color: '#000',
+    color: '#89CFF0',
+    textAlign: 'center',
+    paddingHorizontal: 10,
+    marginTop: -20,
   },
   subtitle: {
     fontSize: 18,
-    color: '#000',
+    color: '#89CFF0',
+    textAlign: 'center',
   },
   pagination: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: 20,
+    bottom: 70,
     alignSelf: 'center',
+    zIndex: 2,
   },
   dot: {
     width: 10,
     height: 10,
     borderRadius: 5,
     marginHorizontal: 5,
+    backgroundColor: '#89CFF0',
+  },
+  button: {
+    backgroundColor: '#89CFF0',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 25,
+    elevation: 3,
+    shadowColor: '#000',
+    marginTop: 20,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
