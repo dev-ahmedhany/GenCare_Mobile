@@ -4,7 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 
-export default function Navbar() {
+export type ScrollHandler = (event: any) => void;
+
+interface NavbarProps {
+  scrollY: Animated.Value;
+}
+
+export default function Navbar({ scrollY }: NavbarProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -41,6 +47,19 @@ export default function Navbar() {
   const scaleAnimation = useRef(new Animated.Value(1)).current;
   const menuItemsAnimation = useRef(menuItems.map(() => new Animated.Value(0))).current;
   const authButtonsAnimation = useRef(authButtons.map(() => new Animated.Value(0))).current;
+
+  const diffClamp = Animated.diffClamp(scrollY, 0, 100);
+  
+  const translateY = diffClamp.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -100],
+  });
+
+  // Define scroll handler inside component
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: true }
+  );
 
   const toggleMenu = () => {
     const toValue = isMenuOpen ? 0 : 1;
@@ -83,17 +102,28 @@ export default function Navbar() {
   });
 
   return (
-    <View style={styles.mainContainer}>
+    <Animated.View style={[
+      styles.mainContainer,
+      {
+        transform: [{ translateY }]
+      }
+    ]}>
       <BlurView
         intensity={100}
         tint="default"
         style={[
-          styles.navbar,
-          { backgroundColor: 'rgba(255, 255, 255, 0.6)' }
+          styles.navbar
         ]}
       >
         <View style={[styles.container, { backgroundColor: 'transparent' }]}>
-          <Text style={styles.title}>GenCare</Text>
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('@/assets/Logo/Mob-Logo-removebg-preview.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+          </View>
+
           <Animated.View style={[
             styles.menuItemsContainer,
             { display: isMenuOpen ? 'flex' : 'none' }
@@ -183,7 +213,7 @@ export default function Navbar() {
           </TouchableOpacity>
         </View>
       </BlurView>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -201,21 +231,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: 15,
-    marginTop: 20,
+    marginTop: 25,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#623AA2',
-    letterSpacing: 1,
+  logoContainer: {
     flex: 1,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  logoImage: {
+    width: 220,
+    height: 250,
+    marginLeft: -55,
   },
   logoButton: {
     zIndex: 2,
@@ -245,9 +289,8 @@ const styles = StyleSheet.create({
   menuItemsContainer: {
     position: 'absolute',
     right: 50,
-    top: 50,
-    backdropFilter: 'blur(10px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    top: 60,
+    backgroundColor: 'rgba(255, 255, 255, 1)',
     borderRadius: 0,
     padding: 8,
     shadowColor: '#000',
@@ -257,7 +300,8 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 3,
+    borderRadius: 10,
     minWidth: 180,
   },
   menuItemWrapper: {
