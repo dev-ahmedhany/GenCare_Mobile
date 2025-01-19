@@ -89,23 +89,27 @@ export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.R
 
   const renderItem = ({ item }: { item: Slide }) => (
     <View style={[styles.slide, { width }]}>
-      <View style={styles.contentContainer}>
-        <Image 
-          source={item.image}
-          style={styles.image}
-          resizeMode="contain"
-        />
-        
-        <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
-          <ThemedText style={styles.title}>{item.title}</ThemedText>
+      <View style={styles.cardContainer}>
+        <View style={styles.contentContainer}>
+          <View style={styles.imageContainer}>
+            <Image 
+              source={item.image}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          </View>
           
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => handleButtonPress(item.button)}
-          >
-            <ThemedText style={styles.buttonText}>{item.button}</ThemedText>
-          </TouchableOpacity>
-        </Animated.View>
+          <Animated.View style={[styles.textContainer, { opacity: fadeAnim }]}>
+            <ThemedText style={styles.title}>{item.title}</ThemedText>
+            
+            <TouchableOpacity 
+              style={styles.button}
+              onPress={() => handleButtonPress(item.button)}
+            >
+              <ThemedText style={styles.buttonText}>{item.button}</ThemedText>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       </View>
     </View>
   );
@@ -126,10 +130,6 @@ export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.R
 
   return (
     <View style={styles.container}>
-      <Image 
-        source={require('@/assets/home_swiper/blueTopLeft.jpeg')}
-        style={styles.topLeftImage}
-      />
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -149,42 +149,79 @@ export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.R
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
     alignItems: 'center',
     height: 550,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     width: '100%',
   },
   slide: {
     padding: 20,
-    height: '100%'
+    height: '100%',
+    justifyContent: 'center',
+  },
+  cardContainer: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
     },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    height: '80%',
+    width: '95%',
+    alignSelf: 'center',
+    position: 'relative',
+    marginBottom: 80,
+    padding: 15,
+  },
   contentContainer: {
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    justifyContent: 'space-between',
+    padding: 10,
     height: '100%',
+    zIndex: 1,
+  },
+  imageContainer: {
+    width: 250,
+    height: 200,
+    marginTop: 20,
+    marginBottom: 20,
+    borderRadius: 30,
+    overflow: 'hidden',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    backgroundColor: 'white',
   },
   image: {
-    width: 350,
-    height: 300,
-    marginBottom: -50,
-    zIndex: 1,
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
   },
   textContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    flex: 1,
+    justifyContent: 'space-between',
     width: '100%',
+    flex: 1,
+    paddingVertical: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 40,
     color: '#89CFF0',
     textAlign: 'center',
+    paddingHorizontal: 10,
+    marginTop: -20,
   },
   subtitle: {
     fontSize: 18,
@@ -194,22 +231,16 @@ const styles = StyleSheet.create({
   pagination: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: 10,
+    bottom: 70,
     alignSelf: 'center',
+    zIndex: 2,
   },
   dot: {
     width: 10,
     height: 10,
     borderRadius: 5,
     marginHorizontal: 5,
-  },
-  topLeftImage: {
-    position: 'absolute',
-    marginTop: -180,
-    left: -30,
-    width: 200,
-    height: 250,
-    zIndex: 0,
+    backgroundColor: '#89CFF0',
   },
   button: {
     backgroundColor: '#89CFF0',
@@ -218,10 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     elevation: 3,
     shadowColor: '#000',
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
-    
+    marginTop: 20,
     shadowOffset: {
       width: 0,
       height: 2,

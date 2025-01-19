@@ -1,6 +1,6 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Animated, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 
 import Navbar from './(home-components)/navbar';
 import UpperSwiper from './(home-components)/upper-swiper';
@@ -13,13 +13,16 @@ import Footer from './(home-components)/footer';
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    scrollY.setValue(offsetY);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Navbar />
+      <Navbar scrollY={scrollY} />
       <ScrollView 
         ref={scrollViewRef}
         style={styles.scrollView}

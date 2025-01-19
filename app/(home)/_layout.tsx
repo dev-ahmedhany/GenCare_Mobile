@@ -5,6 +5,7 @@ export default function HomeLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="home" />
       <Stack.Screen name="(home-components)" />
+      <Stack.Screen name="profile" />
     </Stack>
   );
 } 

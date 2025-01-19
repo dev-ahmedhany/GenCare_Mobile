@@ -2,9 +2,11 @@ import { View, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-nat
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
 export default function Footer() {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const router = useRouter();
 
   const menuItems = [
     // الصفحات الرئيسية
@@ -44,10 +46,6 @@ export default function Footer() {
           <ThemedText style={styles.navText}>Home</ThemedText>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="person" size={24} color="#495057" />
-          <ThemedText style={styles.navText}>Profile</ThemedText>
-        </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.navButton}

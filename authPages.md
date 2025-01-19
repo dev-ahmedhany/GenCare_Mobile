@@ -54,7 +54,6 @@ This document provides a quick guide for team members working on the `feature/au
 ---
 
 ## 4. Create a Pull Request
-
 1. Once your work is complete, go to the [GitHub Repository](https://github.com/ahmed-838/GenCare_Mobile).
 2. Navigate to the "Pull Requests" tab and click **New Pull Request**.
 3. Set the base branch to `main` and compare it with `feature/authentication`.
