@@ -111,11 +111,53 @@ export default function Navbar({ scrollY }: NavbarProps) {
       <BlurView
         intensity={100}
         tint="default"
-        style={[
-          styles.navbar
-        ]}
+        style={styles.navbar}
       >
-        <View style={[styles.container, { backgroundColor: 'transparent' }]}>
+        <View style={styles.container}>
+          <View style={styles.leftContainer}>
+            <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)}>
+              <Ionicons 
+                name={isMenuOpen ? "close" : "menu"} 
+                size={24} 
+                color="#623AA2"
+              />
+            </TouchableOpacity>
+
+            <Animated.View style={[
+              styles.menuItemsContainer,
+              { display: isMenuOpen ? 'flex' : 'none' }
+            ]}>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity 
+                  key={index}
+                  style={styles.menuItem}
+                  onPress={() => {
+                    if (item.route) {
+                      router.push(item.route as any);
+                    }
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <Ionicons name={item.icon} size={20} color="#623AA2" />
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
+              
+              <View style={styles.divider} />
+              
+              {authButtons.map((item, index) => (
+                <TouchableOpacity 
+                  key={`auth-${index}`}
+                  style={styles.menuItem}
+                  onPress={item.onPress}
+                >
+                  <Ionicons name={item.icon} size={20} color="#623AA2" />
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </Animated.View>
+          </View>
+
           <View style={styles.logoContainer}>
             <Image 
               source={require('@/assets/Logo/Mob-Logo-removebg-preview.png')}
@@ -124,92 +166,11 @@ export default function Navbar({ scrollY }: NavbarProps) {
             />
           </View>
 
-          <Animated.View style={[
-            styles.menuItemsContainer,
-            { display: isMenuOpen ? 'flex' : 'none' }
-          ]}>
-            {menuItems.map((item, index) => (
-              <Animated.View
-                key={index}
-                style={[
-                  styles.menuItemWrapper,
-                  {
-                    opacity: menuItemsAnimation[index],
-                    transform: [{
-                      translateX: menuItemsAnimation[index].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-20, 0],
-                      }),
-                    }],
-                  },
-                ]}
-              >
-                <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={() => {
-                    if (item.route) {
-                      router.push(item.route as any);
-                    }
-                    toggleMenu();
-                  }}
-                >
-                  <Ionicons name={item.icon} size={20} color="#623AA2" />
-                  <Text style={styles.menuText}>{item.title}</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
-            
-            <View style={styles.divider} />
-            
-            {authButtons.map((item, index) => (
-              <Animated.View
-                key={`auth-${index}`}
-                style={[
-                  styles.menuItemWrapper,
-                  {
-                    opacity: authButtonsAnimation[index],
-                    transform: [{
-                      translateX: authButtonsAnimation[index].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-20, 0],
-                      }),
-                    }],
-                  },
-                ]}
-              >
-                <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={item.onPress}
-                >
-                  <Ionicons name={item.icon} size={20} color="#623AA2" />
-                  <Text style={styles.menuText}>{item.title}</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
-          </Animated.View>
-
           <TouchableOpacity 
-            onPress={toggleMenu} 
-            style={styles.logoButton}
-            activeOpacity={0.7}
+            style={styles.profileButton}
+            onPress={() => router.push('/profile')}
           >
-            <Animated.View 
-              style={[
-                styles.logoCircle,
-                {
-                  transform: [
-                    { rotate: spin },
-                    { scale: scaleAnimation }
-                  ]
-                }
-              ]}
-            >
-              <Image 
-                source={require('@/assets/Logo/Mob-Logo-removebg-preview.png')} 
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </Animated.View>
+            <Ionicons name="person-circle-outline" size={28} color="#623AA2" />
           </TouchableOpacity>
         </View>
       </BlurView>
@@ -229,7 +190,7 @@ const styles = StyleSheet.create({
     height: 70,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     marginTop: 25,
     borderRadius: 10,
@@ -250,48 +211,16 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 10,
   },
-  logoContainer: {
-    flex: 1,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  logoImage: {
-    width: 220,
-    height: 250,
-    marginLeft: -55,
-  },
-  logoButton: {
-    zIndex: 2,
-  },
-  logoCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 30,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    borderWidth: 1.5,
-    borderColor: '#F97794',
-  },
-  logo: {
-    width: 90,
-    height: 400,
+  leftContainer: {
+    position: 'relative',
+    width: 40, // Fixed width to help with centering logo
   },
   menuItemsContainer: {
     position: 'absolute',
-    right: 50,
-    top: 60,
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    borderRadius: 0,
+    left: 0,
+    top: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 10,
     padding: 8,
     shadowColor: '#000',
     shadowOffset: {
@@ -300,29 +229,40 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 3,
-    borderRadius: 10,
+    elevation: 5,
     minWidth: 180,
-  },
-  menuItemWrapper: {
-    overflow: 'hidden',
+    zIndex: 1000,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    borderRadius: 0,
-    marginVertical: 2,
+    borderRadius: 8,
   },
   menuText: {
+    marginLeft: 10,
     fontSize: 14,
     color: '#333',
-    marginLeft: 10,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F0F0F0',
-    marginVertical: 6,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 8,
   },
-
+  logoContainer: {
+    position: 'absolute',
+    left: 50,
+    right: 0,
+    alignItems: 'center',
+    zIndex: -1, // Place behind other elements
+  },
+  logoImage: {
+    width: 200,
+    height: 200,
+    marginLeft: -55,
+  },
+  profileButton: {
+    padding: 8,
+    width: 41, // Fixed width to match leftContainer
+  },
 });
