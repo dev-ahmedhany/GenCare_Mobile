@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, View, ImageBackground, TouchableOpacity, FlatList } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View, ImageBackground, TouchableOpacity, FlatList, Image } from "react-native";
 import React from "react";
 import { router } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
@@ -64,13 +64,22 @@ const SettingsScreen = () => {
 
   const renderNameItem = ({ item }: { item: BabyName }) => (
     <View style={styles.nameItem}>
-      <Text style={styles.nameTxt}>{item.name}</Text>
-      <Text style={[
-        styles.genderIndicator,
-        { color: item.gender === 'M' ? '#4A90E2' : '#E2719E' }
-      ]}>
-        {item.gender}
-      </Text>
+      <View style={styles.leftContainer}>
+        <Image
+          source={item.gender === 'M' 
+            ? require('../../../../assets/images/babyNames/man.png')
+            : require('../../../../assets/images/babyNames/woman.png')
+          }
+          style={styles.genderIcon}
+          resizeMode="contain"
+        />
+        <Text style={[
+          styles.nameTxt,
+          { color: item.gender === 'M' ? '#95cae4' : '#ffb9cc' }
+        ]}>
+          {item.name}
+        </Text>
+      </View>
     </View>
   );
 
@@ -115,6 +124,7 @@ const SettingsScreen = () => {
             renderItem={renderNameItem}
             keyExtractor={item => item.name}
             numColumns={2}
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.namesGrid}
           />
         </View>
@@ -168,7 +178,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    // marginTop: 10,
     zIndex: 1,
   },
   alphabetList: {
@@ -222,6 +231,7 @@ const styles = StyleSheet.create({
   },
   namesGrid: {
     padding: 5,
+    paddingBottom: 20,
   },
   nameItem: {
     flex: 1,
@@ -230,21 +240,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10, // Space between icon and text
   },
   nameTxt: {
     fontFamily: Font["raleway"],
     fontSize: 16,
     fontWeight: '500',
   },
-  genderIndicator: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 8,
+  genderIcon: {
+    width: 24,
+    height: 24,
   },
   defaultBackground: {
     backgroundColor: theme.colors.secondary, // or any color you prefer
