@@ -1,11 +1,17 @@
 import React from 'react';
 import { View, StyleSheet, Image, Pressable, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { theme } from '@/constants/Colors1';
 import { Image as ExpoImage } from 'expo-image';
+import { bgColors } from '@/constants/Colors';
+import MainButton from '@/constants/MainButton';
 
 const { width, height } = Dimensions.get('window');
+
+const handleSeeMore = () => {
+  router.push('/(home)/(home-components)/(pages-components)/BabyNames');
+};
 
 export default function BabyNames() {
   return (
@@ -59,9 +65,12 @@ export default function BabyNames() {
 
           {/* See More Button */}
           <Link href="/(home)/(home-components)/(pages-components)/BabyNames" asChild>
-            <Pressable style={styles.button}>
-              <ThemedText style={styles.buttonText}>See More</ThemedText>
-            </Pressable>
+            <View style={styles.button}>
+              <MainButton 
+                title="See More"
+                onPress={handleSeeMore}
+              />
+            </View>
           </Link>
         </View>
       </View>
@@ -71,23 +80,16 @@ export default function BabyNames() {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: bgColors.light.background,
     width: '100%',
-    height: height * 0.9, // Adjust based on screen height
-    paddingHorizontal: 10,
-    paddingVertical: 20,
+    height: height ,
   },
   cardContainer: {
-    backgroundColor: 'white',
-    borderRadius: 25,
-    overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#000',
+    backgroundColor: bgColors.light.background,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
     height: '95%',
     width: '100%',
     alignSelf: 'center',
@@ -95,33 +97,35 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    padding: 15,
   },
   imageContainer: {
-    width: '100%',
-    height: height * 0.15, // Adjust based on screen height
-    marginBottom: 10,
+    position: 'relative',
+    top: 0,
+    right: 0,
+    width: width ,
+    height: height * 0.15,
+    zIndex: 1,
   },
   headerOverlay: {
     width: '100%',
-    height: '120%',
-    top: -18,
-    left: 40,
+    height: '100%',
+    resizeMode: 'contain',
+    transform: [{ translateX: width * 0.13 }],
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: height * 0.02,
     position: 'absolute',
-    top: 30,
-    left: 10,
+    top: height * 0.04,
+    left: width * 0.04,
   },
   title: {
-    fontSize: 32,
+    fontSize: width * 0.08,
     fontWeight: '900',
     color: theme.colors.secondary,
   },
   subtitle: {
-    fontSize: 24,
+    fontSize: width * 0.06,
     fontWeight: '700',
     color: theme.colors.secondary,
   },
@@ -129,77 +133,64 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     width: '100%',
-    marginBottom: 20,
+    marginBottom: height * 0.02,
   },
   blob: {
     position: 'absolute',
-    width: width * 0.28, // Responsive size
+    width: width * 0.28,
     height: width * 0.28,
-    borderRadius: width * 0.15,
+    borderRadius: width * 0.07,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
     shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 4,
   },
   blobText: {
-    fontSize: 28,
+    fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#FFF',
   },
   blobA: {
     backgroundColor: theme.colors.ligthblue,
-    top: '1%',
+    top: '5%',
     left: '5%',
   },
   blobB: {
     backgroundColor: theme.colors.lightpink,
-    top: '31%',
+    top: '35%',
     left: '35%',
   },
   blobC: {
     backgroundColor: theme.colors.ligthblue,
-    bottom: '10%',
+    bottom: '15%',
     right: '5%',
   },
   blobGif: {
     position: 'absolute',
     width: width * 0.35,
     height: width * 0.35,
-    borderRadius: width * 0.175,
+    borderRadius: width * 0.075,
   },
   gifTopRight: {
-    top: '-3%',
-    right: '-3%',
+    top: '0%',
+    right: '0%',
   },
   gifBottomLeft: {
-    bottom: '0%',
-    left: '-3%',
+    bottom: '5%',
+    left: '0%',
   },
   button: {
-    backgroundColor: theme.colors.secondary,
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    position: 'relative',
+    bottom: 0,
+    left: 0,
+    width: width * 0.34,
     alignSelf: 'center',
-    marginBottom: 20, // Added space at bottom
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    textAlign: 'center',
+    marginBottom: height * 0.02,
   },
 });

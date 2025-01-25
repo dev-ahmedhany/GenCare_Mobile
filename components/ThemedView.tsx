@@ -1,6 +1,6 @@
 import { View, ViewProps } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import Colors from '@/constants/Colors';
+import { bgColors } from '@/constants/Colors';
 
 export function ThemedView(props: ViewProps) {
   const colorScheme = useColorScheme();
@@ -10,7 +10,7 @@ export function ThemedView(props: ViewProps) {
       {...props}
       style={[
         {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          backgroundColor: bgColors[colorScheme ?? 'light'].background,
         },
         props.style,
       ]}

@@ -51,6 +51,20 @@
     "owner": "ahmed_shams2",
     "updates": {
       "url": "https://u.expo.dev/adbf0acd-f3da-4e6e-80ce-620c7f72c2f5"
-    }
+    },
+    "fonts": [
+      {
+        "asset": "assets/fonts/Fugaz_One/FugazOne-Regular.ttf",
+        "family": "FugazOne"
+      },
+      {
+        "asset": "assets/fonts/Actor/Actor-Regular.ttf",
+        "family": "Actor"
+      },
+      {
+        "asset": "assets/fonts/ADLaM_Display/ADLaMDisplay-Regular.ttf",
+        "family": "ADLaMDisplay"
+      }
+    ]
   }
 }

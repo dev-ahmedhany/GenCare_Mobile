@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { View, TouchableOpacity, StyleSheet, Image, Animated, Text } from 'react-native';
+import { useState, useRef, useCallback } from 'react';
+import { View, TouchableOpacity, StyleSheet, Image, Animated, Text, Dimensions, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -10,16 +10,25 @@ interface NavbarProps {
   scrollY: Animated.Value;
 }
 
+// إضافة ثابت لارتفاع الشاشة
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+const NAVBAR_HEIGHT = Math.min(SCREEN_HEIGHT * 0.12, 80); // 12% من ارتفاع الشاشة بحد أقصى 80
+const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
+
 export default function Navbar({ scrollY }: NavbarProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // تحسين الأنيميشن باستخدام useRef
+  const animations = useRef({
+    rotate: new Animated.Value(0),
+    scale: new Animated.Value(1),
+    menu: new Animated.Value(0)
+  }).current;
 
-  const menuItems: { 
-    icon: keyof typeof Ionicons.glyphMap; 
-    title: string; 
-    route?: string 
-  }[] = [
+  // القائمة الرئيسية
+  const menuItems = [
     { icon: 'calendar-outline', title: 'Weeks' },
     { icon: 'medical-outline', title: 'Baby Names', route: '../BabyNames' },
     { icon: 'chatbubbles-outline', title: 'AI Page' },
@@ -27,137 +36,133 @@ export default function Navbar({ scrollY }: NavbarProps) {
     { icon: 'man-outline', title: 'Management', route: '/(management)/management' as const },
   ];
 
-  const authButtons: { icon: keyof typeof Ionicons.glyphMap; title: string; onPress: () => void }[] = isLoggedIn ? [
-    { icon: 'log-out-outline', title: 'Logout', onPress: () => {
-      setIsLoggedIn(false);
-      setIsMenuOpen(false);
-    }}
-  ] : [
-    { icon: 'log-in-outline', title: 'Login', onPress: () => {
-      router.push('/(auth)/login');
-      setIsMenuOpen(false);
-    }},
-    { icon: 'person-add-outline', title: 'Sign Up', onPress: () => {
-      router.push('/(auth)/signup');
-      setIsMenuOpen(false);
-    }}
-  ];
-  
-  const rotateAnimation = useRef(new Animated.Value(0)).current;
-  const scaleAnimation = useRef(new Animated.Value(1)).current;
-  const menuItemsAnimation = useRef(menuItems.map(() => new Animated.Value(0))).current;
-  const authButtonsAnimation = useRef(authButtons.map(() => new Animated.Value(0))).current;
+  // أزرار تسجيل الدخول
+  const authButtons = isLoggedIn 
+    ? [{ icon: 'log-out-outline', title: 'Logout', onPress: () => handleLogout() }]
+    : [
+        { icon: 'log-in-outline', title: 'Login', onPress: () => handleAuth('login') },
+        { icon: 'person-add-outline', title: 'Sign Up', onPress: () => handleAuth('signup') }
+      ];
 
-  const diffClamp = Animated.diffClamp(scrollY, 0, 100);
-  
-  const translateY = diffClamp.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, -100],
-  });
+  // تحسين أداء معالجات الأحداث باستخدام useCallback
+  const handleAuth = useCallback((type: 'login' | 'signup') => {
+    router.push(`/(auth)/${type}`);
+    setIsMenuOpen(false);
+  }, [router]);
 
-  // Define scroll handler inside component
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    { useNativeDriver: true }
-  );
+  const handleLogout = useCallback(() => {
+    setIsLoggedIn(false);
+    setIsMenuOpen(false);
+  }, []);
 
-  const toggleMenu = () => {
+  const handleMenuPress = useCallback((route?: string) => {
+    if (route) {
+      router.push(route as any);
+    }
+    setIsMenuOpen(false);
+  }, [router]);
+
+  // تحسين أنيميشن القائمة
+  const toggleMenu = useCallback(() => {
     const toValue = isMenuOpen ? 0 : 1;
     
     Animated.parallel([
-      Animated.timing(rotateAnimation, {
+      Animated.spring(animations.rotate, {
+        toValue,
+        useNativeDriver: true,
+        tension: 40,
+        friction: 7
+      }),
+      Animated.spring(animations.scale, {
+        toValue: isMenuOpen ? 1 : 1.1,
+        useNativeDriver: true,
+        tension: 40,
+        friction: 7
+      }),
+      Animated.timing(animations.menu, {
         toValue,
         duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnimation, {
-        toValue: isMenuOpen ? 1 : 1.2,
-        friction: 5,
-        useNativeDriver: true,
-      }),
-      ...menuItemsAnimation.map((anim, index) =>
-        Animated.timing(anim, {
-          toValue,
-          duration: 200,
-          delay: isMenuOpen ? 0 : index * 100,
-          useNativeDriver: true,
-        })
-      ),
-      ...authButtonsAnimation.map((anim, index) =>
-        Animated.timing(anim, {
-          toValue,
-          duration: 200,
-          delay: isMenuOpen ? 0 : (menuItems.length + index) * 100,
-          useNativeDriver: true,
-        })
-      ),
+        useNativeDriver: true
+      })
     ]).start();
 
     setIsMenuOpen(!isMenuOpen);
-  };
+  }, [isMenuOpen, animations]);
 
-  const spin = rotateAnimation.interpolate({
+  // حساب التحويلات للأنيميشن
+  const navbarTranslateY = Animated.diffClamp(scrollY, 0, NAVBAR_HEIGHT).interpolate({
+    inputRange: [0, NAVBAR_HEIGHT],
+    outputRange: [0, -NAVBAR_HEIGHT]
+  });
+
+  const menuRotate = animations.rotate.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
+    outputRange: ['0deg', '180deg']
   });
 
   return (
-    <Animated.View style={[
-      styles.mainContainer,
-      {
-        transform: [{ translateY }]
-      }
-    ]}>
-      <BlurView
-        intensity={100}
-        tint="default"
-        style={styles.navbar}
-      >
+    <Animated.View style={[styles.mainContainer, { transform: [{ translateY: navbarTranslateY }] }]}>
+      <BlurView intensity={100} tint="default" style={styles.navbar}>
         <View style={styles.container}>
+          {/* زر القائمة */}
           <View style={styles.leftContainer}>
-            <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)}>
-              <Ionicons 
-                name={isMenuOpen ? "close" : "menu"} 
-                size={24} 
-                color="#623AA2"
-              />
+            <TouchableOpacity onPress={toggleMenu}>
+              <Animated.View style={{ transform: [{ rotate: menuRotate }] }}>
+                <Ionicons 
+                  name={isMenuOpen ? "close" : "menu"} 
+                  size={Math.min(SCREEN_WIDTH * 0.06, 24)}
+                  color="#623AA2"
+                />
+              </Animated.View>
             </TouchableOpacity>
 
-            <Animated.View style={[
-              styles.menuItemsContainer,
-              { display: isMenuOpen ? 'flex' : 'none' }
-            ]}>
-              {menuItems.map((item, index) => (
-                <TouchableOpacity 
-                  key={index}
-                  style={styles.menuItem}
-                  onPress={() => {
-                    if (item.route) {
-                      router.push(item.route as any);
-                    }
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  <Ionicons name={item.icon} size={20} color="#623AA2" />
-                  <Text style={styles.menuText}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
-              
-              <View style={styles.divider} />
-              
-              {authButtons.map((item, index) => (
-                <TouchableOpacity 
-                  key={`auth-${index}`}
-                  style={styles.menuItem}
-                  onPress={item.onPress}
-                >
-                  <Ionicons name={item.icon} size={20} color="#623AA2" />
-                  <Text style={styles.menuText}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </Animated.View>
+            {/* القائمة المنسدلة */}
+            {isMenuOpen && (
+              <Animated.View 
+                style={[
+                  styles.menuItemsContainer,
+                  {
+                    opacity: animations.menu,
+                    transform: [{ scale: animations.scale }]
+                  }
+                ]}
+              >
+                {menuItems.map((item, index) => (
+                  <TouchableOpacity 
+                    key={index}
+                    style={styles.menuItem}
+                    onPress={() => handleMenuPress(item.route)}
+                  >
+                    <Ionicons 
+                      name={item.icon as any} 
+                      size={Math.min(SCREEN_WIDTH * 0.05, 20)}
+                      color="#623AA2"
+                    />
+                    <Text style={styles.menuText}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))}
+                
+                <View style={styles.divider} />
+                
+                {authButtons.map((item, index) => (
+                  <TouchableOpacity 
+                    key={`auth-${index}`}
+                    style={styles.menuItem}
+                    onPress={item.onPress}
+                  >
+                    <Ionicons 
+                      name={item.icon as any} 
+                      size={Math.min(SCREEN_WIDTH * 0.05, 20)}
+                      color="#623AA2"
+                    />
+                    <Text style={styles.menuText}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </Animated.View>
+            )}
           </View>
 
+          {/* الشعار */}
           <View style={styles.logoContainer}>
             <Image 
               source={require('@/assets/Logo/Mob-Logo-removebg-preview.png')}
@@ -166,11 +171,16 @@ export default function Navbar({ scrollY }: NavbarProps) {
             />
           </View>
 
+          {/* زر الملف الشخصي */}
           <TouchableOpacity 
             style={styles.profileButton}
             onPress={() => router.push('/profile')}
           >
-            <Ionicons name="person-circle-outline" size={28} color="#623AA2" />
+            <Ionicons 
+              name="person-circle-outline" 
+              size={Math.min(SCREEN_WIDTH * 0.07, 28)}
+              color="#623AA2"
+            />
           </TouchableOpacity>
         </View>
       </BlurView>
@@ -185,22 +195,20 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1000,
+    height: NAVBAR_HEIGHT + STATUSBAR_HEIGHT,
   },
   navbar: {
-    height: 70,
+    height: NAVBAR_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    marginTop: 25,
-    borderRadius: 10,
+    paddingHorizontal: SCREEN_WIDTH * 0.04, // 4% من عرض الشاشة
+    marginTop: STATUSBAR_HEIGHT,
+    borderRadius: Math.min(SCREEN_WIDTH * 0.02, 10), // حد أقصى 10
     backgroundColor: '#FFFFFF',
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
@@ -209,60 +217,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 10,
+    paddingHorizontal: SCREEN_WIDTH * 0.02, // 2% من عرض الشاشة
   },
   leftContainer: {
     position: 'relative',
-    width: 40, // Fixed width to help with centering logo
+    width: SCREEN_WIDTH * 0.1, // 10% من عرض الشاشة
+    minWidth: 40,
   },
   menuItemsContainer: {
     position: 'absolute',
     left: 0,
-    top: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 10,
-    padding: 8,
+    top: NAVBAR_HEIGHT - SCREEN_HEIGHT * 0.02, // تعديل موضع القائمة المنسدلة
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: Math.min(SCREEN_WIDTH * 0.03, 12),
+    padding: SCREEN_WIDTH * 0.02,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
     elevation: 5,
-    minWidth: 180,
-    zIndex: 1000,
+    width: Math.min(SCREEN_WIDTH * 0.7, 300), // حد أقصى 300
+    maxHeight: SCREEN_HEIGHT * 0.6, // 60% من ارتفاع الشاشة
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    borderRadius: 8,
+    padding: SCREEN_WIDTH * 0.03,
+    borderRadius: Math.min(SCREEN_WIDTH * 0.02, 8),
   },
   menuText: {
-    marginLeft: 10,
-    fontSize: 14,
+    marginLeft: SCREEN_WIDTH * 0.03,
+    fontSize: Math.min(SCREEN_WIDTH * 0.04, 16), // حد أقصى 16
     color: '#333',
+    fontWeight: '500',
   },
   divider: {
     height: 1,
     backgroundColor: '#E0E0E0',
-    marginVertical: 8,
+    marginVertical: SCREEN_HEIGHT * 0.01,
   },
   logoContainer: {
     position: 'absolute',
-    left: 50,
-    right: 0,
+    left: SCREEN_WIDTH * 0.15, // 15% من عرض الشاشة
+    right: SCREEN_WIDTH * 0.15,
     alignItems: 'center',
-    zIndex: -1, // Place behind other elements
   },
   logoImage: {
-    width: 200,
-    height: 200,
-    marginLeft: -55,
+    position: 'absolute',
+    width: Math.min(SCREEN_WIDTH * 0.4, 200), // 30% من عرض الشاشة، حد أقصى 120
+    height: Math.min(SCREEN_WIDTH * 0.8, 200), // 15% من عرض الشاشة، حد أقصى 60
+    resizeMode: 'contain',
+    top: -SCREEN_HEIGHT * 0.13,
   },
   profileButton: {
-    padding: 8,
-    width: 41, // Fixed width to match leftContainer
+    padding: SCREEN_WIDTH * 0.02,
+    width: SCREEN_WIDTH * 0.1, // 10% من عرض الشاشة
+    minWidth: 40,
+    alignItems: 'center',
   },
 });
