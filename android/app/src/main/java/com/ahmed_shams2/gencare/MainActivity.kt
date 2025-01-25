@@ -1,4 +1,4 @@
-package com.anonymous.gencare
+package com.ahmed_shams2.gencare
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

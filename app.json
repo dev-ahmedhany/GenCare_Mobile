@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "GenCare",
-    "slug": "gen-care",
+    "slug": "gencare",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
-    "scheme": "gen-care",
+    "scheme": "gencare",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,9 +17,10 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.gencare",
+      "package": "com.ahmed_shams2.gencare",
       "permissions": [
-        "INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -54,26 +55,26 @@
         "origin": false
       },
       "eas": {
-        "projectId": "adbf0acd-f3da-4e6e-80ce-620c7f72c2f5"
-      }
+        "projectId": "492afcaf-713b-4b0c-b955-f70442f2acdb"
+      },
+      "fonts": [
+        {
+          "asset": "assets/fonts/Fugaz_One/FugazOne-Regular.ttf",
+          "family": "FugazOne"
+        },
+        {
+          "asset": "assets/fonts/Actor/Actor-Regular.ttf",
+          "family": "Actor"
+        },
+        {
+          "asset": "assets/fonts/ADLaM_Display/ADLaMDisplay-Regular.ttf",
+          "family": "ADLaMDisplay"
+        }
+      ]
     },
     "owner": "ahmed_shams2",
     "updates": {
       "url": "https://u.expo.dev/adbf0acd-f3da-4e6e-80ce-620c7f72c2f5"
-    },
-    "fonts": [
-      {
-        "asset": "assets/fonts/Fugaz_One/FugazOne-Regular.ttf",
-        "family": "FugazOne"
-      },
-      {
-        "asset": "assets/fonts/Actor/Actor-Regular.ttf",
-        "family": "Actor"
-      },
-      {
-        "asset": "assets/fonts/ADLaM_Display/ADLaMDisplay-Regular.ttf",
-        "family": "ADLaMDisplay"
-      }
-    ]
+    }
   }
 }

@@ -1,4 +1,4 @@
-package com.anonymous.gencare
+package com.ahmed_shams2.gencare
 
 import android.app.Application
 import android.content.res.Configuration
