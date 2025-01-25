@@ -20,6 +20,7 @@ export default function Profile() {
     pregnancyWeek: '',
     phone: '',
     email: '',
+    bloodType: '',
   });
   const [tempFormData, setTempFormData] = useState({...formData});
   const [emailError, setEmailError] = useState('');
@@ -73,7 +74,9 @@ export default function Profile() {
     symptoms: '',
   });
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
-  const [profileImage, setProfileImage] = useState(require('D:/Gencare/GenCare_Mobile/assets/profile_images/default.png'));
+  const [profileImage, setProfileImage] = useState(
+    require('@/assets/profile_images/default.png')
+  );
 
   const commonDiseases = [
     'Diabetes',
@@ -305,13 +308,13 @@ export default function Profile() {
 
         <View style={styles.profileCard}>
           <View style={styles.inputContainer}>
-            {renderProfileField('Full Name')}
-            {renderProfileField('Address')}
-            {renderProfileField('Age')}
-            {renderProfileField('Phone')}
-            {renderProfileField('Email')}
-            {renderProfileField('Blood Type')}
-            {renderProfileField('Pregnancy Week')}
+            {renderProfileField('Full Name', formData.fullName)}
+            {renderProfileField('Address', formData.address)}
+            {renderProfileField('Age', formData.age)}
+            {renderProfileField('Phone', formData.phone)}
+            {renderProfileField('Email', formData.email)}
+            {renderProfileField('Blood Type', formData.bloodType)}
+            {renderProfileField('Pregnancy Week', formData.pregnancyWeek)}
             {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
 
             <View style={styles.buttonContainer}>
@@ -366,7 +369,7 @@ export default function Profile() {
                     <FontAwesome5 name="ruler-vertical" size={16} color="#623AA2" />
                     <ThemedText style={styles.measurementLabel}>Length</ThemedText>
                   </View>
-                  <ThemedText style={styles.measurementValue}>{weekInfo.length}</ThemedText>
+                  <ThemedText style={styles.measurementValue}>{weekInfo.title}</ThemedText>
                 </View>
               </View>
             </View>
@@ -554,46 +557,46 @@ export default function Profile() {
           <View style={styles.imageGrid}>
             <TouchableOpacity 
               style={styles.imageOption}
-              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card1.jpeg'))}
+              onPress={() => handleSelectImage(require('@/assets/profile_images/swiper_card1.jpeg'))}
             >
               <Image 
-                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card1.jpeg')} 
+                source={require('@/assets/profile_images/swiper_card1.jpeg')} 
                 style={styles.optionImage}
               />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.imageOption}
-              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card2.jpeg'))}
+              onPress={() => handleSelectImage(require('@/assets/profile_images/swiper_card2.jpeg'))}
             >
               <Image 
-                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card2.jpeg')} 
+                source={require('@/assets/profile_images/swiper_card2.jpeg')} 
                 style={styles.optionImage}
               />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.imageOption}
-              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card3.jpeg'))}
+              onPress={() => handleSelectImage(require('@/assets/profile_images/swiper_card3.jpeg'))}
             >
               <Image 
-                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card3.jpeg')} 
+                source={require('@/assets/profile_images/swiper_card3.jpeg')} 
                 style={styles.optionImage}
               />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.imageOption}
-              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo-removebg-preview.png'))}
+              onPress={() => handleSelectImage(require('@/assets/profile_images/Mob-Logo-removebg-preview.png'))}
             >
               <Image 
-                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo-removebg-preview.png')} 
+                source={require('@/assets/profile_images/Mob-Logo-removebg-preview.png')} 
                 style={styles.optionImage}
               />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.imageOption}
-              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo.png'))}
+              onPress={() => handleSelectImage(require('@/assets/profile_images/Mob-Logo.png'))}
             >
               <Image 
-                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo.png')} 
+                source={require('@/assets/profile_images/Mob-Logo.png')} 
                 style={styles.optionImage}
               />
             </TouchableOpacity>
