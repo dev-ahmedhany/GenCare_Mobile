@@ -2,13 +2,14 @@ import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleShe
 import React from "react";
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
+import { bgColors } from "@/constants/Colors";
 
 const PregnancyPage = () => {
   const { news } = useLocalSearchParams();
   const weekData = JSON.parse(news as string);
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#ffffff', flex: 1 }}>
+    <SafeAreaView style={{ backgroundColor: bgColors.light.background, flex: 1 }}>
       {/* Header with back button */}
       <View style={styles.header}>
         <TouchableOpacity

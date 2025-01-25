@@ -153,9 +153,10 @@ export default function AIChatPage() {
           <View style={styles.envelopeContainer}>
             <View style={styles.envelope}>
               <TouchableOpacity 
-                style={styles.envelopeFront}
+                style={[styles.envelopeFront, { zIndex: 3 }]}
                 onPress={handleImagePick}
                 disabled={isEnvelopeClosed}
+                activeOpacity={0.7}
               >
                 {selectedImage ? (
                   <View style={styles.imageContainer}>
@@ -165,7 +166,7 @@ export default function AIChatPage() {
                     />
                   </View>
                 ) : (
-                  <View style={styles.uploadButton}>
+                  <View style={[styles.uploadButton, { zIndex: 3 }]}>
                     <Ionicons 
                       name="cloud-upload-outline" 
                       size={40} 
@@ -217,6 +218,9 @@ export default function AIChatPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+    marginTop: 0,
+    paddingTop: 0,
   },
   backgroundVideo: {
     position: 'absolute',
@@ -227,6 +231,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 0,
   },
   centerContent: {
     width: '90%',
@@ -269,6 +274,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#9C92CE',
+    position: 'relative',
   },
   envelopeLid: {
     position: 'absolute',
@@ -318,6 +324,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
+    width: '100%',
+    position: 'relative',
   },
   uploadText: {
     marginTop: 10,

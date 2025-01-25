@@ -1,6 +1,7 @@
-import { ScrollView, StyleSheet, Animated, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { ScrollView, StyleSheet, Animated, NativeSyntheticEvent, NativeScrollEvent, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef } from 'react';
+import { View } from 'react-native';
 
 import Navbar from './(home-components)/navbar';
 import UpperSwiper from './(home-components)/upper-swiper';
@@ -9,7 +10,6 @@ import BabyNames from './(home-components)/baby-names';
 import AiPage from './(home-components)/ai-page';
 import DiseasesList from './(home-components)/diseases-list';
 import Footer from './(home-components)/footer';
-
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -29,12 +29,17 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollViewContent}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
       >
         <UpperSwiper scrollViewRef={scrollViewRef} />
         <WeeksList />
         <BabyNames />
-        <AiPage />
-        <DiseasesList />
+        <View style={styles.pageContainer}>
+          <AiPage />
+        </View>
+        <View style={styles.pageContainer}>
+          <DiseasesList />
+        </View>
       </ScrollView>
       <Footer />
     </SafeAreaView>
@@ -48,8 +53,15 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    width: '100%',
   },
   scrollViewContent: {
-    paddingTop: 60, // ارتفاع الـ Navbar
+    flexGrow: 1,
+    paddingTop: Platform.OS === 'ios' ? 90 : 70,
   },
+  pageContainer: {
+    flex: 1,
+    marginVertical: 0, // إزالة الهوامش العمودية
+    paddingVertical: 0, // إزالة الحشو العمودي
+  }
 });
