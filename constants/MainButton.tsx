@@ -6,13 +6,14 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 interface MainButtonProps {
   title: string;
   onPress: () => void;
+  backgroundColor?: string;
 }
 
-const MainButton: React.FC<MainButtonProps> = ({ title, onPress }) => {
+const MainButton: React.FC<MainButtonProps> = ({ title, onPress, backgroundColor = '#5E259B' }) => {
   return (
     <TouchableOpacity 
       style={{
-        backgroundColor: '#5E259B',
+        backgroundColor: backgroundColor,
         padding: 15,
         borderRadius: 10,
         minWidth: 150,
