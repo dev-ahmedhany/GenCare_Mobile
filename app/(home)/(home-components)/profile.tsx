@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView, Animated, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { FontAwesome5, Ionicons, FontAwesome } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { NewsList } from "../../../data/pregnancyweeks";
+import Modal from 'react-native-modal';
+import * as ImagePicker from 'expo-image-picker';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function Profile() {
   const router = useRouter();
@@ -61,6 +65,15 @@ export default function Profile() {
       nextCheckup: '2024-04-10'
     }
   ]);
+  const [isEditingHealth, setIsEditingHealth] = useState(false);
+  const [tempHealthData, setTempHealthData] = useState({
+    bloodPressure: '',
+    bloodSugar: '',
+    weight: '',
+    symptoms: '',
+  });
+  const [isImagePickerVisible, setImagePickerVisible] = useState(false);
+  const [profileImage, setProfileImage] = useState(require('D:/Gencare/GenCare_Mobile/assets/profile_images/default.png'));
 
   const commonDiseases = [
     'Diabetes',
@@ -167,6 +180,94 @@ export default function Profile() {
     setRiskLevel(risks[Math.floor(Math.random() * risks.length)]);
   };
 
+  const handleEditHealth = () => {
+    setTempHealthData({...currentHealth});
+    setIsEditingHealth(true);
+  };
+
+  const handleCancelHealth = () => {
+    setTempHealthData({...currentHealth});
+    setIsEditingHealth(false);
+  };
+
+  const handleSaveHealth = () => {
+    setCurrentHealth({...tempHealthData});
+    setIsEditingHealth(false);
+    showMessage();
+  };
+
+  const toggleImagePicker = () => {
+    setImagePickerVisible(!isImagePickerVisible);
+  };
+
+  const handleSelectImage = (image: any) => {
+    setProfileImage(image);
+    setImagePickerVisible(false);
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage({ uri: result.assets[0].uri });
+      setImagePickerVisible(false);
+    }
+  };
+
+  const renderProfileField = (label: string, value: string) => {
+    if (isEditing) {
+      if (label === 'Pregnancy Week') {
+        return (
+          <TextInput
+            style={styles.input}
+            placeholder={label}
+            value={tempFormData.pregnancyWeek}
+            onChangeText={handlePregnancyWeekChange}
+            keyboardType="numeric"
+            maxLength={2}
+          />
+        );
+      }
+      return (
+        <TextInput
+          style={[styles.input, label === 'Email' && emailError ? styles.inputError : null]}
+          placeholder={label}
+          value={tempFormData[label.toLowerCase() as keyof typeof tempFormData]}
+          onChangeText={(text) => 
+            setTempFormData({...tempFormData, [label.toLowerCase()]: text})
+          }
+          keyboardType={label === 'Email' ? 'email-address' : 
+                       label === 'Age' || label === 'Phone' ? 'numeric' : 
+                       'default'}
+        />
+      );
+    }
+    
+    const displayValue = label === 'Pregnancy Week' 
+      ? formData.pregnancyWeek 
+      : formData[label.toLowerCase() as keyof typeof formData];
+
+    return (
+      <View style={styles.infoField}>
+        <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
+        <ThemedText style={[
+          styles.fieldValue,
+          !displayValue && styles.emptyFieldValue
+        ]}>
+          {displayValue || '—'}
+        </ThemedText>
+      </View>
+    );
+  };
+
+  const weekInfo = getCurrentWeekInfo();
+  const progress = (parseInt(formData.pregnancyWeek) || 0) / 40;
+
   return (
     <ScrollView style={styles.container}>
       {/* Header with Back Button and Title */}
@@ -189,60 +290,28 @@ export default function Profile() {
       <View style={styles.contentContainer}>
         <View style={styles.imageContainer}>
           <Image
-            source={require('@/assets/home_swiper/swiper_card3.jpeg')}
+            source={profileImage}
             style={styles.profileImage}
           />
+          {isEditing && (
+            <TouchableOpacity 
+              style={styles.editImageButton}
+              onPress={toggleImagePicker}
+            >
+              <FontAwesome6 name="edit" size={16} color="#ffffff" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.profileCard}>
           <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Full Name"
-              value={isEditing ? tempFormData.fullName : formData.fullName}
-              onChangeText={(text) => setTempFormData({...tempFormData, fullName: text})}
-              editable={isEditing}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Address"
-              value={isEditing ? tempFormData.address : formData.address}
-              onChangeText={(text) => setTempFormData({...tempFormData, address: text})}
-              editable={isEditing}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Age"
-              keyboardType="numeric"
-              value={isEditing ? tempFormData.age : formData.age}
-              onChangeText={(text) => setTempFormData({...tempFormData, age: text})}
-              editable={isEditing}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Pregnancy Week"
-              keyboardType="numeric"
-              value={isEditing ? tempFormData.pregnancyWeek : formData.pregnancyWeek}
-              onChangeText={handlePregnancyWeekChange}
-              maxLength={2}
-              editable={isEditing}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number"
-              keyboardType="phone-pad"
-              value={isEditing ? tempFormData.phone : formData.phone}
-              onChangeText={(text) => setTempFormData({...tempFormData, phone: text})}
-              editable={isEditing}
-            />
-            <TextInput
-              style={[styles.input, emailError ? styles.inputError : null]}
-              placeholder="Email"
-              keyboardType="email-address"
-              value={isEditing ? tempFormData.email : formData.email}
-              onChangeText={(text) => setTempFormData({...tempFormData, email: text})}
-              editable={isEditing}
-            />
+            {renderProfileField('Full Name')}
+            {renderProfileField('Address')}
+            {renderProfileField('Age')}
+            {renderProfileField('Phone')}
+            {renderProfileField('Email')}
+            {renderProfileField('Blood Type')}
+            {renderProfileField('Pregnancy Week')}
             {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
 
             <View style={styles.buttonContainer}>
@@ -268,47 +337,36 @@ export default function Profile() {
           <ThemedText style={styles.cardTitle}>Pregnancy Tracker</ThemedText>
           <View style={styles.progressContainer}>
             <LinearGradient
-              colors={['#E6E6FA', '#9370DB']}
+              colors={['#9370DB', '#F78DA7']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={[
-                styles.progressBar,
-                {
-                  width: `${(parseInt(formData.pregnancyWeek) || 0) * 2.5}%`,
-                  borderRadius: 10,
-                }
-              ]}
+              style={[styles.progressBar, { width: `${progress * 100}%` }]}
             />
           </View>
           <ThemedText style={styles.weekText}>
-            Week {formData.pregnancyWeek || 0}/40
+            Week {formData.pregnancyWeek || '0'} of 40
           </ThemedText>
 
-          {/* Week Development Section */}
-          {formData.pregnancyWeek && getCurrentWeekInfo() && (
+          {weekInfo && (
             <View style={styles.developmentCard}>
               <ThemedText style={styles.developmentTitle}>
-                Week {formData.pregnancyWeek}'s Development
+                Baby's Development - Week {weekInfo.id}
               </ThemedText>
               <View style={styles.measurementsContainer}>
                 <View style={styles.measurementItem}>
                   <View style={styles.measurementHeader}>
-                    <FontAwesome5 name="ruler-horizontal" size={24} color="#9370DB" />
-                    <ThemedText style={styles.measurementLabel}>Size</ThemedText>
+                    <FontAwesome5 name="weight" size={16} color="#623AA2" />
+                    <ThemedText style={styles.measurementLabel}>Weight</ThemedText>
                   </View>
-                  <ThemedText style={styles.measurementValue}>
-                    {getCurrentWeekInfo()?.author.split(' ').pop()?.toUpperCase() || 'N/A'}
-                  </ThemedText>
+                  <ThemedText style={styles.measurementValue}>{weekInfo.author}</ThemedText>
                 </View>
                 <View style={styles.divider} />
                 <View style={styles.measurementItem}>
                   <View style={styles.measurementHeader}>
-                    <Ionicons name="scale-outline" size={24} color="#9370DB" />
-                    <ThemedText style={styles.measurementLabel}>Weight</ThemedText>
+                    <FontAwesome5 name="ruler-vertical" size={16} color="#623AA2" />
+                    <ThemedText style={styles.measurementLabel}>Length</ThemedText>
                   </View>
-                  <ThemedText style={styles.measurementValue}>
-                    {getCurrentWeekInfo()?.weight || 'N/A'}
-                  </ThemedText>
+                  <ThemedText style={styles.measurementValue}>{weekInfo.length}</ThemedText>
                 </View>
               </View>
             </View>
@@ -373,90 +431,55 @@ export default function Profile() {
                       <TextInput
                         style={styles.healthInput}
                         placeholder="Blood Pressure (e.g., 120/80)"
-                        value={currentHealth.bloodPressure}
-                        onChangeText={(text) => setCurrentHealth(prev => ({...prev, bloodPressure: text}))}
+                        value={isEditingHealth ? tempHealthData.bloodPressure : currentHealth.bloodPressure}
+                        onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, bloodPressure: text}))}
+                        editable={isEditingHealth}
                       />
                       <TextInput
                         style={styles.healthInput}
                         placeholder="Blood Sugar Level (mg/dL)"
-                        value={currentHealth.bloodSugar}
-                        onChangeText={(text) => setCurrentHealth(prev => ({...prev, bloodSugar: text}))}
+                        value={isEditingHealth ? tempHealthData.bloodSugar : currentHealth.bloodSugar}
+                        onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, bloodSugar: text}))}
                         keyboardType="numeric"
+                        editable={isEditingHealth}
                       />
                       <TextInput
                         style={styles.healthInput}
                         placeholder="Weight (kg)"
-                        value={currentHealth.weight}
-                        onChangeText={(text) => setCurrentHealth(prev => ({...prev, weight: text}))}
+                        value={isEditingHealth ? tempHealthData.weight : currentHealth.weight}
+                        onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, weight: text}))}
                         keyboardType="numeric"
+                        editable={isEditingHealth}
                       />
                       <TextInput
                         style={[styles.healthInput, styles.symptomsInput]}
                         placeholder="Current Symptoms (if any)"
-                        value={currentHealth.symptoms}
-                        onChangeText={(text) => setCurrentHealth(prev => ({...prev, symptoms: text}))}
+                        value={isEditingHealth ? tempHealthData.symptoms : currentHealth.symptoms}
+                        onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, symptoms: text}))}
                         multiline
+                        editable={isEditingHealth}
                       />
                     </View>
 
-                    <TouchableOpacity style={styles.analyzeButton} onPress={analyzeRisk}>
-                      <ThemedText style={styles.analyzeButtonText}>Analyze Risk</ThemedText>
-                    </TouchableOpacity>
-
-                    {riskLevel && (
-                      <View style={[styles.riskIndicator, { backgroundColor: getRiskColor(riskLevel) }]}>
-                        <ThemedText style={styles.riskText}>{riskLevel} Risk</ThemedText>
-                      </View>
-                    )}
+                    <View style={styles.healthButtonContainer}>
+                      {!isEditingHealth ? (
+                        <TouchableOpacity style={styles.healthEditButton} onPress={handleEditHealth}>
+                          <ThemedText style={styles.healthButtonText}>Edit Health Info</ThemedText>
+                        </TouchableOpacity>
+                      ) : (
+                        <>
+                          <TouchableOpacity style={styles.healthSaveButton} onPress={handleSaveHealth}>
+                            <ThemedText style={styles.healthButtonText}>Save Changes</ThemedText>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.healthCancelButton} onPress={handleCancelHealth}>
+                            <ThemedText style={styles.healthButtonText}>Cancel</ThemedText>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          )}
-        </View>
-
-        {/* Saved Diseases Card */}
-        <View style={styles.infoCard}>
-          <TouchableOpacity 
-            style={styles.cardHeader}
-            onPress={() => toggleCard('savedDiseases')}
-          >
-            <ThemedText style={styles.cardTitle}>Saved Diseases</ThemedText>
-            <FontAwesome 
-              name={expandedCards.savedDiseases ? 'chevron-up' : 'chevron-down'} 
-              size={16} 
-              color="#495057" 
-            />
-          </TouchableOpacity>
-
-          {expandedCards.savedDiseases && (
-            <View style={styles.cardContent}>
-              {savedDiseases.map((disease, index) => (
-                <View key={index} style={styles.diseaseCard}>
-                  <View style={styles.diseaseHeader}>
-                    <ThemedText style={styles.diseaseName}>{disease.name}</ThemedText>
-                    <View style={[styles.riskBadge, { backgroundColor: getRiskColor(disease.risk) }]}>
-                      <ThemedText style={styles.riskBadgeText}>{disease.risk}</ThemedText>
-                    </View>
-                  </View>
-
-                  <View style={styles.symptomsContainer}>
-                    <ThemedText style={styles.symptomsTitle}>Symptoms to Watch:</ThemedText>
-                    {disease.symptoms.map((symptom, idx) => (
-                      <View key={idx} style={styles.symptomItem}>
-                        <ThemedText style={styles.bulletPoint}>•</ThemedText>
-                        <ThemedText style={styles.symptomText}>{symptom}</ThemedText>
-                      </View>
-                    ))}
-                  </View>
-
-                  <View style={styles.checkupContainer}>
-                    <ThemedText style={styles.checkupText}>
-                      Next Checkup: {disease.nextCheckup}
-                    </ThemedText>
-                  </View>
-                </View>
-              ))}
             </View>
           )}
         </View>
@@ -519,6 +542,79 @@ export default function Profile() {
           )}
         </View>
       </View>
+
+      <Modal
+        isVisible={isImagePickerVisible}
+        onBackdropPress={toggleImagePicker}
+        style={styles.modal}
+      >
+        <View style={styles.modalContent}>
+          <ThemedText style={styles.modalTitle}>Choose Profile Picture</ThemedText>
+          
+          <View style={styles.imageGrid}>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card1.jpeg'))}
+            >
+              <Image 
+                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card1.jpeg')} 
+                style={styles.optionImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card2.jpeg'))}
+            >
+              <Image 
+                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card2.jpeg')} 
+                style={styles.optionImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card3.jpeg'))}
+            >
+              <Image 
+                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/swiper_card3.jpeg')} 
+                style={styles.optionImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo-removebg-preview.png'))}
+            >
+              <Image 
+                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo-removebg-preview.png')} 
+                style={styles.optionImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={() => handleSelectImage(require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo.png'))}
+            >
+              <Image 
+                source={require('D:/Gencare/GenCare_Mobile/assets/profile_images/Mob-Logo.png')} 
+                style={styles.optionImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.uploadButton}
+            onPress={pickImage}
+          >
+            <FontAwesome name="upload" size={20} color="#fff" />
+            <ThemedText style={styles.uploadButtonText}>Upload from Device</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.closeButton}
+            onPress={toggleImagePicker}
+          >
+            <ThemedText style={styles.closeButtonText}>Cancel</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -560,25 +656,25 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontFamily: 'DMSerifText-Regular',
     marginLeft: 16,
     color: '#623AA2',
   },
   contentContainer: {
-    padding: 16,
-    marginTop: 10,
+    padding: SCREEN_WIDTH * 0.04,
+    marginTop: SCREEN_WIDTH * 0.02,
   },
   imageContainer: {
     alignItems: 'center',
     position: 'relative',
     zIndex: 1,
-    marginBottom: -60, // Half the height of the image to create overlap
+    marginBottom: -SCREEN_WIDTH * 0.15,
   },
   profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: SCREEN_WIDTH * 0.3,
+    height: SCREEN_WIDTH * 0.3,
+    borderRadius: SCREEN_WIDTH * 0.15,
     borderWidth: 4,
     borderColor: '#fff',
     elevation: 5,
@@ -590,14 +686,14 @@ const styles = StyleSheet.create({
   profileCard: {
     backgroundColor: '#fff',
     borderRadius: 15,
-    padding: 20,
-    paddingTop: 80, // Add extra padding at top to account for overlapping image
+    padding: SCREEN_WIDTH * 0.05,
+    paddingTop: SCREEN_WIDTH * 0.2,
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    marginBottom: 20,
+    marginBottom: SCREEN_WIDTH * 0.05,
   },
   inputContainer: {
     gap: 12,
@@ -606,8 +702,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ced4da',
     borderRadius: 18,
-    padding: 12,
-    fontSize: 16,
+    padding: SCREEN_WIDTH * 0.03,
+    fontSize: SCREEN_WIDTH * 0.04,
     backgroundColor: '#fff',
   },
   inputError: {
@@ -619,34 +715,40 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    gap: 10,
+    justifyContent: 'center',
+    marginTop: SCREEN_WIDTH * 0.03,
+    gap: SCREEN_WIDTH * 0.02,
   },
   editButton: {
     backgroundColor: '#9370DB',
-    padding: 12,
+    padding: SCREEN_WIDTH * 0.02,
     borderRadius: 8,
-    flex: 1,
+    flex: 0.7,
     alignItems: 'center',
+    minHeight: SCREEN_WIDTH * 0.12,
+    justifyContent: 'center',
   },
   saveButton: {
     backgroundColor: '#F78DA7',
-    padding: 12,
+    padding: SCREEN_WIDTH * 0.03,
     borderRadius: 8,
-    flex: 0.48,
+    flex: 0.55,
     alignItems: 'center',
+    minHeight: SCREEN_WIDTH * 0.1,
+    justifyContent: 'center',
   },
   cancelButton: {
     backgroundColor: '#0693E3',
-    padding: 12,
+    padding: SCREEN_WIDTH * 0.02,
     borderRadius: 8,
-    flex: 0.48,
+    flex: 0.35,
     alignItems: 'center',
+    minHeight: SCREEN_WIDTH * 0.1,
+    justifyContent: 'center',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: SCREEN_WIDTH * 0.039,
     fontWeight: 'bold',
   },
   trackerCard: {
@@ -661,13 +763,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: SCREEN_WIDTH * 0.045,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: SCREEN_WIDTH * 0.03,
+    color: '#623AA2',
   },
   progressContainer: {
     height: 20,
-    backgroundColor: '#f0f0f0', // Light background for empty progress
+    backgroundColor: '#f0f0f0',
     borderRadius: 10,
     overflow: 'hidden',
     width: '100%',
@@ -849,92 +952,152 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#dee2e6',
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
+    padding: SCREEN_WIDTH * 0.03,
+    marginBottom: SCREEN_WIDTH * 0.02,
     backgroundColor: '#fff',
+    fontSize: SCREEN_WIDTH * 0.035,
   },
   symptomsInput: {
-    height: 80,
+    height: SCREEN_WIDTH * 0.2,
     textAlignVertical: 'top',
   },
-  analyzeButton: {
-    backgroundColor: '#623AA2',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  analyzeButtonText: {
-    color: '#fff',
+  fieldValue: {
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#212529',
+    fontWeight: '500',
   },
-  riskIndicator: {
-    marginTop: 15,
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
+  emptyFieldValue: {
+    color: '#adb5bd',
+    fontStyle: 'italic',
   },
-  riskText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#495057',
   },
-  diseaseCard: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-  },
-  diseaseHeader: {
+  infoField: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    paddingVertical: 8,
   },
-  diseaseName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#495057',
+  healthButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: SCREEN_WIDTH * 0.02,
+    gap: SCREEN_WIDTH * 0.02,
   },
-  riskBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  healthEditButton: {
+    backgroundColor: '#9370DB',
+    padding: SCREEN_WIDTH * 0.02,
+    borderRadius: 8,
+    flex: 0.7,
+    alignItems: 'center',
+    minHeight: SCREEN_WIDTH * 0.12,
+    justifyContent: 'center',
   },
-  riskBadgeText: {
+  healthSaveButton: {
+    backgroundColor: '#F78DA7',
+    padding: SCREEN_WIDTH * 0.03,
+    borderRadius: 8,
+    flex: 0.55,
+    alignItems: 'center',
+    minHeight: SCREEN_WIDTH * 0.1,
+    justifyContent: 'center',
+  },
+  healthCancelButton: {
+    backgroundColor: '#0693E3',
+    padding: SCREEN_WIDTH * 0.02,
+    borderRadius: 8,
+    flex: 0.35,
+    alignItems: 'center',
+    minHeight: SCREEN_WIDTH * 0.1,
+    justifyContent: 'center',
+  },
+  healthButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: SCREEN_WIDTH * 0.039,
     fontWeight: 'bold',
   },
-  symptomsContainer: {
-    marginTop: 10,
+  editImageButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: SCREEN_WIDTH * 0.32,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#623AA2',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  symptomsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 5,
+  modal: {
+    margin: 0,
+    justifyContent: 'flex-end',
   },
-  symptomItem: {
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: SCREEN_WIDTH * 1.1,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#623AA2',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  imageOption: {
+    width: SCREEN_WIDTH * 0.25,
+    height: SCREEN_WIDTH * 0.25,
+    marginBottom: 10,
+    borderRadius: SCREEN_WIDTH * 0.125,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#e9ecef',
+  },
+  optionImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  uploadButton: {
+    backgroundColor: '#623AA2',
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 10,
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    gap: 10,
   },
-  bulletPoint: {
-    marginRight: 5,
-    color: '#623AA2',
+  uploadButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
-  symptomText: {
-    color: '#6c757d',
+  closeButton: {
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
   },
-  checkupContainer: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#dee2e6',
-  },
-  checkupText: {
-    color: '#623AA2',
-    fontSize: 14,
+  closeButtonText: {
+    color: '#495057',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
+
