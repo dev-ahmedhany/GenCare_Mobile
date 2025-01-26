@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, Image, Animated, Text, Dimensions, Platform, StatusBar } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Image, Animated, Text, Dimensions, Platform, StatusBar, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -29,10 +29,7 @@ export default function Navbar({ scrollY }: NavbarProps) {
 
   // القائمة الرئيسية
   const menuItems = [
-    { icon: 'calendar-outline', title: 'Weeks' },
-    { icon: 'medical-outline', title: 'Baby Names', route: '../BabyNames' },
-    { icon: 'chatbubbles-outline', title: 'AI Page' },
-    { icon: 'person-outline', title: 'Diseases' },
+    { icon: 'person-outline', title: 'Profile', route: '/profile' },
     { icon: 'man-outline', title: 'Management', route: '/(management)/management' as const },
   ];
 
@@ -92,7 +89,7 @@ export default function Navbar({ scrollY }: NavbarProps) {
   // حساب التحويلات للأنيميشن
   const navbarTranslateY = Animated.diffClamp(scrollY, 0, NAVBAR_HEIGHT).interpolate({
     inputRange: [0, NAVBAR_HEIGHT],
-    outputRange: [0, -NAVBAR_HEIGHT]
+    outputRange: [0, -(NAVBAR_HEIGHT + STATUSBAR_HEIGHT + 20)],
   });
 
   const menuRotate = animations.rotate.interpolate({
@@ -117,49 +114,60 @@ export default function Navbar({ scrollY }: NavbarProps) {
             </TouchableOpacity>
 
             {/* القائمة المنسدلة */}
-            {isMenuOpen && (
-              <Animated.View 
-                style={[
-                  styles.menuItemsContainer,
-                  {
-                    opacity: animations.menu,
-                    transform: [{ scale: animations.scale }]
-                  }
-                ]}
-              >
-                {menuItems.map((item, index) => (
-                  <TouchableOpacity 
-                    key={index}
-                    style={styles.menuItem}
-                    onPress={() => handleMenuPress(item.route)}
-                  >
-                    <Ionicons 
-                      name={item.icon as any} 
-                      size={Math.min(SCREEN_WIDTH * 0.05, 20)}
-                      color="#623AA2"
-                    />
-                    <Text style={styles.menuText}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))}
-                
-                <View style={styles.divider} />
-                
-                {authButtons.map((item, index) => (
-                  <TouchableOpacity 
-                    key={`auth-${index}`}
-                    style={styles.menuItem}
-                    onPress={item.onPress}
-                  >
-                    <Ionicons 
-                      name={item.icon as any} 
-                      size={Math.min(SCREEN_WIDTH * 0.05, 20)}
-                      color="#623AA2"
-                    />
-                    <Text style={styles.menuText}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))}
-              </Animated.View>
-            )}
+            <Modal
+              visible={isMenuOpen}
+              transparent={true}
+              animationType="none"
+              onRequestClose={() => setIsMenuOpen(false)}
+            >
+              <TouchableWithoutFeedback onPress={() => setIsMenuOpen(false)}>
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                    <Animated.View 
+                      style={[
+                        styles.menuItemsContainer,
+                        {
+                          opacity: animations.menu,
+                          transform: [{ scale: animations.scale }]
+                        }
+                      ]}
+                    >
+                      {menuItems.map((item, index) => (
+                        <TouchableOpacity 
+                          key={index}
+                          style={styles.menuItem}
+                          onPress={() => handleMenuPress(item.route)}
+                        >
+                          <Ionicons 
+                            name={item.icon as any} 
+                            size={Math.min(SCREEN_WIDTH * 0.05, 20)}
+                            color="#623AA2"
+                          />
+                          <Text style={styles.menuText}>{item.title}</Text>
+                        </TouchableOpacity>
+                      ))}
+                      
+                      <View style={styles.divider} />
+                      
+                      {authButtons.map((item, index) => (
+                        <TouchableOpacity 
+                          key={`auth-${index}`}
+                          style={styles.menuItem}
+                          onPress={item.onPress}
+                        >
+                          <Ionicons 
+                            name={item.icon as any} 
+                            size={Math.min(SCREEN_WIDTH * 0.05, 20)}
+                            color="#623AA2"
+                          />
+                          <Text style={styles.menuText}>{item.title}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </Animated.View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
           </View>
 
           {/* الشعار */}
@@ -224,10 +232,14 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.1, // 10% من عرض الشاشة
     minWidth: 40,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   menuItemsContainer: {
     position: 'absolute',
-    left: 0,
-    top: NAVBAR_HEIGHT - SCREEN_HEIGHT * 0.02, // تعديل موضع القائمة المنسدلة
+    left: SCREEN_WIDTH * 0.05,
+    top: NAVBAR_HEIGHT + STATUSBAR_HEIGHT,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: Math.min(SCREEN_WIDTH * 0.03, 12),
     padding: SCREEN_WIDTH * 0.02,
@@ -238,6 +250,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     width: Math.min(SCREEN_WIDTH * 0.45, 300), // حد أقصى 300
     maxHeight: SCREEN_HEIGHT * 0.5, // 60% من ارتفاع الشاشة
+
   },
   menuItem: {
     flexDirection: 'row',
@@ -258,16 +271,17 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: 'absolute',
-    left: SCREEN_WIDTH * 0.15, // 15% من عرض الشاشة
+    left: SCREEN_WIDTH * 0.15,
     right: SCREEN_WIDTH * 0.15,
     alignItems: 'center',
+    height: '100%', // إضافة ارتفاع كامل للحاوية
+    justifyContent: 'center', // توسيط عمودي
   },
   logoImage: {
-    position: 'absolute',
-    width: Math.min(SCREEN_WIDTH * 0.25), // 30% من عرض الشاشة، حد أقصى 120
-    height: Math.min(SCREEN_WIDTH * 0.55), // 15% من عرض الشاشة، حد أقصى 60
+
+    width: Math.min(SCREEN_WIDTH * 0.25, 100),
+    height: Math.min(SCREEN_WIDTH * 0.5, 100),
     resizeMode: 'contain',
-    top: -SCREEN_HEIGHT * 0.13,
   },
   profileButton: {
     padding: SCREEN_WIDTH * 0.02,

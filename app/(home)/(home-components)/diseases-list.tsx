@@ -7,6 +7,7 @@ import { theme } from '@/constants/Colors1';
 import MainButton from '@/constants/MainButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import { HeaderHomeFont } from '@/constants/Fonts';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -95,31 +96,28 @@ export default function DiseasesList() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    height: SCREEN_HEIGHT * 0.8,
     backgroundColor: bgColors.light.background,
   },
-  headerContainer: {
-    flex: 0.2,
+  headerContainer: { 
+    flex: 0.12,
     justifyContent: 'center',
     paddingHorizontal: SCREEN_WIDTH * 0.05,
-    
+
+    paddingBottom: SCREEN_HEIGHT * 0.02,
   },
   headerGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: SCREEN_HEIGHT * 0.15,
-    
+    position: 'relative',
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
+    fontFamily: HeaderHomeFont.fontFamily,
+    color: HeaderHomeFont.color,
+    fontSize: HeaderHomeFont.fontSize,
     fontWeight: '900',
-    color: theme.colors.secondary,
   },
   listContainer: {
-    flex: 0.6,
+    flex: 0.78,
     paddingHorizontal: SCREEN_WIDTH * 0.05,
+    marginBottom: SCREEN_HEIGHT * 0.02,
   },
   card: {
     backgroundColor: '#FFF',
@@ -170,9 +168,11 @@ const styles = StyleSheet.create({
     borderRadius: SCREEN_WIDTH * 0.02,
   },
   buttonContainer: {
-    flex: 0.2,
+    flex: 0.1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: SCREEN_HEIGHT * 0.02,
+    position: 'relative',
   },
 });
   

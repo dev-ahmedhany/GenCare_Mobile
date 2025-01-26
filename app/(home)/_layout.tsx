@@ -7,6 +7,7 @@ export default function HomeLayout() {
         headerShown: false,
         contentStyle: {
           backgroundColor: '#fff', // تعيين لون خلفية موحد
+          
         },
         animation: 'none', // إيقاف الانيميشن بين الصفحات
       }}

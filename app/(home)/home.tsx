@@ -10,6 +10,9 @@ import BabyNames from './(home-components)/baby-names';
 import AiPage from './(home-components)/ai-page';
 import DiseasesList from './(home-components)/diseases-list';
 import Footer from './(home-components)/footer';
+import { bgColors } from '@/constants/Colors';
+
+const NAVBAR_HEIGHT = 0;
 
 export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -49,19 +52,16 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor : bgColors.light.background,
   },
   scrollView: {
+    marginTop: NAVBAR_HEIGHT,
     flex: 1,
-    width: '100%',
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingTop: Platform.OS === 'ios' ? 90 : 70,
   },
   pageContainer: {
     flex: 1,
-    marginVertical: 0, // إزالة الهوامش العمودية
-    paddingVertical: 0, // إزالة الحشو العمودي
   }
 });

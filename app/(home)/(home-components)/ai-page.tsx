@@ -5,6 +5,7 @@ import { theme } from '@/constants/Colors1';
 import { bgColors } from '@/constants/Colors';
 import MainButton from '@/constants/MainButton';
 import { useState, useRef } from 'react';
+import { HeaderHomeFont } from '@/constants/Fonts';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -20,8 +21,7 @@ export default function AiPage() {
     <View style={styles.mainContainer}>
       {/* Header Container */}
       <View style={styles.headerContainer}>
-        <ThemedText style={styles.title}>Fetal's Brain</ThemedText>
-        <ThemedText style={styles.subtitle}>Disease Test</ThemedText>
+        <ThemedText style={styles.title}>Fetal's Brain AI Test</ThemedText>
       </View>
 
       {/* Carousel Container */}
@@ -74,32 +74,26 @@ export default function AiPage() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    height: SCREEN_HEIGHT * 0.8,
     backgroundColor: bgColors.light.background,
-    paddingVertical: SCREEN_HEIGHT * 0.02,
   },
   headerContainer: {
-    flex: 0.2,
-    justifyContent: 'center',
-    paddingHorizontal: SCREEN_WIDTH * 0.05,
+    flex: 0.15,
+    paddingHorizontal: SCREEN_WIDTH * 0.04,
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
+    fontFamily: HeaderHomeFont.fontFamily,
+    color: HeaderHomeFont.color,
+    fontSize: HeaderHomeFont.fontSize,
     fontWeight: '900',
-    color: theme.colors.secondary,
-  },
-  subtitle: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: '700',
-    color: theme.colors.secondary,
   },
   carouselContainer: {
-    flex: 0.6,
-    justifyContent: 'center',
+    flex: 0.78,
+    height: SCREEN_HEIGHT * 0.6,
+
   },
   scrollContent: {
-    paddingHorizontal: SCREEN_WIDTH * 0.05,
-    alignItems: 'center',
+    paddingHorizontal: SCREEN_WIDTH * 0.05, // left and right padding
+    backgroundColor: bgColors.light.background,
   },
   card: {
     width: SCREEN_WIDTH * 0.8,
@@ -160,9 +154,10 @@ const styles = StyleSheet.create({
     lineHeight: SCREEN_WIDTH * 0.05,
   },
   buttonContainer: {
-    flex: 0.2,
+    flex: 0.1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: SCREEN_HEIGHT * 0.02,
   },
 });
 
