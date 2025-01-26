@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     flex: 0.2,
     justifyContent: 'center',
     paddingHorizontal: SCREEN_WIDTH * 0.05,
+    
   },
   headerGradient: {
     position: 'absolute',
@@ -109,6 +110,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: SCREEN_HEIGHT * 0.15,
+    
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,

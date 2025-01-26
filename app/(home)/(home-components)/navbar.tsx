@@ -236,8 +236,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
-    width: Math.min(SCREEN_WIDTH * 0.7, 300), // حد أقصى 300
-    maxHeight: SCREEN_HEIGHT * 0.6, // 60% من ارتفاع الشاشة
+    width: Math.min(SCREEN_WIDTH * 0.45, 300), // حد أقصى 300
+    maxHeight: SCREEN_HEIGHT * 0.5, // 60% من ارتفاع الشاشة
   },
   menuItem: {
     flexDirection: 'row',
@@ -264,8 +264,8 @@ const styles = StyleSheet.create({
   },
   logoImage: {
     position: 'absolute',
-    width: Math.min(SCREEN_WIDTH * 0.4, 200), // 30% من عرض الشاشة، حد أقصى 120
-    height: Math.min(SCREEN_WIDTH * 0.8, 200), // 15% من عرض الشاشة، حد أقصى 60
+    width: Math.min(SCREEN_WIDTH * 0.25), // 30% من عرض الشاشة، حد أقصى 120
+    height: Math.min(SCREEN_WIDTH * 0.55), // 15% من عرض الشاشة، حد أقصى 60
     resizeMode: 'contain',
     top: -SCREEN_HEIGHT * 0.13,
   },

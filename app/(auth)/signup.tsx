@@ -1,4 +1,4 @@
-import { Image, StyleSheet,TextInput, Text, View, ImageBackground, TouchableOpacity, ScrollView } from "react-native";
+import { Image, StyleSheet,TextInput, Text, View, ImageBackground, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import  AntDesign  from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 import { Entypo } from "@expo/vector-icons";
 import {Animated} from 'react-native'
 import { useFocusEffect } from '@react-navigation/native';
+import MainButton from "@/constants/MainButton";
 
 const SignupScreen = () => {
     const router = useRouter();
@@ -110,8 +111,16 @@ const SignupScreen = () => {
                 />
             </Animated.View>
             <View>
-                <Text style={styles.createAccount}>Create Your Account</Text>
+                <Text style={styles.Welcome}>Welcome to GenCare</Text>
             </View>
+            <View style={styles.logoContainer}>
+          <Image
+            source={require("D:/Graduation Project 4th/GenCare_Mobile/assets/Logo/Mob-Logo-removebg-preview.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
             <View style = {styles.inputContainer}>
                 <FontAwesome name="user" size={24} color="#9A9A9A" style={styles.inputIcon} />
                 <TextInput style={styles.textInput} placeholder="Username" />
@@ -130,20 +139,16 @@ const SignupScreen = () => {
             </View>
 
             <View style={styles.createButtonContainer}>
-                <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
-                    <LinearGradient
-                        colors={["#8ED1FC", "#F78DA7"]}
-                        style={styles.createButtonGradient}>
-                        <Text style={styles.createButtonText}>Create Account</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+                <MainButton 
+          title="Create Account"
+          onPress={handleCreate}
+          backgroundColor="#F78DA7"
+                />       
             </View>
             <View style={styles.footerContainer}>
                 <Text style={styles.footerText}>Or create using..</Text>
                 <View style={styles.socialMediaContainer}>
                     <AntDesign name="google" size={30} color="#9A9A9A" style={styles.socialMediaIcon} />
-                    <Entypo name="facebook-with-circle" size={30} color="blue" style={styles.socialMediaIcon} />
-                    <AntDesign name="twitter" size={30} color="lightblue" style={styles.socialMediaIcon} />
                 </View>
             </View>
         </ScrollView>
@@ -162,31 +167,43 @@ const styles = StyleSheet.create({
   topImageContainer: {},
   topImage: {
     width: "100%",
-    height: 130,
+    height: "15%",
+    minHeight: 100,
+    maxHeight: 150,
   },
     helloContainer: {},
     helloText: {
         textAlign: "center",
-        fontSize: 70,
+        fontSize: Math.min(32, Dimensions.get('window').width * 0.08),
+        marginBottom: Dimensions.get('window').height * 0.01,
         fontWeight: "500",
         color: "#262626",
+        paddingHorizontal: "5%",
   },
-  createAccount: {
+  Welcome: {
     textAlign: "center",
-    fontSize: 30,
-    color:"#262626",
-    marginBottom: 30,
-    fontWeight: 400,
+    fontSize: Math.min(30, Dimensions.get('window').width * 0.07),
+    color: "#262626",
+    marginBottom: "3%",
+    fontWeight: "400",
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  logo: {
+    width: Dimensions.get('window').width * 0.4,
+    height: Dimensions.get('window').height * 0.2,
+    resizeMode: 'contain',
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 40,
-    marginVertical: 20,
-    borderRadius: 20,
+    marginHorizontal: "8%",
+    marginVertical: "3%",
+    borderRadius: 15,
     backgroundColor: "#FFFFFF",
     elevation: 10,
-    height: 50,
+    height: Math.max(45, Dimensions.get('window').height * 0.06),
   },
   inputIcon: {
     marginLeft: 15,
@@ -197,11 +214,11 @@ const styles = StyleSheet.create({
   },
 
     createButtonContainer: {
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 10,
-        paddingHorizontal: 20,
+        marginTop: "5%",
+        alignSelf: 'center',
+        width: '40%',
+        minWidth: 120,
+        maxWidth: 200,
     },
     signIn:{
         color: "#262626",
@@ -219,8 +236,8 @@ const styles = StyleSheet.create({
     footerText: {
         textAlign: "center",
         color: "#262626",
-        fontSize: 18,
-        marginTop: 20,
+        fontSize: Math.min(18, Dimensions.get('window').width * 0.045),
+        marginTop: "5%",
     },
 
     footerContainer: {
