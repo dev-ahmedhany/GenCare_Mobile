@@ -4,24 +4,24 @@ import { useEffect, useRef, useState } from 'react';
 import { bgColors } from '@/constants/Colors';
 import MainButton from '@/constants/MainButton';
 
-const NAVBAR_HEIGHT = 100;
+const NAVBAR_HEIGHT = 60;
 const slides = [
   {
     id: '1',
     image: require('@/assets/home_swiper/swiper_card1-removebg-preview.png'),
-    title: 'How Does Your\nBaby Look Like\nNow ?',
+    title: 'How Does Your Baby Look Like Now ?',
     button: 'Show Baby'
   },
   {
     id: '2',
     image: require('@/assets/home_swiper/swiper_card2-removebg-preview.png'),
-    title: 'Want Baby Name ? Check Out Our Baby Names Lists',
+    title: 'Want Baby Name ?\n Check Out Our Baby Names Lists',
     button: 'Baby Names'
   },
   {
     id: '3',
     image: require('@/assets/home_swiper/swiper_card3-removebg-preview.png'),
-    title: 'What Does Your Baby Look Like Now?',
+    title: 'What Does Your Baby\n Look Like Now?',
     button: 'Show My Baby'
   }
 ];
@@ -73,10 +73,12 @@ export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.R
           resizeMode="contain"
         />
         <ThemedText style={styles.title}>{item.title}</ThemedText>
-        <MainButton 
-          title={item.button}
-          onPress={() => handleButtonPress(item.button as 'AI Test' | 'Baby Names' | 'Show My Baby')}
-        />
+        <View style={styles.buttonContainer}>
+          <MainButton 
+            title={item.button}
+            onPress={() => handleButtonPress(item.button as 'AI Test' | 'Baby Names' | 'Show My Baby')}
+          />
+        </View>
       </View>
     </View>
   );
@@ -100,32 +102,52 @@ export default function UpperSwiper({ scrollViewRef }: { scrollViewRef?: React.R
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    marginTop: NAVBAR_HEIGHT,
+    backgroundColor: bgColors.light.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   slide: {
+    paddingHorizontal: SCREEN_WIDTH * 0.04,
   },
   cardContainer: {
-    backgroundColor: bgColors.light.background,
+    backgroundColor: bgColors.card.background,
     alignItems: 'center',
-    paddingTop: SCREEN_HEIGHT * 0.05,
-    flexDirection: 'column',
+    paddingTop: SCREEN_HEIGHT * 0.01,
+    paddingBottom: SCREEN_HEIGHT * 0.01,
+    paddingHorizontal: SCREEN_WIDTH * 0.03,
+    marginHorizontal: SCREEN_WIDTH * 0.03,
+    marginTop: SCREEN_HEIGHT * 0.04,
+    flexDirection: 'column', 
     justifyContent: 'space-between',
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginBottom: SCREEN_HEIGHT * 0.02,
   },
   image: {
-    width: SCREEN_WIDTH * 0.95,
-    height: SCREEN_HEIGHT * 0.3,
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_HEIGHT * 0.28,
     resizeMode: 'contain',
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.06,
+    fontSize: SCREEN_WIDTH * 0.05,
     fontWeight: '500',
     color: '#89CFF0',
     textAlign: 'center',
     paddingHorizontal: SCREEN_WIDTH * 0.02,
     letterSpacing: 0.5,
-    height: SCREEN_HEIGHT * 0.15,
+    height: SCREEN_HEIGHT * 0.12,
     justifyContent: 'center',
+    marginVertical: SCREEN_HEIGHT * 0.02,
+  },
+  buttonContainer: {
+    marginBottom: SCREEN_HEIGHT * 0.02,
   },
 });

@@ -6,6 +6,7 @@ import { theme } from '@/constants/Colors1';
 import { Image as ExpoImage } from 'expo-image';
 import { bgColors } from '@/constants/Colors';
 import MainButton from '@/constants/MainButton';
+import { HeaderHomeFont } from '@/constants/Fonts';
 
 const { width, height } = Dimensions.get('window');
 
@@ -82,35 +83,41 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: bgColors.light.background,
     width: '100%',
-    height: height ,
+    height: height,
+    paddingHorizontal: width * 0.03,
+    paddingVertical: height * 0.02,
   },
   cardContainer: {
-    backgroundColor: bgColors.light.background,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    backgroundColor: bgColors.card.background,
     height: '95%',
     width: '100%',
     alignSelf: 'center',
-    position: 'relative',
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginVertical: height * 0.01,
   },
   contentContainer: {
     flex: 1,
+    position: 'relative',
   },
   imageContainer: {
-    position: 'relative',
-    top: 0,
-    right: 0,
-    width: width ,
+    width: '100%',
+    borderRadius: 15,
     height: height * 0.15,
-    zIndex: 1,
+    alignSelf: 'center',
+    overflow: 'hidden',
   },
   headerOverlay: {
     width: '100%',
     height: '100%',
-    resizeMode: 'contain',
-    transform: [{ translateX: width * 0.13 }],
+    transform: [{ translateX: width * 0.15 }],
   },
   titleContainer: {
     alignItems: 'center',
@@ -120,9 +127,10 @@ const styles = StyleSheet.create({
     left: width * 0.04,
   },
   title: {
-    fontSize: width * 0.08,
+    fontFamily: HeaderHomeFont.fontFamily,
+    color: HeaderHomeFont.color,
+    fontSize: HeaderHomeFont.fontSize,
     fontWeight: '900',
-    color: theme.colors.secondary,
   },
   subtitle: {
     fontSize: width * 0.06,
@@ -186,11 +194,9 @@ const styles = StyleSheet.create({
     left: '0%',
   },
   button: {
-    position: 'relative',
-    bottom: 0,
-    left: 0,
     width: width * 0.34,
     alignSelf: 'center',
+    marginTop: 'auto',
     marginBottom: height * 0.02,
   },
 });

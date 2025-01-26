@@ -11,10 +11,13 @@ export const bgColors = {
   },
   dark: {
     text: '#FFFFFF',
-    background: '#000000',
+    background: '#5E259B',
     tint: tintColorDark,
     tabIconDefault: '#C4C4C4',
     tabIconSelected: tintColorDark,
+  },
+  card: {
+    background: '#FFFFFF',
   },
 };
 

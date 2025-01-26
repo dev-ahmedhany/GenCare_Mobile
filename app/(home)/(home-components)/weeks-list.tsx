@@ -14,6 +14,7 @@ import { NewsList } from "../../../data/pregnancyweeks";
 import FontSize from "../../../constants/FontSize";
 import { theme } from "../../../constants/Colors1";
 import { bgColors } from "@/constants/Colors";
+import { HeaderHomeFont } from "@/constants/Fonts";
 
 const HomeScreen = () => {
   return (
@@ -79,9 +80,10 @@ const styles = StyleSheet.create({
     padding: Spacing.padding.base,
   },
   headerText: {
-    fontSize: FontSize.xl,
-    textAlign: 'left',
-    color: theme.colors.secondary,
+    fontFamily: HeaderHomeFont.fontFamily,
+    color: HeaderHomeFont.color,
+    fontSize: HeaderHomeFont.fontSize,
+    fontWeight: '900',
   },
   sliderContainer: {
     marginTop: Spacing.margin.lg,

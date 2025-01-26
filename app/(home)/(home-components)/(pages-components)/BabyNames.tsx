@@ -2,7 +2,7 @@ import { SafeAreaView, StyleSheet, Text, View, ImageBackground, TouchableOpacity
 import React from "react";
 import { router } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
-import Font from "../../../../constants/Font";
+import Font from "../../../../constants/Fonts";
 import { alphabetData, BabyName } from "data/babyNames";
 import { theme } from "../../../../constants/Colors1";
 import { getLetterGif } from 'data/BabyGifs';
