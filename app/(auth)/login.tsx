@@ -98,7 +98,7 @@ const LoginScreen = () => {
         
         <View style={styles.logoContainer}>
           <Image
-            source={require("D:/Graduation Project 4th/GenCare_Mobile/assets/Logo/Mob-Logo-removebg-preview.png")}
+            source={require("@/assets/Logo/Mob-Logo-removebg-preview.png")}
             style={styles.logo}
             resizeMode="contain"
           />

@@ -29,7 +29,11 @@ export default function Navbar({ scrollY }: NavbarProps) {
 
   // القائمة الرئيسية
   const menuItems = [
-    { icon: 'person-outline', title: 'Profile', route: '/profile' },
+    { 
+      icon: 'person-outline', 
+      title: 'Profile', 
+      route: '/(home)/(home-components)/(pages-components)/(profile-pages-components)' 
+    },
     { icon: 'man-outline', title: 'Management', route: '/(management)/management' as const },
   ];
 
@@ -182,7 +186,7 @@ export default function Navbar({ scrollY }: NavbarProps) {
           {/* زر الملف الشخصي */}
           <TouchableOpacity 
             style={styles.profileButton}
-            onPress={() => router.push('/profile')}
+            onPress={() => router.push('/(home)/(home-components)/(pages-components)/(profile-pages-components)')}
           >
             <Ionicons 
               name="person-circle-outline" 
