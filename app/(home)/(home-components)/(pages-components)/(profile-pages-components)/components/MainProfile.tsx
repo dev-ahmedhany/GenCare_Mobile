@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Animated, Dimensions } from 'react-native';
 import { bgColors } from '@/constants/Colors';
-import ProfileInfo from './components/ProfileInfo';
-import PregnancySection from './components/PregnancySection';
-import HealthSection from './components/HealthSection';
-import { FormData, HealthData, ExpandedSections, ExpandedCards } from './types/profile.types';
-
+import ProfileInfo from './ProfileInfo';
+import PregnancySection from './PregnancySection';
+import HealthSection from './HealthSection';
+import { FormData, HealthData, ExpandedSections, ExpandedCards } from '../types/profile.types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 export default function MainProfile() {
   const [formData, setFormData] = useState<FormData>({
@@ -36,6 +37,23 @@ export default function MainProfile() {
     savedDiseases: false,
     savedItems: false,
   });
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSplashScreen = async () => {
+      try {
+        const hasSeenSplash = await AsyncStorage.getItem('profileSplashShown');
+        if (!hasSeenSplash) {
+          router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/ProfileSplash');
+        }
+      } catch (error) {
+        console.warn('Error checking splash state:', error);
+      }
+    };
+
+    checkSplashScreen();
+  }, [router]);
 
   return (
     <ScrollView style={styles.container}>

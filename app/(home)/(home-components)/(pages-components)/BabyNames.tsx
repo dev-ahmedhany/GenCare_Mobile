@@ -6,6 +6,7 @@ import Font from "../../../../constants/Fonts";
 import { alphabetData, BabyName } from "data/babyNames";
 import { theme } from "../../../../constants/Colors1";
 import { getLetterGif } from 'data/BabyGifs';
+import { bgColors } from "@/constants/Colors";
 
 const SettingsScreen = () => {
   const [selectedLetter, setSelectedLetter] = React.useState('A');
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#fff',
+    backgroundColor: bgColors.light.background,
   },
   header: {
     paddingHorizontal: 16,
