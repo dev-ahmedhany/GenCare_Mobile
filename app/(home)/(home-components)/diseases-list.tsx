@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     flex: 0.12,
     justifyContent: 'center',
     paddingHorizontal: SCREEN_WIDTH * 0.05,
+
     paddingBottom: SCREEN_HEIGHT * 0.02,
   },
   headerGradient: {

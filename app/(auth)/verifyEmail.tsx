@@ -1,10 +1,11 @@
-import { Image, StyleSheet, TextInput, Text, View, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import { Image, StyleSheet, TextInput, Text, View, ImageBackground, TouchableOpacity, Animated, Dimensions } from "react-native";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef } from "react";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from '@react-navigation/native';
+import MainButton from "@/constants/MainButton";
 
 const VerifyEmailScreen = () => {
     const router = useRouter();
@@ -95,6 +96,13 @@ const VerifyEmailScreen = () => {
             </Animated.View>
 
             <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
+            <View style={styles.logoContainer}>
+          <Image
+            source={require("D:/Graduation Project 4th/GenCare_Mobile/assets/Logo/Mob-Logo-removebg-preview.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Verify Your Email</Text>
                 </View>
@@ -114,13 +122,13 @@ const VerifyEmailScreen = () => {
                     ))}
                 </View>
 
-                <TouchableOpacity style={styles.verifyButton}>
-                    <LinearGradient
-                        colors={["#8ED1FC", "#8ED1FC"]}
-                        style={styles.verifyButtonGradient}>
-                        <Text style={styles.verifyButtonText}>Verify</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+        <View style={styles.verifyButton}>
+                <MainButton 
+          title="Verify your email"
+          onPress={() => {}}
+          backgroundColor="#F78DA7"
+                />       
+            </View>
 
                 <TouchableOpacity style={styles.resendContainer}>
                     <Text style={styles.resendText}>Didn't receive the code? Resend</Text>
@@ -139,64 +147,66 @@ const styles = StyleSheet.create({
     contentContainer: {
         flex: 1,
         justifyContent: 'center',
-        paddingHorizontal: 20,
+        paddingHorizontal: "5%",
+        marginBottom: "30%",
     },
     topImageContainer: {
         alignItems: 'center',
     },
     topImage: {
         width: "100%",
-        height: 150,
+        height: "15%",
+        minHeight: 100,
+        maxHeight: 150,
     },
+    logoContainer: {
+        alignItems: 'center',
+      },
+      logo: {
+        width: Dimensions.get('window').width * 0.4,
+        height: Dimensions.get('window').height * 0.2,
+        resizeMode: 'contain',
+      },
     titleContainer: {
         marginBottom: 10,
     },
     title: {
         textAlign: "center",
-        fontSize: 40,
+        fontSize: Math.min(32, Dimensions.get('window').width * 0.08),
+        marginBottom: Dimensions.get('window').height * 0.01,
         fontWeight: "500",
         color: "#262626",
+        paddingHorizontal: "5%",
     },
     subtitle: {
         textAlign: "center",
-        fontSize: 18,
+        fontSize: Math.min(18, Dimensions.get('window').width * 0.045),
         color: "#262626",
-        marginBottom: 30,
+        marginBottom: "1%",
     },
     codeContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginHorizontal: 20,
-        marginVertical: 20,
+        marginVertical: "5%",
     },
     codeInput: {
-        width: 45,
-        height: 45,
+        width: Math.min(45, Dimensions.get('window').width * 0.1),
+        height: Math.min(45, Dimensions.get('window').width * 0.1),
         borderRadius: 10,
         backgroundColor: "#FFFFFF",
         elevation: 10,
-        margin: 5,
+        margin: "1%",
         textAlign: 'center',
-        fontSize: 24,
+        fontSize: Math.min(24, Dimensions.get('window').width * 0.06),
         fontWeight: 'bold',
-        color: "#262626",
     },
     verifyButton: {
-        marginTop: 30,
+        marginTop: "5%",
         alignSelf: 'center',
-        width: '60%',
-    },
-    verifyButtonGradient: {
-        borderRadius: 25,
-        padding: 15,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    verifyButtonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: 'bold',
+        width: '40%',
+        minWidth: 120,
+        maxWidth: 200,
     },
     resendContainer: {
         marginTop: 20,

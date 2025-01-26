@@ -1,10 +1,14 @@
-import { Image, StyleSheet, TextInput, Text, View, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import { Image, StyleSheet, TextInput, Text, View, ImageBackground, TouchableOpacity, Animated, Dimensions } from "react-native";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from 'expo-linear-gradient';
 import React from "react";
 import { useNavigation } from "expo-router";
 import { useFocusEffect } from '@react-navigation/native';
+import MainButton from "@/constants/MainButton";
+
+// Add dimensions at the top
+const { width, height } = Dimensions.get('window');
 
 const ForgotPasswordScreen = () => {
     const navigation = useNavigation();
@@ -79,6 +83,13 @@ const ForgotPasswordScreen = () => {
             </Animated.View>
 
             <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
+            <View style={styles.logoContainer}>
+          <Image
+            source={require("D:/Graduation Project 4th/GenCare_Mobile/assets/Logo/Mob-Logo-removebg-preview.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Forgot Password</Text>
                 </View>
@@ -96,13 +107,13 @@ const ForgotPasswordScreen = () => {
                     />
                 </View>
 
-                <TouchableOpacity style={styles.resetButton}>
-                    <LinearGradient
-                        colors={["#F78DA7", "#F78DA7"]}
-                        style={styles.resetButtonGradient}>
-                        <Text style={styles.resetButtonText}>Reset</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+                <View style={styles.resetButton}>
+                <MainButton 
+          title="Reset Password"
+          onPress={() => {}}
+          backgroundColor="#8ED1FC"
+                />       
+                </View>
             </Animated.View>
         </View>
     );
@@ -117,74 +128,69 @@ const styles = StyleSheet.create({
     contentContainer: {
         flex: 1,
         justifyContent: 'center',
-        marginBottom: 100,
-        paddingHorizontal: 20,
+        paddingHorizontal: "5%",
+        marginBottom: "30%",
     },
     topImageContainer: {
         alignItems: 'center',
     },
     topImage: {
         width: "100%",
-        height: 150,
-
+        height: "15%",
+        minHeight: 100,
+        maxHeight: 150,
     },
+    logoContainer: {
+        alignItems: 'center',
+      },
+      logo: {
+        width: Dimensions.get('window').width * 0.4,
+        height: Dimensions.get('window').height * 0.2,
+        resizeMode: 'contain',
+      },
     titleContainer: {
-        marginBottom: 10,
+        marginBottom: height * 0.02,
     },
     title: {
         textAlign: "center",
-        fontSize: 40,
+        fontSize: Math.min(32, Dimensions.get('window').width * 0.08),
+        marginBottom: Dimensions.get('window').height * 0.01,
         fontWeight: "500",
         color: "#262626",
+        paddingHorizontal: "5%",
     },
     subtitle: {
         textAlign: "center",
-        fontSize: 18,
+        fontSize: Math.min(18, Dimensions.get('window').width * 0.045),
         color: "#262626",
-        marginBottom: 30,
+        marginBottom: "1%",
     },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
-        marginHorizontal: 20,
-        marginVertical: 20,
-        borderRadius: 20,
+        marginHorizontal: width * 0.05,
+        marginVertical: height * 0.01,
+        borderRadius: 15,
         backgroundColor: "#FFFFFF",
         elevation: 10,
-        height: 50,
+        height: Math.max(50, height * 0.06), // Minimum height of 50
+        paddingHorizontal: width * 0.03,
     },
     inputIcon: {
-        marginLeft: 15,
-        marginRight: 5,
+        marginRight: width * 0.02,
+        fontSize: Math.min(24, width * 0.06),
+        color: "#9A9A9A",
     },
     textInput: {
         flex: 1,
+        fontSize: Math.min(16, width * 0.04),
     },
     resetButton: {
-        marginTop: 30,
+        marginTop: "5%",
         alignSelf: 'center',
-        width: '60%',
-    },
-    resetButtonGradient: {
-        borderRadius: 25,
-        padding: 15,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    resetButtonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    logoContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 20,
-        marginBottom: 20,
-    },
-    logoImage: {
-        width: 150,
-        height: 80,
+        width: '40%',
+        minWidth: 120,
+        maxWidth: 200,
     },
 });
 

@@ -248,8 +248,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
-    width: Math.min(SCREEN_WIDTH * 0.7, 300),
-    maxHeight: SCREEN_HEIGHT * 0.6,
+    width: Math.min(SCREEN_WIDTH * 0.45, 300), // حد أقصى 300
+    maxHeight: SCREEN_HEIGHT * 0.5, // 60% من ارتفاع الشاشة
+
   },
   menuItem: {
     flexDirection: 'row',
@@ -277,6 +278,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // توسيط عمودي
   },
   logoImage: {
+
     width: Math.min(SCREEN_WIDTH * 0.25, 100),
     height: Math.min(SCREEN_WIDTH * 0.5, 100),
     resizeMode: 'contain',

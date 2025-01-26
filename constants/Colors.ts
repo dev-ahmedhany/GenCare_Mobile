@@ -4,7 +4,7 @@ const tintColorDark = '#0A84FF';
 export const bgColors = {
   light: {
     text: '#000000',
-    background: '#EEF5FF',
+    background: '#FFFFFF',
     tint: tintColorLight,
     tabIconDefault: '#C4C4C4',
     tabIconSelected: tintColorLight,
