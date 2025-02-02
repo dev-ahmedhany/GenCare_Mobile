@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef } from 'react';
 import { View } from 'react-native';
 
-import Navbar from './(home-components)/navbar';
+import Navbar from './(home-components)/navbar/navbar';
 import UpperSwiper from './(home-components)/upper-swiper';
 import WeeksList from './(home-components)/weeks-list';
 import BabyNames from './(home-components)/baby-names';

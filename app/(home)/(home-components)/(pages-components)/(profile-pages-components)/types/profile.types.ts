@@ -1,10 +1,8 @@
 export interface FormData {
   fullName: string;
-  address: string;
   age: string;
   pregnancyWeek: string;
   phone: string;
-  email: string;
   bloodType: string;
 }
 

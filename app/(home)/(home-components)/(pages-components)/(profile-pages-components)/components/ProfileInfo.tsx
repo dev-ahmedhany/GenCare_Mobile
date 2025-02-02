@@ -1,316 +1,434 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions, Modal, Animated, ScrollView, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { FontAwesome6 } from '@expo/vector-icons';
-import Modal from 'react-native-modal';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { FormData } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
+import { BlurView } from 'expo-blur';
+import PregnancyWeekPicker from './PregnancyWeekPicker';
+import { Picker } from '@react-native-picker/picker';
 
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ProfileInfoProps {
   formData: FormData;
   setFormData: (data: FormData) => void;
 }
 
+interface ValidationErrors {
+  fullName?: string;
+  age?: string;
+  phone?: string;
+  bloodType?: string;
+  pregnancyWeek?: string;
+}
+
+const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+
 export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempFormData, setTempFormData] = useState(formData);
-  const [emailError, setEmailError] = useState('');
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
   const [profileImage, setProfileImage] = useState(
     require('@/assets/profile_images/default.png')
   );
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    let isValid = true;
 
-  const handleEdit = () => {
-    setTempFormData(formData);
-    setIsEditing(true);
+    // التحقق من الاسم إذا تم إدخاله
+    if (tempFormData.fullName.trim() && !/^[a-zA-Z\s]+$/.test(tempFormData.fullName)) {
+      newErrors.fullName = 'Name should contain only letters';
+      isValid = false;
+    } else if (tempFormData.fullName.trim() && tempFormData.fullName.length < 3) {
+      newErrors.fullName = 'Name must be at least 3 characters';
+      isValid = false;
+    }
+
+    // التحقق من العمر إذا تم إدخاله
+    if (tempFormData.age) {
+      const age = Number(tempFormData.age);
+      if (isNaN(age) || age < 15 || age > 60) {
+        newErrors.age = 'Age must be between 15 and 60';
+        isValid = false;
+      }
+    }
+
+    // التحقق من رقم الهاتف إذا تم إدخاله
+    if (tempFormData.phone && !/^\d{11}$/.test(tempFormData.phone)) {
+      newErrors.phone = 'Phone number must be exactly 11 digits';
+      isValid = false;
+    }
+
+    // التحقق من فصيلة الدم إذا تم إدخالها
+    if (tempFormData.bloodType && !BLOOD_TYPES.includes(tempFormData.bloodType)) {
+      newErrors.bloodType = 'Please select a valid blood type';
+      isValid = false;
+    }
+
+    // التحقق من أسبوع الحمل إذا تم إدخاله
+    if (tempFormData.pregnancyWeek) {
+      const week = Number(tempFormData.pregnancyWeek);
+      if (isNaN(week) || week < 1 || week > 42) {
+        newErrors.pregnancyWeek = 'Week must be between 1 and 42';
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSave = () => {
-    if (tempFormData.email && !validateEmail(tempFormData.email)) {
-      setEmailError('Please enter a valid email address');
-      return;
-    }
-    setFormData(tempFormData);
-    setIsEditing(false);
-    setEmailError('');
-  };
-
-  const handleCancel = () => {
-    setTempFormData(formData);
-    setIsEditing(false);
-    setEmailError('');
-  };
-
-  const handleSelectImage = (image: any) => {
-    setProfileImage(image);
-    setImagePickerVisible(false);
-  };
-
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setProfileImage({ uri: result.assets[0].uri });
-      setImagePickerVisible(false);
+    if (validateForm()) {
+      setFormData(tempFormData);
+      setIsEditing(false);
+      setErrors({});
     }
   };
 
-  const renderProfileField = (label: string, value: string) => {
-    if (isEditing) {
+  const renderProfileField = (label: string, value: string, icon: string) => (
+    <View style={styles.fieldContainer}>
+      <FontAwesome6 name={icon} size={20} color="#623AA2" style={styles.fieldIcon} />
+      <View style={styles.fieldContent}>
+        <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
+        <ThemedText style={[styles.fieldValue, !value && styles.emptyFieldValue]}>
+          {label === 'Pregnancy Week' && value ? `Week ${value}` : value || '—'}
+        </ThemedText>
+      </View>
+    </View>
+  );
+
+  const renderEditField = (label: string, value: string, field: keyof FormData) => {
+    if (field === 'bloodType') {
       return (
-        <TextInput
-          style={[styles.input, label === 'Email' && emailError ? styles.inputError : null]}
-          placeholder={label}
-          value={tempFormData[label.toLowerCase() as keyof FormData]}
-          onChangeText={(text) => 
-            setTempFormData({...tempFormData, [label.toLowerCase()]: text})
-          }
-          keyboardType={label === 'Email' ? 'email-address' : 
-                       label === 'Age' || label === 'Phone' ? 'numeric' : 
-                       'default'}
-        />
+        <View style={styles.editFieldContainer}>
+          <ThemedText style={styles.editFieldLabel}>{label}</ThemedText>
+          <View style={[styles.editInput, styles.pickerWrapper]}>
+            <Picker
+              selectedValue={tempFormData[field]}
+              onValueChange={(text) => setTempFormData({...tempFormData, [field]: text})}
+              style={styles.bloodTypePicker}
+              dropdownIconColor="#623AA2"
+              mode="dropdown"
+            >
+              <Picker.Item 
+                label="Select Blood Type" 
+                value="" 
+                enabled={false}
+              />
+              {BLOOD_TYPES.map((type) => (
+                <Picker.Item 
+                  key={type} 
+                  label={type} 
+                  value={type}
+                />
+              ))}
+            </Picker>
+          </View>
+          {errors[field] && (
+            <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+          )}
+        </View>
       );
     }
-    
+
     return (
-      <View style={styles.infoField}>
-        <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
-        <ThemedText style={[
-          styles.fieldValue,
-          !value && styles.emptyFieldValue
-        ]}>
-          {value || '—'}
-        </ThemedText>
+      <View style={styles.editFieldContainer}>
+        <ThemedText style={styles.editFieldLabel}>{label}</ThemedText>
+        <TextInput
+          style={[
+            styles.editInput,
+            errors[field] ? styles.inputError : null
+          ]}
+          value={tempFormData[field]}
+          onChangeText={(text) => {
+            let newText = text;
+            
+            // التحقق من الإدخال حسب نوع الحقل
+            if (field === 'age') {
+              newText = text.replace(/[^0-9]/g, ''); // أرقام فقط
+            } else if (field === 'phone') {
+              newText = text.replace(/[^0-9]/g, '').slice(0, 11); // 11 رقم فقط
+            } else if (field === 'fullName') {
+              newText = text.replace(/[^a-zA-Z\s]/g, ''); // حروف ومسافات فقط
+            }
+            
+            setTempFormData({...tempFormData, [field]: newText});
+          }}
+          placeholder={`Enter your ${label.toLowerCase()}`}
+          placeholderTextColor="#9CA3AF"
+          keyboardType={field === 'phone' || field === 'age' ? 'numeric' : 'default'}
+          maxLength={field === 'phone' ? 11 : undefined}
+        />
+        {errors[field] && (
+          <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+        )}
       </View>
     );
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={profileImage}
-          style={styles.profileImage}
-        />
-        {isEditing && (
+      <View style={styles.profileCard}>
+        <View style={styles.imageContainer}>
+          <Image source={profileImage} style={styles.profileImage} />
           <TouchableOpacity 
             style={styles.editImageButton}
             onPress={() => setImagePickerVisible(true)}
           >
-            <FontAwesome6 name="edit" size={16} color="#ffffff" />
+            <FontAwesome6 name="camera" size={16} color="#ffffff" />
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
 
-      <View style={styles.profileCard}>
-        <View style={styles.inputContainer}>
-          {Object.entries(formData).map(([key, value]) => (
-            <React.Fragment key={key}>
-              {renderProfileField(key.charAt(0).toUpperCase() + key.slice(1), value)}
-            </React.Fragment>
-          ))}
-          {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
+        <View style={styles.infoContainer}>
+          {renderProfileField('Full Name', formData.fullName, 'user')}
+          {renderProfileField('Age', formData.age, 'calendar')}
+          {renderProfileField('Phone', formData.phone, 'phone')}
+          {renderProfileField('Blood Type', formData.bloodType, 'droplet')}
+          {renderProfileField('Pregnancy Week', formData.pregnancyWeek, 'baby')}
 
           <View style={styles.buttonContainer}>
-            {!isEditing ? (
-              <MainButton 
-                title="Edit Profile"
-                onPress={handleEdit}
-                backgroundColor="#9370DB"
-              />
-            ) : (
-              <>
-                <MainButton 
-                  title="Save Changes"
-                  onPress={handleSave}
-                  backgroundColor="#F78DA7"
-                />
-                <MainButton 
-                  title="Cancel"
-                  onPress={handleCancel}
-                  backgroundColor="#0693E3"
-                />
-              </>
-            )}
+            <MainButton 
+              title="Edit Profile"
+              onPress={() => setIsEditing(true)}
+              backgroundColor="#623AA2"
+            />
           </View>
         </View>
       </View>
 
-      {/* Image Picker Modal */}
+      {/* Edit Modal */}
       <Modal
-        isVisible={isImagePickerVisible}
-        onBackdropPress={() => setImagePickerVisible(false)}
-        style={styles.modal}
+        visible={isEditing}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsEditing(false)}
       >
-        <View style={styles.modalContent}>
-          <ThemedText style={styles.modalTitle}>Choose Profile Picture</ThemedText>
-          
-          <View style={styles.imageGrid}>
-            {/* Image Options */}
-            <TouchableOpacity 
-              style={styles.imageOption}
-              onPress={() => handleSelectImage(require('@/assets/profile_images/swiper_card1.jpeg'))}
+        <BlurView intensity={10} style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <ThemedText style={styles.modalTitle}>Edit Profile</ThemedText>
+              <TouchableOpacity onPress={() => setIsEditing(false)}>
+                <Ionicons name="close" size={24} color="#623AA2" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              style={styles.modalScrollContent}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ flexGrow: 1 }}
             >
-              <Image 
-                source={require('@/assets/profile_images/swiper_card1.jpeg')} 
-                style={styles.optionImage}
+              {renderEditField('Full Name', tempFormData.fullName, 'fullName')}
+              {renderEditField('Age', tempFormData.age, 'age')}
+              {renderEditField('Phone', tempFormData.phone, 'phone')}
+              {renderEditField('Blood Type', tempFormData.bloodType, 'bloodType')}
+
+              <View style={styles.editFieldContainer}>
+                <ThemedText style={styles.editFieldLabel}>Pregnancy Progress</ThemedText>
+                <PregnancyWeekPicker
+                  value={tempFormData.pregnancyWeek}
+                  onChange={(week) => setTempFormData({...tempFormData, pregnancyWeek: week})}
+                />
+                {errors.pregnancyWeek && (
+                  <ThemedText style={styles.errorText}>{errors.pregnancyWeek}</ThemedText>
+                )}
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalButtons}>
+              <MainButton 
+                title="Save Changes"
+                onPress={handleSave}
+                backgroundColor="#623AA2"
               />
-            </TouchableOpacity>
-            {/* ... باقي الصور */}
+              <MainButton 
+                title="Cancel"
+                onPress={() => {
+                  setTempFormData(formData);
+                  setIsEditing(false);
+                  setErrors({});
+                }}
+                backgroundColor="#9CA3AF"
+              />
+            </View>
           </View>
-
-          <MainButton 
-            title="Upload from Device"
-            onPress={pickImage}
-            backgroundColor="#623AA2"
-          />
-
-          <MainButton 
-            title="Cancel"
-            onPress={() => setImagePickerVisible(false)}
-            backgroundColor="#f8f9fa"
-          />
-        </View>
+        </BlurView>
       </Modal>
+
+      {/* Image Picker Modal - يمكن إضافة تصميم مشابه */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: SCREEN_WIDTH * 0.18,
     padding: SCREEN_WIDTH * 0.04,
+  },
+  profileCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   imageContainer: {
     alignItems: 'center',
+    marginBottom: 20,
     position: 'relative',
-    zIndex: 1,
-    marginBottom: -SCREEN_WIDTH * 0.15,
   },
   profileImage: {
-    width: SCREEN_WIDTH * 0.3,
-    height: SCREEN_WIDTH * 0.3,
-    borderRadius: SCREEN_WIDTH * 0.15,
-    borderWidth: 4,
-    borderColor: '#fff',
+    width: SCREEN_WIDTH * 0.25,
+    height: SCREEN_WIDTH * 0.25,
+    borderRadius: SCREEN_WIDTH * 0.125,
+    borderWidth: 3,
+    borderColor: '#623AA2',
   },
-  modal: {
-    margin: 0,
-    justifyContent: 'flex-end',
+  editImageButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: SCREEN_WIDTH * 0.33,
+    backgroundColor: '#623AA2',
+    padding: 8,
+    borderRadius: 20,
+    elevation: 3,
+  },
+  infoContainer: {
+    gap: 15,
+    paddingBottom: 10,
+  },
+  buttonContainer: {
+    marginTop: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  fieldContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  fieldIcon: {
+    marginRight: 15,
+  },
+  fieldContent: {
+    flex: 1,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 2,
+  },
+  fieldValue: {
+    fontSize: 16,
+    color: '#1F2937',
+    fontWeight: '500',
+  },
+  emptyFieldValue: {
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderRadius: 20,
     padding: 20,
+    width: SCREEN_WIDTH * 0.9,
+    maxHeight: SCREEN_HEIGHT * 0.85,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#623AA2',
-    textAlign: 'center',
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+  },
+  editFieldContainer: {
     marginBottom: 20,
+    flexShrink: 0,
   },
-  imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  imageOption: {
-    width: SCREEN_WIDTH * 0.25,
-    height: SCREEN_WIDTH * 0.25,
-    marginBottom: 10,
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  optionImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#dee2e6',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-  },
-  inputError: {
-    borderColor: '#dc3545',
-  },
-  infoField: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  fieldLabel: {
+  editFieldLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#495057',
+    color: '#4B5563',
+    marginBottom: 8,
+    fontWeight: '500',
   },
-  fieldValue: {
+  editInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: Platform.OS === 'ios' ? 12 : 0,
     fontSize: 16,
-    color: '#212529',
+    color: '#1F2937',
+    backgroundColor: '#F9FAFB',
+    minHeight: 50,
   },
-  emptyFieldValue: {
-    color: '#adb5bd',
-    fontStyle: 'italic',
-  },
-  profileCard: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  inputContainer: {
-    marginTop: SCREEN_WIDTH * 0.15,
-  },
-  buttonContainer: {
+  modalButtons: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: 10,
     marginTop: 20,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
-  editImageButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: SCREEN_WIDTH * 0.32,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#623AA2',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  pregnancyPickerContainer: {
+    marginTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 15,
+  },
+  inputError: {
+    borderColor: '#EF4444',
+    borderWidth: 1.5,
   },
   errorText: {
-    color: '#dc3545',
+    color: '#EF4444',
     fontSize: 12,
-    marginTop: -5,
-    marginBottom: 10,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  pickerWrapper: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    height: 50,
+  },
+  bloodTypePicker: {
+    ...Platform.select({
+      ios: {
+        width: '100%',
+        height: 50,
+      },
+      android: {
+        width: '100%',
+        height: 50,
+        color: '#1F2937',
+      }
+    }),
   },
 });
