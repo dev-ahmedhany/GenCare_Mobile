@@ -363,7 +363,7 @@ export const alphabetData: AlphabetSection[] = [
     letter: 'O',
     names: [
       { name: 'Oliver', gender: 'M' },
-      { name: 'Olivia', gender: 'F' },
+      { name: 'Omneya ', gender: 'F' },
       { name: 'Owen', gender: 'M' },
       { name: 'Ophelia', gender: 'F' },
       { name: 'Oscar', gender: 'M' },
