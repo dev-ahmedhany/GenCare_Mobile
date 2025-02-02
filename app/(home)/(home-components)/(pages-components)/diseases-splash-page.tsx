@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, SafeAreaView, Animated, FlatList } from 'react-native';
 import { bgColors } from '@/constants/Colors';
-import Navbar from '../navbar';
+import Navbar from '../navbar/navbar';
 import DiseaseCard from './(diseases-pages-components)/DiseaseCard';
 import DiseasesPageComponents from './(diseases-pages-components)/diseases-page-components';
 import { diseases } from '@/data/diseases';

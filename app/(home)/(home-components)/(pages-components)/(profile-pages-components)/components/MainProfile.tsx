@@ -11,11 +11,9 @@ import { useRouter } from 'expo-router';
 export default function MainProfile() {
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
-    address: '',
     age: '',
     pregnancyWeek: '',
     phone: '',
-    email: '',
     bloodType: '',
   });
 
@@ -80,6 +78,7 @@ export default function MainProfile() {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: 70,
     flex: 1,
     backgroundColor: bgColors.light.background,
   },

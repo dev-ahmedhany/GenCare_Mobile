@@ -3,7 +3,8 @@ import { View, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Navbar from '../../../navbar';
+import Navbar from '../../../navbar/navbar';
+import { bgColors } from '@/constants/Colors';
 
 const scrollY = new Animated.Value(0);
 export default function ProfileHeader() {
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingHorizontal: 16,
     paddingBottom: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: bgColors.light.background,
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
   },
