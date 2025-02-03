@@ -3,6 +3,10 @@ import { ThemedText } from '@/components/ThemedText';
 import { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import Navbar from '../(navbar)/navbar';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;
 
 export default function AIChatPage() {
   const [isEnvelopeClosed, setIsEnvelopeClosed] = useState(false);
@@ -12,6 +16,7 @@ export default function AIChatPage() {
   const envelopeAnimation = useRef(new Animated.Value(0)).current;
   const bottomFlapAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const scrollY = new Animated.Value(0);
 
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -108,6 +113,17 @@ export default function AIChatPage() {
     });
   };
 
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    scrollY.setValue(offsetY);
+  };
+
+  const navbarOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
   return (
     <View style={styles.container}>
       <Image
@@ -115,7 +131,16 @@ export default function AIChatPage() {
         style={styles.backgroundVideo}
       />
 
-      <Animated.View style={[styles.contentContainer, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.navbarContainer, { opacity: navbarOpacity }]} />
+      <Navbar 
+        scrollY={scrollY}
+        variant="simple"
+        style={styles.navbar}
+      />
+
+      <Animated.View 
+        style={[styles.contentContainer, { opacity: fadeAnim }]}
+      >
         {showLoader && (
           <View style={styles.centerContent}>
             <View style={styles.loaderContainer}>
@@ -203,7 +228,7 @@ export default function AIChatPage() {
                     }]
                   }
                 ]}
-              />
+                />
               
               <View style={[styles.envelopeSide, styles.leftSide]} />
               <View style={[styles.envelopeSide, styles.rightSide]} />
@@ -220,18 +245,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     marginTop: 0,
-    paddingTop: 0,
   },
   backgroundVideo: {
     position: 'absolute',
     width: '100%',
     height: '100%',
   },
+  navbarContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: NAVBAR_HEIGHT,
+    backgroundColor: 'white',
+    zIndex: 1,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  navbar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    height: NAVBAR_HEIGHT,
+  },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 0,
+    marginTop: NAVBAR_HEIGHT,
   },
   centerContent: {
     width: '90%',

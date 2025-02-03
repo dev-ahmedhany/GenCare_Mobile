@@ -1,11 +1,12 @@
 import React, { useState, Dispatch, SetStateAction } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { HealthData, ExpandedCards, ExpandedSections } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
+import { BlurView } from 'expo-blur';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface HealthSectionProps {
   currentHealth: HealthData;
@@ -14,6 +15,13 @@ interface HealthSectionProps {
   setExpandedCards: Dispatch<SetStateAction<ExpandedCards>>;
   expandedSections: ExpandedSections;
   setExpandedSections: Dispatch<SetStateAction<ExpandedSections>>;
+}
+
+interface ValidationErrors {
+  bloodPressure?: string;
+  bloodSugar?: string;
+  weight?: string;
+  symptoms?: string;
 }
 
 export default function HealthSection({
@@ -26,6 +34,7 @@ export default function HealthSection({
 }: HealthSectionProps) {
   const [isEditingHealth, setIsEditingHealth] = useState(false);
   const [tempHealthData, setTempHealthData] = useState(currentHealth);
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   const commonDiseases = [
     'Diabetes',
@@ -51,19 +60,123 @@ export default function HealthSection({
     }));
   };
 
-  const handleEditHealth = () => {
-    setTempHealthData(currentHealth);
-    setIsEditingHealth(true);
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    let isValid = true;
+
+    // التحقق من ضغط الدم
+    if (tempHealthData.bloodPressure) {
+      const bpPattern = /^\d{2,3}\/\d{2,3}$/;
+      if (!bpPattern.test(tempHealthData.bloodPressure)) {
+        newErrors.bloodPressure = 'Invalid format. Use format: 120/80';
+        isValid = false;
+      }
+    }
+
+    // التحقق من مستوى السكر في الدم
+    if (tempHealthData.bloodSugar) {
+      const sugar = Number(tempHealthData.bloodSugar);
+      if (isNaN(sugar) || sugar < 50 || sugar > 500) {
+        newErrors.bloodSugar = 'Blood sugar must be between 50 and 500 mg/dL';
+        isValid = false;
+      }
+    }
+
+    // التحقق من الوزن
+    if (tempHealthData.weight) {
+      const weight = Number(tempHealthData.weight);
+      if (isNaN(weight) || weight < 30 || weight > 200) {
+        newErrors.weight = 'Weight must be between 30 and 200 kg';
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSaveHealth = () => {
-    setCurrentHealth(tempHealthData);
-    setIsEditingHealth(false);
+    if (validateForm()) {
+      setCurrentHealth(tempHealthData);
+      setIsEditingHealth(false);
+      setErrors({});
+    }
   };
 
-  const handleCancelHealth = () => {
-    setTempHealthData(currentHealth);
-    setIsEditingHealth(false);
+  const renderEditField = (label: string, value: string, field: keyof HealthData) => {
+    if (field === 'bloodPressure') {
+      const [systolic, diastolic] = value ? value.split('/') : ['', ''];
+      
+      return (
+        <View style={styles.editFieldContainer}>
+          <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
+          <View style={styles.bloodPressureContainer}>
+            <View style={styles.bpFieldContainer}>
+              <ThemedText style={styles.bpLabel}>High</ThemedText>
+              <TextInput
+                style={[styles.bpInput, errors[field] && styles.inputError]}
+                value={systolic}
+                onChangeText={(text) => {
+                  const newText = text.replace(/[^0-9]/g, '');
+                  setTempHealthData(prev => ({
+                    ...prev,
+                    bloodPressure: `${newText}/${diastolic || ''}`
+                  }));
+                }}
+                placeholder="120"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                maxLength={3}
+              />
+            </View>
+            <ThemedText style={styles.bpSeparator}>/</ThemedText>
+            <View style={styles.bpFieldContainer}>
+              <ThemedText style={styles.bpLabel}>Low</ThemedText>
+              <TextInput
+                style={[styles.bpInput, errors[field] && styles.inputError]}
+                value={diastolic}
+                onChangeText={(text) => {
+                  const newText = text.replace(/[^0-9]/g, '');
+                  setTempHealthData(prev => ({
+                    ...prev,
+                    bloodPressure: `${systolic || ''}/${newText}`
+                  }));
+                }}
+                placeholder="80"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                maxLength={3}
+              />
+            </View>
+          </View>
+          {errors[field] && (
+            <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+          )}
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.editFieldContainer}>
+        <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
+        <TextInput
+          style={[
+            styles.editInput,
+            errors[field] && styles.inputError,
+            field === 'symptoms' && styles.symptomsInput
+          ]}
+          value={value}
+          onChangeText={(text) => setTempHealthData(prev => ({...prev, [field]: text}))}
+          placeholder={`Enter your ${label.toLowerCase()}`}
+          placeholderTextColor="#9CA3AF"
+          keyboardType={field === 'bloodSugar' || field === 'weight' ? 'numeric' : 'default'}
+          multiline={field === 'symptoms'}
+        />
+        {errors[field] && (
+          <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+        )}
+      </View>
+    );
   };
 
   return (
@@ -74,75 +187,105 @@ export default function HealthSection({
           style={styles.cardHeader}
           onPress={() => toggleCard('healthPredictor')}
         >
-          <ThemedText style={styles.cardTitle}>Health Predictor</ThemedText>
+          <ThemedText style={styles.cardTitle}>Health Information</ThemedText>
           <FontAwesome 
             name={expandedCards.healthPredictor ? 'chevron-up' : 'chevron-down'} 
             size={16} 
-            color="#495057" 
+            color="#623AA2" 
           />
         </TouchableOpacity>
 
         {expandedCards.healthPredictor && (
           <View style={styles.cardContent}>
-            <View style={styles.healthInputs}>
-              <TextInput
-                style={styles.healthInput}
-                placeholder="Blood Pressure (e.g., 120/80)"
-                value={isEditingHealth ? tempHealthData.bloodPressure : currentHealth.bloodPressure}
-                onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, bloodPressure: text}))}
-                editable={isEditingHealth}
-              />
-              <TextInput
-                style={styles.healthInput}
-                placeholder="Blood Sugar Level (mg/dL)"
-                value={isEditingHealth ? tempHealthData.bloodSugar : currentHealth.bloodSugar}
-                onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, bloodSugar: text}))}
-                keyboardType="numeric"
-                editable={isEditingHealth}
-              />
-              <TextInput
-                style={styles.healthInput}
-                placeholder="Weight (kg)"
-                value={isEditingHealth ? tempHealthData.weight : currentHealth.weight}
-                onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, weight: text}))}
-                keyboardType="numeric"
-                editable={isEditingHealth}
-              />
-              <TextInput
-                style={[styles.healthInput, styles.symptomsInput]}
-                placeholder="Current Symptoms (if any)"
-                value={isEditingHealth ? tempHealthData.symptoms : currentHealth.symptoms}
-                onChangeText={(text) => isEditingHealth && setTempHealthData(prev => ({...prev, symptoms: text}))}
-                multiline
-                editable={isEditingHealth}
-              />
+            <View style={styles.healthInfo}>
+              <View style={styles.infoField}>
+                <ThemedText style={styles.fieldLabel}>Blood Pressure</ThemedText>
+                <ThemedText style={styles.fieldValue}>
+                  {currentHealth.bloodPressure || '—'}
+                </ThemedText>
+              </View>
+              <View style={styles.infoField}>
+                <ThemedText style={styles.fieldLabel}>Blood Sugar (mg/dL)</ThemedText>
+                <ThemedText style={styles.fieldValue}>
+                  {currentHealth.bloodSugar || '—'}
+                </ThemedText>
+              </View>
+              <View style={styles.infoField}>
+                <ThemedText style={styles.fieldLabel}>Weight (kg)</ThemedText>
+                <ThemedText style={styles.fieldValue}>
+                  {currentHealth.weight || '—'}
+                </ThemedText>
+              </View>
+              <View style={styles.infoField}>
+                <ThemedText style={styles.fieldLabel}>Symptoms</ThemedText>
+                <ThemedText style={styles.fieldValue}>
+                  {currentHealth.symptoms || '—'}
+                </ThemedText>
+              </View>
             </View>
 
             <View style={styles.buttonContainer}>
-              {!isEditingHealth ? (
-                <MainButton
-                  title="Edit Health Info"
-                  onPress={handleEditHealth}
-                  backgroundColor="#9370DB"
-                />
-              ) : (
-                <>
-                  <MainButton
-                    title="Save Changes"
-                    onPress={handleSaveHealth}
-                    backgroundColor="#F78DA7"
-                  />
-                  <MainButton
-                    title="Cancel"
-                    onPress={handleCancelHealth}
-                    backgroundColor="#0693E3"
-                  />
-                </>
-              )}
+              <MainButton
+                title="Edit Health Info"
+                onPress={() => setIsEditingHealth(true)}
+                backgroundColor="#623AA2"
+              />
             </View>
           </View>
         )}
       </View>
+
+      {/* Edit Modal */}
+      <Modal
+        visible={isEditingHealth}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsEditingHealth(false)}
+      >
+        <BlurView intensity={10} style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <ThemedText style={styles.modalTitle}>Edit Health Information</ThemedText>
+              <TouchableOpacity 
+                onPress={() => {
+                  setIsEditingHealth(false);
+                  setTempHealthData(currentHealth);
+                  setErrors({});
+                }}
+              >
+                <Ionicons name="close" size={24} color="#623AA2" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              style={styles.modalScrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {renderEditField('Blood Pressure', tempHealthData.bloodPressure, 'bloodPressure')}
+              {renderEditField('Blood Sugar (mg/dL)', tempHealthData.bloodSugar, 'bloodSugar')}
+              {renderEditField('Weight (kg)', tempHealthData.weight, 'weight')}
+              {renderEditField('Symptoms', tempHealthData.symptoms, 'symptoms')}
+            </ScrollView>
+
+            <View style={styles.modalButtons}>
+              <MainButton 
+                title="Save Changes"
+                onPress={handleSaveHealth}
+                backgroundColor="#623AA2"
+              />
+              <MainButton 
+                title="Cancel"
+                onPress={() => {
+                  setIsEditingHealth(false);
+                  setTempHealthData(currentHealth);
+                  setErrors({});
+                }}
+                backgroundColor="#9CA3AF"
+              />
+            </View>
+          </View>
+        </BlurView>
+      </Modal>
 
       {/* Saved Items Section */}
       <View style={styles.card}>
@@ -237,51 +380,78 @@ const styles = StyleSheet.create({
     borderTopColor: '#e9ecef',
     paddingTop: 15,
   },
-  healthInputs: {
+  healthInfo: {
     gap: 12,
   },
-  healthInput: {
+  infoField: {
+    marginBottom: 15,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  fieldValue: {
+    fontSize: 16,
+    color: '#1F2937',
+    fontWeight: '500',
+  },
+  editFieldContainer: {
+    marginBottom: 20,
+  },
+  editInput: {
     borderWidth: 1,
-    borderColor: '#dee2e6',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: Platform.OS === 'ios' ? 12 : 8,
+    fontSize: 16,
+    color: '#1F2937',
+    backgroundColor: '#F9FAFB',
+    minHeight: 50,
   },
   symptomsInput: {
-    height: 80,
+    height: 100,
     textAlignVertical: 'top',
   },
-  buttonContainer: {
-    flexDirection: 'row',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    marginTop: 20,
-    gap: 10,
-  },
-  editButton: {
-    backgroundColor: '#9370DB',
-    padding: 12,
-    borderRadius: 8,
-    flex: 0.7,
     alignItems: 'center',
+    paddingVertical: 20,
   },
-  saveButton: {
-    backgroundColor: '#F78DA7',
-    padding: 12,
-    borderRadius: 8,
-    flex: 0.55,
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    width: SCREEN_WIDTH * 0.9,
+    maxHeight: SCREEN_HEIGHT * 0.85,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 15,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  cancelButton: {
-    backgroundColor: '#0693E3',
-    padding: 12,
-    borderRadius: 8,
-    flex: 0.35,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
+  modalTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#623AA2',
+  },
+  modalScrollContent: {
+    flexGrow: 0,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 20,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -303,5 +473,50 @@ const styles = StyleSheet.create({
     color: '#6c757d',
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+  inputError: {
+    borderColor: '#EF4444',
+    borderWidth: 1.5,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  buttonContainer: {
+    marginTop: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  bloodPressureContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  bpFieldContainer: {
+    flex: 1,
+  },
+  bpLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  bpInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: Platform.OS === 'ios' ? 12 : 8,
+    fontSize: 16,
+    color: '#1F2937',
+    backgroundColor: '#F9FAFB',
+    minHeight: 50,
+    textAlign: 'center',
+  },
+  bpSeparator: {
+    fontSize: 24,
+    color: '#6B7280',
+    marginTop: 20,
   },
 });

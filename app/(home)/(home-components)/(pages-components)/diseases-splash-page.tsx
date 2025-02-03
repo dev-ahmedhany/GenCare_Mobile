@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, SafeAreaView, Animated, FlatList } from 'react-native';
 import { bgColors } from '@/constants/Colors';
-import Navbar from '../navbar/navbar';
+import Navbar from '../(navbar)/navbar';
 import DiseaseCard from './(diseases-pages-components)/DiseaseCard';
-import DiseasesPageComponents from './(diseases-pages-components)/diseases-page-components';
 import { diseases } from '@/data/diseases';
 import { router } from 'expo-router';
 import { useFonts } from 'expo-font';
@@ -86,11 +85,12 @@ const styles = StyleSheet.create({
     paddingBottom: Math.min(SCREEN_HEIGHT * 0.02, 15),
   },
   motivationalText: {
-    fontSize: Math.min(SCREEN_WIDTH * 0.04, SCREEN_HEIGHT * 0.02),
+    fontSize: Math.min(SCREEN_WIDTH * 0.06, SCREEN_HEIGHT * 0.03),
     color: '#A27CD2',
     textAlign: 'center',
-    lineHeight: Math.min(SCREEN_WIDTH * 0.06, SCREEN_HEIGHT * 0.03),
+    lineHeight: Math.min(SCREEN_WIDTH * 0.08, SCREEN_HEIGHT * 0.04),
     fontWeight: 'bold',
+    marginTop: Math.min(SCREEN_WIDTH * 0.01, SCREEN_HEIGHT * 0.01),
   },
 });
 

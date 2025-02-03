@@ -1,7 +1,7 @@
 import { View, Image, StyleSheet, TouchableOpacity, ScrollView, Animated, Text, Dimensions, FlatList } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { bgColors } from '@/constants/Colors';
-import Navbar from '../../navbar/navbar';
+import Navbar from '../../(navbar)/navbar';
 import DiseaseCard from './DiseaseCard';
 import DiseaseDetails from './DiseaseDetails';
 import { diseases } from '@/data/diseases';

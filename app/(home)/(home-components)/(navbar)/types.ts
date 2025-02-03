@@ -1,4 +1,4 @@
-import { Animated } from 'react-native';
+import { Animated, ViewStyle } from 'react-native';
 
 export interface NavbarProps {
   scrollY: Animated.Value;
@@ -7,6 +7,7 @@ export interface NavbarProps {
   showProfile?: boolean;
   customLogo?: any;
   onNotificationPress?: () => void;
+  style?: ViewStyle;
 }
 
 export interface MenuItem {
@@ -27,4 +28,12 @@ export interface Notification {
   isRead: boolean;
 }
 
-export type ScrollHandler = (event: any) => void; 
+export type ScrollHandler = (event: any) => void;
+
+const types = {
+  NavbarProps,
+  MenuItem,
+  Notification,
+  ScrollHandler,
+};
+export default types; 

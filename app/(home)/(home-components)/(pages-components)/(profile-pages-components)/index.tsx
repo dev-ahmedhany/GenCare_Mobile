@@ -1,9 +1,11 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import { bgColors } from '@/constants/Colors';
-import ProfileSplash from './ProfileSplash';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
+import { router } from 'expo-router';
 
-export default function Profile() {
-  return <ProfileSplash />;
+export default function ProfileIndex() {
+  useEffect(() => {
+    router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/ProfileSplash');
+  }, []);
+
+  return <View />;
 }
-

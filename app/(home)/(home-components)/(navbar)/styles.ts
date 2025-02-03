@@ -10,4 +10,11 @@ export const DIMENSIONS = {
 
 export const styles = StyleSheet.create({
   // ... existing styles
-}); 
+});
+
+const styleExports = {
+  DIMENSIONS,
+  styles,
+};
+
+export default styleExports; 

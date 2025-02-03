@@ -189,8 +189,7 @@ export default function Navbar({
             {showProfile && (
               <TouchableOpacity 
                 style={styles.iconButton}
-                onPress={() => router.push('/profile')}
-              >
+                onPress={() => router.push('/(home)/(home-components)/(pages-components)/(profile-pages-components)')}              >
                 <Ionicons 
                   name="person-circle-outline" 
                   size={28}

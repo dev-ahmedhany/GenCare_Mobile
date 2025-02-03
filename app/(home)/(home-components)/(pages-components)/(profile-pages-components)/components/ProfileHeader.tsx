@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Navbar from '../../../navbar/navbar';
+import Navbar from '../../../(navbar)/navbar';
 import { bgColors } from '@/constants/Colors';
 
 const scrollY = new Animated.Value(0);

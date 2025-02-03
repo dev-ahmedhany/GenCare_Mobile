@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
     fontSize: Math.min(SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.025),
     fontWeight: 'bold',
     color: '#333',
+    marginTop: Math.min(SCREEN_WIDTH * 0.05, SCREEN_HEIGHT * 0.04),
   },
   description: {
     fontSize: Math.min(SCREEN_WIDTH * 0.035, SCREEN_HEIGHT * 0.018),

@@ -1,32 +1,86 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import React from "react";
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Animated, Dimensions } from "react-native";
+import React, { useState } from "react";
 import { useLocalSearchParams, router } from 'expo-router';
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { bgColors } from "@/constants/Colors";
+import Navbar from '../(navbar)/navbar';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;
 
 const PregnancyPage = () => {
   const { news } = useLocalSearchParams();
   const weekData = JSON.parse(news as string);
+  const scrollY = new Animated.Value(0);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    scrollY.setValue(offsetY);
+  };
+
+  const navbarOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const handleSaveWeek = () => {
+    setIsSaved(!isSaved);
+    // هنا يمكن إضافة منطق حفظ الأسبوع
+  };
 
   return (
-    <SafeAreaView style={{ backgroundColor: bgColors.light.background, flex: 1 }}>
-      {/* Header with back button */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
+    <SafeAreaView style={styles.container}>
+      <Animated.View style={[styles.navbarContainer, { opacity: navbarOpacity }]} />
+      <Navbar 
+        scrollY={scrollY}
+        variant="simple"
+        style={styles.navbar}
+      />
+
+      {/* <View style={styles.saveButtonContainer}>
+        <TouchableOpacity 
+          style={[styles.saveButton, isSaved && styles.savedButton]} 
+          onPress={handleSaveWeek}
         >
-          <Ionicons name='chevron-back' size={24} color="#000" />
+          <MaterialIcons 
+            name={isSaved ? "bookmark" : "bookmark-outline"} 
+            size={24} 
+            color={isSaved ? "#fff" : "#623AA2"} 
+          />
+          <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
+            {isSaved ? 'Saved' : 'Save Week'}
+          </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <ScrollView
+      
         style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Title and Subtitle */}
-        <Text style={styles.title}>{weekData.title}</Text>
-        <Text style={styles.subtitle}>{weekData.author}</Text>
+        <View style={styles.saveButtonContainer}>
+        <TouchableOpacity 
+          style={[styles.saveButton, isSaved && styles.savedButton]} 
+          onPress={handleSaveWeek}
+        >
+          <MaterialIcons 
+            name={isSaved ? "bookmark" : "bookmark-outline"} 
+            size={24} 
+            color={isSaved ? "#fff" : "#623AA2"} 
+          />
+          <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
+            {isSaved ? 'Saved' : 'Save Week'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{weekData.title}</Text>
+          <Text style={styles.subtitle}>{weekData.author}</Text>
+        </View>
 
         {/* Main Image */}
         <View style={styles.imageContainer}>
@@ -87,35 +141,51 @@ const PregnancyPage = () => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  container: {
+    flex: 1,
+    backgroundColor: bgColors.light.background,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#6B7280',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  navbarContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: NAVBAR_HEIGHT,
+    backgroundColor: 'white',
+    zIndex: 1,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  navbar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    height: NAVBAR_HEIGHT,
   },
   scrollView: {
     flex: 1,
-    backgroundColor: bgColors.light.background,
+    marginTop: NAVBAR_HEIGHT,
+  },
+  titleContainer: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
     fontWeight: '600',
-    color: '#4B0082',
-    marginHorizontal: 16,
-    marginTop: 8,
+    color: '#623AA2',
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#6B7280',
-    marginHorizontal: 16,
-    marginTop: 4,
+    fontSize: 16,
+    color: '#9CA3AF',
+    fontWeight: '500',
   },
   imageContainer: {
     alignItems: 'center',
@@ -162,6 +232,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4B5563',
     lineHeight: 24,
+  },
+  saveButtonContainer: {
+    position: 'absolute',
+    top: SCREEN_HEIGHT * 0.08,
+    right: 16,
+    zIndex: 3,
+  },
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(98, 58, 162, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#623AA2',
+  },
+  savedButton: {
+    backgroundColor: '#623AA2',
+    borderColor: '#623AA2',
+  },
+  saveButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#623AA2',
+  },
+  savedButtonText: {
+    color: '#fff',
   },
 });
 

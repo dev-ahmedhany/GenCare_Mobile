@@ -1,21 +1,20 @@
 import React, { useState, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
   Dimensions,
   Animated,
-  TouchableOpacity,
-  Image,
   StatusBar,
+  TouchableOpacity,
+  Text,
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Checkbox from 'expo-checkbox';
-import { BlurView } from 'expo-blur';
-import { AntDesign } from '@expo/vector-icons';
 import { bgColors } from '@/constants/Colors';
+import ProfileInfo from './components/ProfileInfo';
+import Checkbox from 'expo-checkbox';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 const pagesColors = bgColors.light;
@@ -58,20 +57,25 @@ export default function ProfileSplash() {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const handleNavigation = async () => {
-    if (currentIndex < slides.length - 1) {
-      slidesRef.current?.scrollToIndex({ index: currentIndex + 1 });
-    } else {
+    try {
       if (showAgain) {
-        await AsyncStorage.setItem('neverShowSplash', 'true');
+        await AsyncStorage.setItem('profileSplashShown', 'false');
+      } else {
+        await AsyncStorage.setItem('profileSplashShown', 'true');
       }
-      await AsyncStorage.setItem('profileSplashShown', 'true');
       router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
+    } catch (error) {
+      console.error('Error handling navigation:', error);
     }
   };
 
-  const handleSkip = () => {
-    AsyncStorage.setItem('profileSplashShown', 'true');
-    router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
+  const handleSkip = async () => {
+    try {
+      await AsyncStorage.setItem('profileSplashShown', 'true');
+      router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
+    } catch (error) {
+      console.error('Error handling skip:', error);
+    }
   };
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
@@ -132,13 +136,8 @@ export default function ProfileSplash() {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" />
-      
       <View style={styles.headerSection}>
-        <TouchableOpacity 
-          style={styles.skipButton} 
-          onPress={handleSkip}
-        >
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
@@ -147,8 +146,8 @@ export default function ProfileSplash() {
         data={slides}
         renderItem={renderItem}
         horizontal
-        showsHorizontalScrollIndicator={false}
         pagingEnabled
+        showsHorizontalScrollIndicator={false}
         bounces={false}
         keyExtractor={(item: any) => item.id}
         onScroll={Animated.event(
@@ -157,49 +156,56 @@ export default function ProfileSplash() {
         )}
         onViewableItemsChanged={viewableItemsChanged}
         viewabilityConfig={viewConfig}
+        scrollEventThrottle={32}
         ref={slidesRef}
       />
 
       <View style={styles.bottomSection}>
         <View style={styles.pagination}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                currentIndex === index && styles.activeDot
-              ]}
-            />
-          ))}
+          {slides.map((_, index) => {
+            const opacity = scrollX.interpolate({
+              inputRange: [(index - 1) * width, index * width, (index + 1) * width],
+              outputRange: [0.3, 1, 0.3],
+              extrapolate: 'clamp',
+            });
+
+            const scale = scrollX.interpolate({
+              inputRange: [(index - 1) * width, index * width, (index + 1) * width],
+              outputRange: [1, 1.5, 1],
+              extrapolate: 'clamp',
+            });
+
+            return (
+              <Animated.View
+                key={index}
+                style={[
+                  styles.dot,
+                  {
+                    opacity,
+                    transform: [{ scale }],
+                    backgroundColor: currentIndex === index ? '#623AA2' : '#E0E0E0'
+                  }
+                ]}
+              />
+            );
+          })}
         </View>
 
-        {currentIndex === slides.length - 1 && (
-          <View style={styles.checkboxContainer}>
-            <Checkbox
-              value={showAgain}
-              onValueChange={setShowAgain}
-              color={showAgain ? '#4361EE' : undefined}
-              style={styles.checkbox}
-            />
-            <Text style={styles.checkboxLabel}>
-              Don't show this again
-            </Text>
-          </View>
-        )}
+        <View style={styles.checkboxContainer}>
+          <Checkbox
+            value={showAgain}
+            onValueChange={setShowAgain}
+            style={styles.checkbox}
+            color={showAgain ? '#623AA2' : undefined}
+          />
+          <Text style={styles.checkboxLabel}>Don't show again</Text>
+        </View>
 
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={handleNavigation}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleNavigation}>
           <Text style={styles.buttonText}>
             {currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
           </Text>
-          <AntDesign 
-            name="arrowright" 
-            size={20} 
-            color="#fff" 
-            style={styles.buttonIcon}
-          />
+          <MaterialIcons name="arrow-forward" size={24} color="#fff" style={styles.buttonIcon} />
         </TouchableOpacity>
       </View>
     </View>
@@ -252,14 +258,16 @@ const styles = StyleSheet.create({
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 30,
+    height: 20,
   },
   dot: {
-    width: 8,
     height: 8,
+    width: 8,
     borderRadius: 4,
-    backgroundColor: '#DDD',
-    marginHorizontal: 4,
+    marginHorizontal: 6,
+    backgroundColor: '#E0E0E0',
   },
   activeDot: {
     backgroundColor: '#623AA2',

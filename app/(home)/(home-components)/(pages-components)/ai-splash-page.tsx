@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Text, Image, StyleSheet, Button, Dimensions } from 'react-native';
+import { ScrollView, View, Text, Image, StyleSheet,Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { bgColors } from '@/constants/Colors';
 import { useFonts } from 'expo-font';

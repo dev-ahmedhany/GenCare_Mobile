@@ -26,6 +26,18 @@ interface ValidationErrors {
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
+// إضافة مصفوفة الصور الافتراضية (قم باستبدالها بمسارات الصور SVG الخاصة بك)
+const avatarImages = [
+  require('@/assets/profile_images/default.png'),
+  require('@/assets/profile_images/avatar1.jpeg'),
+  require('@/assets/profile_images/avatar2.jpeg'),
+  require('@/assets/profile_images/avatar3.jpeg'),
+  require('@/assets/profile_images/avatar4.jpeg'),
+  require('@/assets/profile_images/avatar5.jpeg'),
+  require('@/assets/profile_images/avatar6.jpg'),
+  require('@/assets/profile_images/avatar7.jpg'),
+];
+
 export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempFormData, setTempFormData] = useState(formData);
@@ -260,6 +272,48 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
       </Modal>
 
       {/* Image Picker Modal - يمكن إضافة تصميم مشابه */}
+      <Modal
+        visible={isImagePickerVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setImagePickerVisible(false)}
+      >
+        <View style={styles.bottomSheetContainer}>
+          <View style={styles.bottomSheet}>
+            <View style={styles.bottomSheetHeader}>
+              <ThemedText style={styles.bottomSheetTitle}>اختر صورة شخصية</ThemedText>
+              <TouchableOpacity onPress={() => setImagePickerVisible(false)}>
+                <Ionicons name="close" size={24} color="#623AA2" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.avatarList}
+            >
+              {avatarImages.map((avatar, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.avatarItem,
+                    profileImage === avatar && styles.selectedAvatar
+                  ]}
+                  onPress={() => {
+                    setProfileImage(avatar);
+                    setImagePickerVisible(false);
+                  }}
+                >
+                  <Image 
+                    source={avatar} 
+                    style={styles.avatarImage}
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -430,5 +484,45 @@ const styles = StyleSheet.create({
         color: '#1F2937',
       }
     }),
+  },
+  bottomSheetContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  bottomSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: SCREEN_HEIGHT * 0.4,
+  },
+  bottomSheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  bottomSheetTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#623AA2',
+  },
+  avatarList: {
+    paddingVertical: 10,
+    gap: 15,
+  },
+  avatarItem: {
+    borderRadius: SCREEN_WIDTH * 0.1,
+    padding: 2,
+  },
+  selectedAvatar: {
+    borderWidth: 2,
+    borderColor: '#623AA2',
+  },
+  avatarImage: {
+    width: SCREEN_WIDTH * 0.2,
+    height: SCREEN_WIDTH * 0.2,
+    borderRadius: SCREEN_WIDTH * 0.1,
   },
 });

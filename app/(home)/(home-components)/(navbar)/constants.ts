@@ -3,7 +3,7 @@ const menuItems = [
     icon: 'person',
     title: 'Profile',
     description: 'Manage your account',
-    route: '/profile'
+    route: '/(home)/(home-components)/(pages-components)/(profile-pages-components)'
   },
   {
     icon: 'settings',

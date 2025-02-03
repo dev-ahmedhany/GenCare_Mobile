@@ -39,7 +39,7 @@ export default function DiseasesList() {
               <Ionicons name="medical-outline" size={SCREEN_WIDTH * 0.055} color={theme.colors.ligthblue} />
             </View>
             <View style={styles.cardContent}>
-              <ThemedText style={styles.cardTitle}>First Disease</ThemedText>
+              <ThemedText style={styles.cardTitle}>Arachnoid Cyst</ThemedText>
               <ThemedText style={styles.cardDescription}>Common in early pregnancy</ThemedText>
             </View>
             <View style={styles.arrowContainer}>
@@ -54,7 +54,7 @@ export default function DiseasesList() {
               <Ionicons name="fitness-outline" size={SCREEN_WIDTH * 0.055} color={theme.colors.lightpink} />
             </View>
             <View style={styles.cardContent}>
-              <ThemedText style={styles.cardTitle}>Second Disease</ThemedText>
+              <ThemedText style={styles.cardTitle}>Cerebellar Hypoplasia</ThemedText>
               <ThemedText style={styles.cardDescription}>Monitor blood sugar levels</ThemedText>
             </View>
             <View style={styles.arrowContainer}>
@@ -69,7 +69,7 @@ export default function DiseasesList() {
               <Ionicons name="heart-outline" size={SCREEN_WIDTH * 0.055} color={theme.colors.ligthblue} />
             </View>
             <View style={styles.cardContent}>
-              <ThemedText style={styles.cardTitle}>Third Disease</ThemedText>
+              <ThemedText style={styles.cardTitle}>Colphocephaly</ThemedText>
               <ThemedText style={styles.cardDescription}>High blood pressure during pregnancy</ThemedText>
             </View>
             <View style={styles.arrowContainer}>
