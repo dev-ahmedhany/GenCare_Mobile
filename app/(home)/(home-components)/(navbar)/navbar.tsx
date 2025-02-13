@@ -39,22 +39,28 @@ export default function Navbar({
 
   // التحقق من حالة تسجيل الدخول عند تحميل المكون
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      const userDataStr = await AsyncStorage.getItem('userData');
-      
-      if (token && userDataStr) {
-        setIsLoggedIn(true);
-        setUserData(JSON.parse(userDataStr));
+    const loadAuthState = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const userDataStr = await AsyncStorage.getItem('userData');
+        
+        if (token && userDataStr) {
+          const userData = JSON.parse(userDataStr);
+          setIsLoggedIn(true);
+          setUserData(userData);
+          setIsAdmin(userData.role === 'admin');
+        } else {
+          setIsLoggedIn(false);
+          setUserData(null);
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Error loading auth state:', error);
       }
-    } catch (error) {
-      console.error('Error checking auth status:', error);
-    }
-  };
+    };
+
+    loadAuthState();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -148,9 +154,12 @@ export default function Navbar({
   });
 
   // تصفية عناصر القائمة حسب صلاحيات المستخدم
-  const filteredMenuItems = MENU_ITEMS.filter((item: MenuItem) => 
-    !item.adminOnly || (item.adminOnly && isAdmin)
-  );
+  const filteredMenuItems = MENU_ITEMS.filter(item => {
+    if (item.adminOnly) {
+      return isAdmin;
+    }
+    return true;
+  });
 
   return (
     <Animated.View style={[styles.mainContainer, { transform: [{ translateY: navbarTranslateY }] }]}>

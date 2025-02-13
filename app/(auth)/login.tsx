@@ -81,7 +81,7 @@ const LoginScreen = () => {
 
     const handleLogin = async () => {
         if (!identifier || !password) {
-            Alert.alert('Error', 'Please enter all required fields');
+            Alert.alert('خطأ', 'الرجاء إدخال جميع البيانات المطلوبة');
             return;
         }
 
@@ -92,22 +92,13 @@ const LoginScreen = () => {
                 password
             });
 
-            if (response.status === 200) {
+            if (response.data.token) {
                 await AsyncStorage.setItem('userToken', response.data.token);
-                // Store user data if needed
                 await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
                 router.replace('/(home)/home');
             }
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                Alert.alert(
-                    'Error',
-                    error.response?.data?.message || 'Login failed. Please try again.'
-                );
-            } else {
-                Alert.alert('Error', 'An unexpected error occurred');
-                console.error('Login error:', error);
-            }
+            Alert.alert('خطأ', 'فشل تسجيل الدخول. الرجاء التحقق من البيانات المدخلة');
         } finally {
             setIsLoading(false);
         }

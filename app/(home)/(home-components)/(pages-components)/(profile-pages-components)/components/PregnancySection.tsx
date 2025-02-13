@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Dimensions, Alert, TouchableOpacity, Text } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { NewsList } from '@/data/pregnancyweeks';
 import MainButton from '@/constants/MainButton';
+import { profileService } from '../services/api';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -16,6 +17,27 @@ interface PregnancySectionProps {
 export default function PregnancySection({ pregnancyWeek }: PregnancySectionProps) {
   const progress = (parseInt(pregnancyWeek) || 0) / 40;
   const weekInfo = NewsList.find(item => item.id === parseInt(pregnancyWeek));
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSaveWeek = async () => {
+    try {
+      const weekData = {
+        week: pregnancyWeek,
+        date: new Date().toISOString(),
+      };
+      
+      const response = await profileService.saveItem('week', weekData);
+      if (response.success) {
+        Alert.alert('نجاح', 'تم حفظ الأسبوع بنجاح');
+        setIsSaved(true);
+      } else {
+        throw new Error('فشل حفظ الأسبوع');
+      }
+    } catch (error) {
+      console.error('Error saving week:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء حفظ الأسبوع');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -62,6 +84,13 @@ export default function PregnancySection({ pregnancyWeek }: PregnancySectionProp
           />
         </View>
       )}
+
+      <TouchableOpacity 
+        style={styles.saveButton}
+        onPress={handleSaveWeek}
+      >
+        <Text style={styles.saveButtonText}>Save Week</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -145,5 +174,17 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#dee2e6',
     marginHorizontal: 15,
+  },
+  saveButton: {
+    backgroundColor: '#623AA2',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

@@ -52,8 +52,7 @@ const userSchema = new mongoose.Schema({
         nextCheckup: String
     }],
     savedWeeks: [{
-        weekNumber: Number,
-        notes: String,
+        week: String,
         date: Date
     }],
     savedBabyNames: [{

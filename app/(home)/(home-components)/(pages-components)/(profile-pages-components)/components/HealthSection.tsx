@@ -1,10 +1,11 @@
 import React, { useState, Dispatch, SetStateAction } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { HealthData, ExpandedCards, ExpandedSections } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
 import { BlurView } from 'expo-blur';
+import { profileService } from '../services/api';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -15,6 +16,7 @@ interface HealthSectionProps {
   setExpandedCards: Dispatch<SetStateAction<ExpandedCards>>;
   expandedSections: ExpandedSections;
   setExpandedSections: Dispatch<SetStateAction<ExpandedSections>>;
+  savedWeeks: Array<{ week: string; date: string }>;
 }
 
 interface ValidationErrors {
@@ -31,10 +33,12 @@ export default function HealthSection({
   setExpandedCards,
   expandedSections,
   setExpandedSections,
+  savedWeeks,
 }: HealthSectionProps) {
   const [isEditingHealth, setIsEditingHealth] = useState(false);
   const [tempHealthData, setTempHealthData] = useState(currentHealth);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const commonDiseases = [
     'Diabetes',
@@ -95,11 +99,55 @@ export default function HealthSection({
     return isValid;
   };
 
-  const handleSaveHealth = () => {
-    if (validateForm()) {
-      setCurrentHealth(tempHealthData);
-      setIsEditingHealth(false);
-      setErrors({});
+  const handleSaveHealth = async () => {
+    try {
+        if (validateForm()) {
+            setIsLoading(true);
+            const response = await profileService.updateHealth(tempHealthData);
+            
+            if (response.success) {
+                const { healthRecord } = response.data;
+                setCurrentHealth({
+                    bloodPressure: healthRecord.bloodPressure || '',
+                    bloodSugar: healthRecord.bloodSugar || '',
+                    weight: healthRecord.weight || '',
+                    symptoms: healthRecord.symptoms || ''
+                });
+                setIsEditingHealth(false);
+                setErrors({});
+                Alert.alert('نجاح', response.message || 'تم تحديث البيانات الصحية بنجاح');
+            } else {
+                throw new Error(response.message || 'فشل تحديث البيانات');
+            }
+        }
+    } catch (error) {
+        console.error('Error saving health data:', error);
+        Alert.alert(
+            'خطأ',
+            error instanceof Error ? error.message : 'حدث خطأ أثناء حفظ البيانات'
+        );
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleSaveItem = async (type: string, data: any) => {
+    try {
+      await profileService.saveItem(type, data);
+      Alert.alert('نجاح', 'تم حفظ العنصر بنجاح');
+      // تحديث واجهة المستخدم حسب الحاجة
+    } catch (error) {
+      Alert.alert('خطأ', 'حدث خطأ أثناء حفظ العنصر');
+    }
+  };
+
+  const handleDeleteItem = async (type: string, id: string) => {
+    try {
+      await profileService.deleteItem(type, id);
+      Alert.alert('نجاح', 'تم حذف العنصر بنجاح');
+      // تحديث واجهة المستخدم حسب الحاجة
+    } catch (error) {
+      Alert.alert('خطأ', 'حدث خطأ أثناء حذف العنصر');
     }
   };
 
@@ -269,16 +317,16 @@ export default function HealthSection({
 
             <View style={styles.modalButtons}>
               <MainButton 
-                title="Save Changes"
+                title={isLoading ? "Saving..." : "Save"}
                 onPress={handleSaveHealth}
                 backgroundColor="#623AA2"
               />
               <MainButton 
                 title="Cancel"
                 onPress={() => {
-                  setIsEditingHealth(false);
-                  setTempHealthData(currentHealth);
-                  setErrors({});
+                    setTempHealthData(currentHealth);
+                    setIsEditingHealth(false);
+                    setErrors({});
                 }}
                 backgroundColor="#9CA3AF"
               />
@@ -314,7 +362,7 @@ export default function HealthSection({
           style={styles.sectionHeader} 
           onPress={() => toggleSection('weeks')}
         >
-          <ThemedText style={styles.sectionTitle}>Weeks</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Saved Weeks</ThemedText>
           <FontAwesome 
             name={expandedSections.weeks ? 'chevron-up' : 'chevron-down'} 
             size={16} 
@@ -323,7 +371,24 @@ export default function HealthSection({
         </TouchableOpacity>
         {expandedSections.weeks && (
           <View style={styles.sectionContent}>
-            <ThemedText style={styles.emptyText}>No saved weeks</ThemedText>
+            {savedWeeks.length > 0 ? (
+              savedWeeks.map((item, index) => (
+                <View key={index} style={styles.savedItem}>
+                  <ThemedText>Week {item.week}</ThemedText>
+                  <ThemedText style={styles.dateText}>
+                    {new Date(item.date).toLocaleDateString()}
+                  </ThemedText>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteItem('week', item.week)}
+                    style={styles.deleteButton}
+                  >
+                    <FontAwesome name="trash-o" size={20} color="#FF4444" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            ) : (
+              <ThemedText style={styles.emptyText}>No saved weeks</ThemedText>
+            )}
           </View>
         )}
 
@@ -518,5 +583,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#6B7280',
     marginTop: 20,
+  },
+  savedItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  dateText: {
+    color: '#6c757d',
+    fontStyle: 'italic',
+  },
+  deleteButton: {
+    padding: 5,
   },
 });
