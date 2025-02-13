@@ -107,59 +107,68 @@ const BabyNames = () => {
         style={styles.navbar}
       />
 
-      <ScrollView
+      <Animated.FlatList
         style={styles.scrollView}
-        onScroll={handleScroll}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
         scrollEventThrottle={16}
-      >
-        <View style={styles.saveButtonContainer}>
-          <TouchableOpacity 
-            style={[styles.saveButton, isSaved && styles.savedButton]} 
-            onPress={handleSaveName}
-          >
-            <MaterialIcons 
-              name={isSaved ? "bookmark" : "bookmark-outline"} 
-              size={24} 
-              color={isSaved ? "#fff" : "#623AA2"} 
+        ListHeaderComponent={() => (
+          <>
+            <View style={styles.saveButtonContainer}>
+              <TouchableOpacity 
+                style={[styles.saveButton, isSaved && styles.savedButton]} 
+                onPress={handleSaveName}
+              >
+                <MaterialIcons 
+                  name={isSaved ? "bookmark" : "bookmark-outline"} 
+                  size={24} 
+                  color={isSaved ? "#fff" : "#623AA2"} 
+                />
+                <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
+                  {isSaved ? 'Saved' : 'Save Names'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ImageBackground
+              source={require('../../../../assets/images/babyNames/svg.png')}
+              style={styles.waveContainer}
+              resizeMode="cover"
             />
-            <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-              {isSaved ? 'Saved' : 'Save Names'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleText}>Baby Names</Text>
+            </View>
 
-        <ImageBackground
-          source={require('../../../../assets/images/babyNames/svg.png')}
-          style={styles.waveContainer}
-          resizeMode="cover"
-        />
-        
-        <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>Baby Names</Text>
-        </View>
+            <View style={styles.content}>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={alphabetData}
+                renderItem={renderAlphabetItem}
+                keyExtractor={item => item.letter}
+                style={styles.alphabetList}
+              />
 
-        <View style={styles.content}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={alphabetData}
-            renderItem={renderAlphabetItem}
-            keyExtractor={item => item.letter}
-            style={styles.alphabetList}
-          />
-
-          <View style={styles.namesContainer}>
-            <FlatList
-              data={selectedNames}
-              renderItem={renderNameItem}
-              keyExtractor={item => item.name}
-              numColumns={2}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.namesGrid}
-            />
-          </View>
-        </View>
-      </ScrollView>
+              <View style={styles.namesContainer}>
+                <FlatList
+                  data={selectedNames}
+                  renderItem={renderNameItem}
+                  keyExtractor={item => item.name}
+                  numColumns={2}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.namesGrid}
+                  nestedScrollEnabled={true}
+                />
+              </View>
+            </View>
+          </>
+        )}
+        data={[]}
+        renderItem={null}
+      />
     </SafeAreaView>
   );
 };
@@ -195,6 +204,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     zIndex: 1,
+    paddingBottom: 20,
   },
   alphabetList: {
     maxHeight: 100,

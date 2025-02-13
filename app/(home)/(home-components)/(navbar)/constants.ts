@@ -1,19 +1,22 @@
-const menuItems = [
-  {
-    icon: 'person',
-    title: 'Profile',
-    description: 'Manage your account',
-    route: '/(home)/(home-components)/(pages-components)/(profile-pages-components)'
-  },
-  {
-    icon: 'settings',
-    title: 'Admin Panel',
-    description: 'Manage system settings',
-    route: '/admin',
-    adminOnly: true
-  },
-  // ... باقي العناصر
+import { MenuItem } from './types';
+
+export const MENU_ITEMS: MenuItem[] = [
+    {
+        icon: 'home',
+        title: 'Home',
+        description: 'Return to home page',
+        route: '/(home)/home',
+    },
+    {
+        icon: 'settings',
+        title: 'Admin Dashboard',
+        description: 'admin management',
+        route: '/(management)/management',
+        adminOnly: true,
+    },
 ];
+
+export const NAVBAR_HEIGHT = 60;
 
 const mockNotifications = [
   {
@@ -44,6 +47,6 @@ const mockNotifications = [
 ];
 
 export default {
-  menuItems,
+  MENU_ITEMS,
   mockNotifications
 }; 

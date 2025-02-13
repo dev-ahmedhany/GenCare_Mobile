@@ -1,16 +1,23 @@
-import { Image, StyleSheet,TextInput, Text, View, ImageBackground, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { Image, StyleSheet,TextInput, Text, View, ImageBackground, TouchableOpacity, ScrollView, Dimensions, Alert } from "react-native";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import  AntDesign  from "@expo/vector-icons/AntDesign";
-import { LinearGradient } from 'expo-linear-gradient';
 import React from "react";
 import { useRouter } from "expo-router";
-import { Entypo } from "@expo/vector-icons";
 import {Animated} from 'react-native'
 import { useFocusEffect } from '@react-navigation/native';
 import MainButton from "@/constants/MainButton";
+import config, { API_URL } from '@/app/config/config';
+import axios from "axios";
+import { authAPI } from '@/app/services/api';
+
+
 
 const SignupScreen = () => {
     const router = useRouter();
+    const [username, setUsername] = React.useState('');
+    const [email, setEmail] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [phone, setPhone] = React.useState('');
     
     // Animation values
     const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -89,9 +96,44 @@ const SignupScreen = () => {
         }, []) // Empty dependency array means this effect runs on every focus
     );
 
-    const handleCreate = () => {
-        router.push('/(auth)/verifyEmail');
-    };
+    const handleSignUp = async () => {
+        // التحقق من إدخال جميع البيانات المطلوبة
+        if (!username || !email || !password || !phone) {
+            Alert.alert('تنبيه', 'الرجاء إدخال جميع البيانات المطلوبة');
+            return;
+        }
+
+        // التحقق من صحة البريد الإلكتروني
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            Alert.alert('خطأ', 'الرجاء إدخال بريد إلكتروني صحيح');
+            return;
+        }
+
+        try {
+            const response = await authAPI.signup({
+                fullName: username,
+                email,
+                password,
+                phone
+            });
+
+            if (response.status === 201) {
+                Alert.alert('نجاح', 'تم إنشاء الحساب بنجاح');
+                router.push('/(auth)/login');
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                Alert.alert(
+                    'خطأ',
+                    error.response?.data?.message || 'حدث خطأ في الاتصال'
+                );
+            } else {
+                Alert.alert('خطأ', 'حدث خطأ غير متوقع');
+                console.error(error);
+            }
+        }
+    };  
 
   return (
     <View style={styles.container}>
@@ -123,25 +165,46 @@ const SignupScreen = () => {
 
             <View style = {styles.inputContainer}>
                 <FontAwesome name="user" size={24} color="#9A9A9A" style={styles.inputIcon} />
-                <TextInput style={styles.textInput} placeholder="Username" />
+                <TextInput 
+                    style={styles.textInput} 
+                    placeholder="Username" 
+                    value={username}
+                    onChangeText={setUsername}
+                />
             </View>
             <View style = {styles.inputContainer}>
                 <FontAwesome name="lock" size={24} color="#9A9A9A" style={styles.inputIcon} />
-                <TextInput style={styles.textInput} placeholder="Password" secureTextEntry/>
+                <TextInput 
+                    style={styles.textInput} 
+                    placeholder="Password" 
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
             </View>
             <View style = {styles.inputContainer}>
                 <AntDesign name="mail" size={24} color="#9A9A9A" style={styles.inputIcon} />
-                <TextInput style={styles.textInput} placeholder="E-mail" />
+                <TextInput 
+                    style={styles.textInput} 
+                    placeholder="E-mail" 
+                    value={email}
+                    onChangeText={setEmail}
+                />
             </View>
             <View style = {styles.inputContainer}>
-                <AntDesign name="mobile1" size={24} color="#9A9A9A" style={styles.inputIcon} />
-                <TextInput style={styles.textInput} placeholder="Mobile" />
+                <AntDesign name="phone" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                <TextInput 
+                    style={styles.textInput} 
+                    placeholder="Mobile" 
+                    value={phone}
+                    onChangeText={setPhone}
+                />
             </View>
 
             <View style={styles.createButtonContainer}>
                 <MainButton 
-          title="Create Account"
-          onPress={handleCreate}
+          title="Sign Up"
+          onPress={handleSignUp}
           backgroundColor="#F78DA7"
                 />       
             </View>

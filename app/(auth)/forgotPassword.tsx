@@ -1,13 +1,12 @@
 import { Image, StyleSheet, TextInput, Text, View, ImageBackground, TouchableOpacity, Animated, Dimensions } from "react-native";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { LinearGradient } from 'expo-linear-gradient';
 import React from "react";
 import { useNavigation } from "expo-router";
 import { useFocusEffect } from '@react-navigation/native';
 import MainButton from "@/constants/MainButton";
+import { config } from "@/app/config/config";
 
-// Add dimensions at the top
+
 const { width, height } = Dimensions.get('window');
 
 const ForgotPasswordScreen = () => {

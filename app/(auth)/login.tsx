@@ -1,14 +1,28 @@
-import { Image, StyleSheet,TextInput, Text, View, ImageBackground, TouchableOpacity, Animated, Dimensions } from "react-native";
+import { Image, StyleSheet, TextInput, Text, View, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import  AntDesign  from "@expo/vector-icons/AntDesign";
-import { LinearGradient } from 'expo-linear-gradient';
+import AntDesign from "@expo/vector-icons/AntDesign";
 import React from "react";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from '@react-navigation/native';
 import MainButton from "@/constants/MainButton";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API_URL } from '@/app/config/config';
+
+// Create axios instance
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
 const LoginScreen = () => {
     const router = useRouter();
-    
+    const [identifier, setIdentifier] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [isLoading, setIsLoading] = React.useState(false);
+
     // Animation values
     const fadeAnim = React.useRef(new Animated.Value(0)).current;
     const slideTopAnim = React.useRef(new Animated.Value(-100)).current;
@@ -65,77 +79,132 @@ const LoginScreen = () => {
         }, [])
     );
 
+    const handleLogin = async () => {
+        if (!identifier || !password) {
+            Alert.alert('Error', 'Please enter all required fields');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await api.post('/auth/login', {
+                identifier,
+                password
+            });
+
+            if (response.status === 200) {
+                await AsyncStorage.setItem('userToken', response.data.token);
+                // Store user data if needed
+                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                router.replace('/(home)/home');
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                Alert.alert(
+                    'Error',
+                    error.response?.data?.message || 'Login failed. Please try again.'
+                );
+            } else {
+                Alert.alert('Error', 'An unexpected error occurred');
+                console.error('Login error:', error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleRegister = () => {
         router.push('/(auth)/signup');
     };
-    const passwordReset = () => {
+
+    const handleForgotPassword = () => {
         router.push('/(auth)/forgotPassword');
     };
 
-  return (
-    <View style={styles.container}>
-      <Animated.View 
-        style={[
-            styles.topImageContainer,
-            {
+    return (
+        <View style={styles.container}>
+            <Animated.View 
+                style={[
+                    styles.topImageContainer,
+                    {
+                        opacity: fadeAnim,
+                        transform: [{ translateY: slideTopAnim }]
+                    }
+                ]}
+            >
+                <Image
+                    source={require("@/assets/auth_imgs/svg.png")}
+                    style={styles.topImage}
+                />
+            </Animated.View>
+            
+            <Animated.View style={{
                 opacity: fadeAnim,
-                transform: [{ translateY: slideTopAnim }]
-            }
-        ]}
-      >
-        <Image
-          source={require("@/assets/auth_imgs/svg.png")}
-          style={styles.topImage}
-        />
-      </Animated.View>
-      
-      <Animated.View style={{
-        opacity: fadeAnim,
-      }}>
-        <View style={styles.helloContainer}>
-          <Text style={styles.helloText}>Welcome Back to GenCare!</Text>
-        </View>
-        
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("@/assets/Logo/Mob-Logo-removebg-preview.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+            }}>
+                <View style={styles.helloContainer}>
+                    <Text style={styles.helloText}>Welcome Back to GenCare!</Text>
+                </View>
+                
+                <View style={styles.logoContainer}>
+                    <Image
+                        source={require("@/assets/Logo/Mob-Logo-removebg-preview.png")}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+                </View>
 
-        <View>
-          <Text style={styles.signInText}>Sign in to your account</Text>
-        </View>
-        <View style = {styles.inputContainer}>
-          <FontAwesome name="user" size={24} color="#9A9A9A" style={styles.inputIcon} />
-          <TextInput style={styles.textInput} placeholder="Username" />
-        </View>
-        <View style = {styles.inputContainer}>
-          <FontAwesome name="lock" size={24} color="#9A9A9A" style={styles.inputIcon} />
-          <TextInput style={styles.textInput} placeholder="Password" secureTextEntry/>
-        </View>
+                <View>
+                    <Text style={styles.signInText}>Sign in to your account</Text>
+                </View>
 
-        <TouchableOpacity onPress={passwordReset}>
-          <Text style={styles.forgotPasswordText}>Forgot your Password?</Text>
-        </TouchableOpacity>
-        <View style={styles.signinButton}>
-        <MainButton 
-          title="Sign in"
-          onPress={() => {}}
-          backgroundColor="#8ED1FC"
-        />      
-        </View>
-        <View style={styles.socialMediaContainer}>
+                <View style={styles.inputContainer}>
+                    <FontAwesome name="user" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                    <TextInput 
+                        style={styles.textInput} 
+                        placeholder="Email or Phone Number"
+                        value={identifier}
+                        onChangeText={setIdentifier}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <FontAwesome name="lock" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                    <TextInput 
+                        style={styles.textInput} 
+                        placeholder="Password" 
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                </View>
+
+                <TouchableOpacity onPress={handleForgotPassword}>
+                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                </TouchableOpacity>
+
+                <View style={styles.signinButton}>
+                    <MainButton 
+                        title={isLoading ? "Loading..." : "Sign In"}
+                        onPress={handleLogin}
+                        backgroundColor="#8ED1FC"
+                        
+                    />      
+                </View>
+
+                <View style={styles.socialMediaContainer}>
                     <AntDesign name="google" size={30} color="#9A9A9A" style={styles.socialMediaIcon} />
+                </View>
+
+                <TouchableOpacity onPress={handleRegister}>
+                    <Text style={styles.footerText}>
+                        Don't have an account? <Text style={{textDecorationLine: "underline"}}>Create</Text>
+                    </Text>
+                </TouchableOpacity>
+            </Animated.View>
         </View>
-        <TouchableOpacity onPress={handleRegister}>
-          <Text style={styles.footerText}>Don't have an account?{" "} <Text style={{textDecorationLine: "underline"}}>Create</Text>
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
-  );
+    );
 };
 
 export default LoginScreen;
@@ -194,6 +263,8 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: Math.min(16, Dimensions.get('window').width * 0.04),
+    color: '#000000',
+    paddingHorizontal: 10,
   },
     forgotPasswordText: {
         textAlign: "right",

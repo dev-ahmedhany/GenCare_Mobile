@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Animated, Text, Dimensions, Platform, StatusBar, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -7,10 +7,12 @@ import { bgColors } from '@/constants/Colors';
 import MenuModal from './MenuModal';
 import NotificationsModal from './NotificationsModal';
 import { DIMENSIONS } from './styles';
-import { NavbarProps, ScrollHandler, Notification } from './types';
-import constants from './constants';
+import { NavbarProps, ScrollHandler, Notification, MenuItem } from './types';
+import constants, { MENU_ITEMS } from './constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@/app/config/config';
 
-const { menuItems, mockNotifications } = constants;
+const { mockNotifications } = constants;
 
 export default function Navbar({ 
   scrollY, 
@@ -24,6 +26,7 @@ export default function Navbar({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState(mockNotifications);
   const [isAdmin, setIsAdmin] = useState(true);
   
@@ -34,26 +37,51 @@ export default function Navbar({
     menu: new Animated.Value(0)
   }).current;
 
-  // تحديث عناصر القائمة باللغة الإنجليزية
+  // التحقق من حالة تسجيل الدخول عند تحميل المكون
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const userDataStr = await AsyncStorage.getItem('userData');
+      
+      if (token && userDataStr) {
+        setIsLoggedIn(true);
+        setUserData(JSON.parse(userDataStr));
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userData');
+      setIsLoggedIn(false);
+      setUserData(null);
+      setIsMenuOpen(false);
+      router.replace('/(home)/home');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   const authButtons = isLoggedIn 
     ? [{ 
-        icon: 'log-out', 
-        title: 'Sign Out', 
+        icon: 'log-out-outline', 
+        title: 'Sign Out',
         description: 'Exit your account',
-        onPress: () => handleLogout() 
+        onPress: handleLogout
       }]
     : [
         { 
-          icon: 'log-in', 
-          title: 'Sign In', 
+          icon: 'log-in-outline',
+          title: 'Sign In',
           description: 'Access your account',
-          onPress: () => handleAuth('login') 
-        },
-        { 
-          icon: 'person-add', 
-          title: 'Sign Up', 
-          description: 'Create new account',
-          onPress: () => handleAuth('signup') 
+          onPress: () => router.push('/(auth)/login')
         }
       ];
 
@@ -65,11 +93,6 @@ export default function Navbar({
     router.push(`/(auth)/${type}`);
     setIsMenuOpen(false);
   }, [router]);
-
-  const handleLogout = useCallback(() => {
-    setIsLoggedIn(false);
-    setIsMenuOpen(false);
-  }, []);
 
   const handleMenuPress = useCallback((route?: string) => {
     if (route) {
@@ -125,7 +148,7 @@ export default function Navbar({
   });
 
   // تصفية عناصر القائمة حسب صلاحيات المستخدم
-  const filteredMenuItems = menuItems.filter(item => 
+  const filteredMenuItems = MENU_ITEMS.filter((item: MenuItem) => 
     !item.adminOnly || (item.adminOnly && isAdmin)
   );
 

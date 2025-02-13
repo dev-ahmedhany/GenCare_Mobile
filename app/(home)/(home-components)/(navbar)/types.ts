@@ -15,8 +15,8 @@ export interface MenuItem {
   title: string;
   description: string;
   route?: string;
-  onPress?: () => void;
   adminOnly?: boolean;
+  onPress?: () => void;
 }
 
 export interface Notification {
@@ -30,10 +30,8 @@ export interface Notification {
 
 export type ScrollHandler = (event: any) => void;
 
-const types = {
-  NavbarProps,
-  MenuItem,
-  Notification,
-  ScrollHandler,
-};
-export default types; 
+// حذف هذا الجزء نهائياً
+// const types = {
+//   Notification,
+// };
+// export default types; 
