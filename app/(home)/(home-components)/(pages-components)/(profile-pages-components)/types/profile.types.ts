@@ -32,11 +32,12 @@ export interface ExpandedCards {
   savedItems: boolean;
 }
 
-interface SavedDisease {
-  id: number;
+export interface SavedDisease {
+  _id: string;
   name: string;
   date: string;
   details?: string;
+  risk?: string;
 }
 
 interface HealthSectionProps {

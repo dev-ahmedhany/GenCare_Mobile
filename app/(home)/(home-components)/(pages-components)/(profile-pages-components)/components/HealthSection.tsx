@@ -2,7 +2,7 @@ import React, { useState, Dispatch, SetStateAction, useEffect } from 'react';
 import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { HealthData, ExpandedCards, ExpandedSections } from '../types/profile.types';
+import { HealthData, ExpandedCards, ExpandedSections, SavedDisease } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
 import { BlurView } from 'expo-blur';
 import { profileService } from '../services/api';
@@ -21,7 +21,7 @@ interface HealthSectionProps {
   setExpandedSections: Dispatch<SetStateAction<ExpandedSections>>;
   savedWeeks: Array<{ week: string; date: string }>;
   onDeleteWeek?: (week: string) => void;
-  savedDiseases?: Array<{ id: string; name: string; date: string }>;
+  savedDiseases?: SavedDisease[];
   onDeleteDisease?: (id: string) => void;
 }
 
@@ -418,7 +418,10 @@ export default function HealthSection({
                       onPress={() => {
                         const diseaseInfo = diseases.find(d => d.name === disease.name);
                         if (diseaseInfo) {
-                          handleViewDisease(diseaseInfo.id);
+                          router.push({
+                            pathname: '/(home)/(home-components)/(pages-components)/(diseases-pages-components)/diseases-page-components',
+                            params: { diseaseId: diseaseInfo.id }
+                          });
                         }
                       }}
                       style={styles.actionButton}
