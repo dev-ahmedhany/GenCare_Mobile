@@ -6,38 +6,24 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { NewsList } from '@/data/pregnancyweeks';
 import MainButton from '@/constants/MainButton';
 import { profileService } from '../services/api';
+import { useRouter } from 'expo-router';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface PregnancySectionProps {
   pregnancyWeek: string;
+  onWeekChange?: (week: string) => void;
+  onSaveWeek?: (weekData: { week: string; date: string }) => Promise<void>;
 }
 
-export default function PregnancySection({ pregnancyWeek }: PregnancySectionProps) {
+export default function PregnancySection({ pregnancyWeek, onWeekChange, onSaveWeek }: PregnancySectionProps) {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
   const progress = (parseInt(pregnancyWeek) || 0) / 40;
   const weekInfo = NewsList.find(item => item.id === parseInt(pregnancyWeek));
-  const [isSaved, setIsSaved] = useState(false);
 
-  const handleSaveWeek = async () => {
-    try {
-      const weekData = {
-        week: pregnancyWeek,
-        date: new Date().toISOString(),
-      };
-      
-      const response = await profileService.saveItem('week', weekData);
-      if (response.success) {
-        Alert.alert('نجاح', 'تم حفظ الأسبوع بنجاح');
-        setIsSaved(true);
-      } else {
-        throw new Error('فشل حفظ الأسبوع');
-      }
-    } catch (error) {
-      console.error('Error saving week:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء حفظ الأسبوع');
-    }
-  };
+  
 
   return (
     <View style={styles.container}>
@@ -77,20 +63,18 @@ export default function PregnancySection({ pregnancyWeek }: PregnancySectionProp
             </View>
           </View>
           
-          <MainButton 
-            title="View Details"
-            onPress={() => {}}
-            backgroundColor="#623AA2"
-          />
+          <View style={styles.buttonContainer}>
+            <MainButton 
+              title={`View Week ${pregnancyWeek}`}
+              onPress={() => router.push({
+                pathname: '/(home)/(home-components)/(pages-components)/pregnancyPage',
+                params: { news: JSON.stringify(weekInfo) }
+              })}
+              backgroundColor="#623AA2"
+            />
+          </View>
         </View>
       )}
-
-      <TouchableOpacity 
-        style={styles.saveButton}
-        onPress={handleSaveWeek}
-      >
-        <Text style={styles.saveButtonText}>Save Week</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -132,7 +116,7 @@ const styles = StyleSheet.create({
   },
   developmentCard: {
     marginTop: 20,
-    padding: 15,
+    paddingTop: 15,
     backgroundColor: '#f8f9fa',
     borderRadius: 12,
     borderWidth: 1,
@@ -149,6 +133,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 15,
   },
   measurementItem: {
     flex: 1,
@@ -175,16 +160,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#dee2e6',
     marginHorizontal: 15,
   },
-  saveButton: {
-    backgroundColor: '#623AA2',
-    padding: 15,
-    borderRadius: 10,
+  buttonContainer: {
     alignItems: 'center',
-    marginTop: 20,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    marginTop: 15,
   },
 });

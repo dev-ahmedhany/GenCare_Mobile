@@ -6,6 +6,8 @@ import { HealthData, ExpandedCards, ExpandedSections } from '../types/profile.ty
 import MainButton from '@/constants/MainButton';
 import { BlurView } from 'expo-blur';
 import { profileService } from '../services/api';
+import { useRouter } from 'expo-router';
+import { NewsList } from '@/data/pregnancyweeks';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -17,6 +19,9 @@ interface HealthSectionProps {
   expandedSections: ExpandedSections;
   setExpandedSections: Dispatch<SetStateAction<ExpandedSections>>;
   savedWeeks: Array<{ week: string; date: string }>;
+  onDeleteWeek?: (week: string) => void;
+  savedDiseases?: Array<{ id: string; name: string; date: string }>;
+  onDeleteDisease?: (id: string) => void;
 }
 
 interface ValidationErrors {
@@ -34,11 +39,15 @@ export default function HealthSection({
   expandedSections,
   setExpandedSections,
   savedWeeks,
+  onDeleteWeek,
+  savedDiseases = [],
+  onDeleteDisease,
 }: HealthSectionProps) {
   const [isEditingHealth, setIsEditingHealth] = useState(false);
   const [tempHealthData, setTempHealthData] = useState(currentHealth);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const commonDiseases = [
     'Diabetes',
@@ -143,10 +152,17 @@ export default function HealthSection({
 
   const handleDeleteItem = async (type: string, id: string) => {
     try {
-      await profileService.deleteItem(type, id);
-      Alert.alert('نجاح', 'تم حذف العنصر بنجاح');
-      // تحديث واجهة المستخدم حسب الحاجة
+      const response = await profileService.deleteItem(type, id);
+      if (response.success) {
+        if (type === 'week') {
+          onDeleteWeek?.(id);
+        } else if (type === 'disease') {
+          onDeleteDisease?.(id);
+        }
+        Alert.alert('نجاح', 'تم حذف العنصر بنجاح');
+      }
     } catch (error) {
+      console.error('Delete error:', error);
       Alert.alert('خطأ', 'حدث خطأ أثناء حذف العنصر');
     }
   };
@@ -353,7 +369,24 @@ export default function HealthSection({
         </TouchableOpacity>
         {expandedSections.diseases && (
           <View style={styles.sectionContent}>
-            <ThemedText style={styles.emptyText}>No saved diseases</ThemedText>
+            {savedDiseases && savedDiseases.length > 0 ? (
+              savedDiseases.map((disease, index) => (
+                <View key={index} style={styles.savedItem}>
+                  <View>
+                    <ThemedText>{disease.name}</ThemedText>
+                    <ThemedText style={styles.dateText}>{disease.date}</ThemedText>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteItem('disease', disease.id)}
+                    style={styles.actionButton}
+                  >
+                    <FontAwesome name="trash-o" size={20} color="#FF4444" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            ) : (
+              <ThemedText style={styles.emptyText}>No saved diseases</ThemedText>
+            )}
           </View>
         )}
 
@@ -371,21 +404,32 @@ export default function HealthSection({
         </TouchableOpacity>
         {expandedSections.weeks && (
           <View style={styles.sectionContent}>
-            {savedWeeks.length > 0 ? (
-              savedWeeks.map((item, index) => (
-                <View key={index} style={styles.savedItem}>
-                  <ThemedText>Week {item.week}</ThemedText>
-                  <ThemedText style={styles.dateText}>
-                    {new Date(item.date).toLocaleDateString()}
-                  </ThemedText>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteItem('week', item.week)}
-                    style={styles.deleteButton}
-                  >
-                    <FontAwesome name="trash-o" size={20} color="#FF4444" />
-                  </TouchableOpacity>
-                </View>
-              ))
+            {savedWeeks && savedWeeks.length > 0 ? (
+              savedWeeks.map((item, index) => {
+                const weekInfo = NewsList.find(w => w.id.toString() === item.week);
+                return (
+                  <View key={index} style={styles.savedItem}>
+                    <ThemedText>Week {item.week}</ThemedText>
+                    <View style={styles.itemActions}>
+                      <TouchableOpacity
+                        onPress={() => router.push({
+                          pathname: '/(home)/(home-components)/(pages-components)/pregnancyPage',
+                          params: { news: JSON.stringify(weekInfo) }
+                        })}
+                        style={styles.actionButton}
+                      >
+                        <FontAwesome name="eye" size={20} color="#623AA2" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteItem('week', item.week)}
+                        style={styles.actionButton}
+                      >
+                        <FontAwesome name="trash-o" size={20} color="#FF4444" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })
             ) : (
               <ThemedText style={styles.emptyText}>No saved weeks</ThemedText>
             )}
@@ -597,6 +641,14 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   deleteButton: {
+    padding: 5,
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  actionButton: {
     padding: 5,
   },
 });

@@ -1,10 +1,10 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Animated, Dimensions } from "react-native";
-import React, { useState } from "react";
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Animated, Dimensions, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { bgColors } from "@/constants/Colors";
 import Navbar from '../(navbar)/navbar';
-
+import { profileService } from "./(profile-pages-components)/services/api";
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;
 
@@ -13,6 +13,7 @@ const PregnancyPage = () => {
   const weekData = JSON.parse(news as string);
   const scrollY = new Animated.Value(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
@@ -25,10 +26,69 @@ const PregnancyPage = () => {
     extrapolate: 'clamp',
   });
 
-  const handleSaveWeek = () => {
-    setIsSaved(!isSaved);
-    // هنا يمكن إضافة منطق حفظ الأسبوع
+  const handleSaveWeek = async () => {
+    try {
+      setIsSaving(true);
+      
+      if (!weekData) {
+        Alert.alert('خطأ', 'لم يتم العثور على معلومات الأسبوع');
+        return;
+      }
+
+      // إذا كان الأسبوع محفوظ، نقوم بحذفه
+      if (isSaved) {
+        const response = await profileService.deleteItem('week', weekData.id.toString());
+        if (response.success) {
+          setIsSaved(false);
+          Alert.alert('نجاح', 'تم إزالة الأسبوع من المحفوظات');
+        } else {
+          throw new Error(response.message || 'فشل حذف الأسبوع');
+        }
+      } else {
+        // حفظ الأسبوع
+        const weekDataToSave = {
+          week: weekData.id.toString(),
+          title: weekData.title,
+          description: weekData.body1Title,
+          date: new Date().toISOString()
+        };
+
+        const response = await profileService.saveItem('week', weekDataToSave);
+        
+        if (response.success) {
+          setIsSaved(true);
+          Alert.alert('نجاح', 'تم حفظ الأسبوع بنجاح');
+        } else {
+          throw new Error(response.message || 'فشل حفظ الأسبوع');
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error handling week:', error);
+      Alert.alert('خطأ', 'حدث خطأ في العملية');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  // إضافة useEffect للتحقق من حالة الحفظ عند تحميل الصفحة
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        const response = await profileService.getProfile();
+        if (response.success) {
+          const savedWeeks = response.data.user.savedWeeks || [];
+          setIsSaved(savedWeeks.some((w: any) => w.week === weekData.id.toString()));
+        }
+      } catch (error) {
+        console.error('Error checking saved status:', error);
+      }
+    };
+
+    if (weekData) {
+      checkIfSaved();
+    }
+  }, [weekData]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,22 +98,6 @@ const PregnancyPage = () => {
         variant="simple"
         style={styles.navbar}
       />
-
-      {/* <View style={styles.saveButtonContainer}>
-        <TouchableOpacity 
-          style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={handleSaveWeek}
-        >
-          <MaterialIcons 
-            name={isSaved ? "bookmark" : "bookmark-outline"} 
-            size={24} 
-            color={isSaved ? "#fff" : "#623AA2"} 
-          />
-          <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-            {isSaved ? 'Saved' : 'Save Week'}
-          </Text>
-        </TouchableOpacity>
-      </View> */}
 
       <ScrollView
       
@@ -66,6 +110,7 @@ const PregnancyPage = () => {
         <TouchableOpacity 
           style={[styles.saveButton, isSaved && styles.savedButton]} 
           onPress={handleSaveWeek}
+          disabled={isSaving}
         >
           <MaterialIcons 
             name={isSaved ? "bookmark" : "bookmark-outline"} 
@@ -73,7 +118,7 @@ const PregnancyPage = () => {
             color={isSaved ? "#fff" : "#623AA2"} 
           />
           <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-            {isSaved ? 'Saved' : 'Save Week'}
+            {isSaving ? "جاري الحفظ..." : (isSaved ? 'Saved' : 'Save Week')}
           </Text>
         </TouchableOpacity>
       </View>

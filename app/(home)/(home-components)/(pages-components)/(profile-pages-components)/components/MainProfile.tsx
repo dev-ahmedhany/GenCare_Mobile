@@ -47,44 +47,35 @@ export default function MainProfile() {
   const scrollY = new Animated.Value(0);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadProfileData();
-  }, []);
-
-  const loadProfileData = async () => {
+  const loadProfileData = async (force = false) => {
     try {
+      if (!force && isRefreshing) return;
+      
       setIsLoading(true);
-      const token = await AsyncStorage.getItem('userToken');
-      const userDataStr = await AsyncStorage.getItem('userData');
+      setIsRefreshing(true);
 
-      if (!token || !userDataStr) {
-        Alert.alert(
-          'تنبيه',
-          'الرجاء تسجيل الدخول للوصول إلى الملف الشخصي',
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        Alert.alert('تنبيه', 'الرجاء تسجيل الدخول للوصول إلى الملف الشخصي',
           [
-            {
-              text: 'إلغاء',
-              onPress: () => router.replace('/(home)/home'),
-              style: 'cancel'
-            },
-            {
-              text: 'تسجيل الدخول',
-              onPress: () => router.replace('/(auth)/login')
-            }
+            { text: 'إلغاء', onPress: () => router.replace('/(home)/home'), style: 'cancel' },
+            { text: 'تسجيل الدخول', onPress: () => router.replace('/(auth)/login') }
           ]
         );
         return;
       }
 
-      // جلب البيانات من السيرفر
       const response = await profileService.getProfile();
-      console.log('Profile response:', response); // للتأكد من البيانات
+      console.log('Profile Response:', response);
 
       if (response.success) {
         const { user, healthRecord } = response.data;
         
-        // تحديث البيانات الشخصية
+        // تحديث البيانات المحلية
+        await AsyncStorage.setItem('userData', JSON.stringify(user));
+        
         setFormData({
           fullName: user.fullName || '',
           age: user.age?.toString() || '',
@@ -93,7 +84,6 @@ export default function MainProfile() {
           bloodType: user.bloodType || '',
         });
 
-        // تحديث البيانات الصحية
         if (healthRecord) {
           setCurrentHealth({
             bloodPressure: healthRecord.bloodPressure || '',
@@ -103,7 +93,6 @@ export default function MainProfile() {
           });
         }
 
-        // تحديث البيانات المحفوظة
         setSavedWeeks(user.savedWeeks || []);
       }
     } catch (error) {
@@ -111,8 +100,36 @@ export default function MainProfile() {
       Alert.alert('خطأ', 'حدث خطأ أثناء تحميل البيانات');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    const initializeProfile = async () => {
+      try {
+        // التحقق من ProfileSplash أولاً
+        const splashShown = await AsyncStorage.getItem('profileSplashShown');
+        if (!splashShown) {
+          router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/ProfileSplash');
+          return;
+        }
+
+        // التحقق من التوكن وتحميل البيانات
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          router.replace('/(auth)/login');
+          return;
+        }
+
+        // تحميل البيانات
+        await loadProfileData();
+      } catch (error) {
+        console.error('Error initializing profile:', error);
+      }
+    };
+
+    initializeProfile();
+  }, []); // تشغيل مرة واحدة فقط عند تحميل المكون
 
   const handleUpdateProfile = async (newData: FormData) => {
     try {
@@ -120,21 +137,24 @@ export default function MainProfile() {
       const response = await profileService.updateProfile(newData);
       
       if (response.success) {
-        setFormData(newData);
+        const { user } = response.data;
+        
+        // تحديث كل البيانات
+        setFormData({
+          fullName: user.fullName || '',
+          age: user.age?.toString() || '',
+          pregnancyWeek: user.pregnancyWeek?.toString() || '',
+          phone: user.phone || '',
+          bloodType: user.bloodType || '',
+        });
+        
+        // تحديث الأسابيع المحفوظة
+        setSavedWeeks(user.savedWeeks || []);
+        
         Alert.alert('نجاح', 'تم تحديث البيانات الشخصية بنجاح');
         
         // تحديث البيانات المخزنة محلياً
-        const userDataStr = await AsyncStorage.getItem('userData');
-        if (userDataStr) {
-          const userData = JSON.parse(userDataStr);
-          const updatedUserData = {
-            ...userData,
-            ...newData
-          };
-          await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
-        }
-      } else {
-        throw new Error(response.message || 'فشل تحديث البيانات');
+        await AsyncStorage.setItem('userData', JSON.stringify(user));
       }
     } catch (error) {
       console.error('Update profile error:', error);
@@ -159,38 +179,30 @@ export default function MainProfile() {
     scrollY.setValue(offsetY);
   };
 
-  useEffect(() => {
-    const checkProfileSplash = async () => {
-      try {
-        const splashShown = await AsyncStorage.getItem('profileSplashShown');
-        if (!splashShown) {
-          router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/ProfileSplash');
-        }
-      } catch (error) {
-        console.error('Error checking profile splash:', error);
+  const handleDeleteWeek = async (weekId: string) => {
+    try {
+      await profileService.deleteItem('week', weekId);
+      await loadProfileData(true);
+    } catch (error) {
+      console.error('Error deleting week:', error);
+    }
+  };
+
+  const handleSaveWeek = async (week: string) => {
+    try {
+      const response = await profileService.saveItem('week', {
+        week,
+        date: new Date().toISOString()
+      });
+      
+      if (response.success) {
+        const { user } = response.data;
+        setSavedWeeks(user.savedWeeks || []);
       }
-    };
-
-    checkProfileSplash();
-  }, []);
-
-  // تحديث useEffect
-  useEffect(() => {
-    const initProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        if (!token) {
-          router.replace('/(auth)/login');
-          return;
-        }
-        await loadProfileData();
-      } catch (error) {
-        console.error('Error initializing profile:', error);
-      }
-    };
-
-    initProfile();
-  }, []);
+    } catch (error) {
+      console.error('Error saving week:', error);
+    }
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -210,6 +222,24 @@ export default function MainProfile() {
           
           <PregnancySection 
             pregnancyWeek={formData.pregnancyWeek}
+            onWeekChange={(week) => {
+              setFormData(prev => ({
+                ...prev,
+                pregnancyWeek: week
+              }));
+            }}
+            onSaveWeek={async (weekData) => {
+              try {
+                const response = await profileService.saveItem('week', weekData);
+                if (response.success) {
+                  // تحديث قائمة الأسابيع المحفوظة مباشرة
+                  setSavedWeeks(response.data.user.savedWeeks || []);
+                }
+              } catch (error) {
+                console.error('Error saving week:', error);
+                throw error; // إعادة رمي الخطأ ليتم معالجته في PregnancySection
+              }
+            }}
           />
           
           <HealthSection 
@@ -220,6 +250,7 @@ export default function MainProfile() {
             expandedSections={expandedSections}
             setExpandedSections={setExpandedSections}
             savedWeeks={savedWeeks}
+            onDeleteWeek={handleDeleteWeek}
           />
         </ScrollView>
       )}

@@ -140,7 +140,10 @@ router.put('/update', authMiddleware, async (req, res) => {
                     age: user.age,
                     bloodType: user.bloodType,
                     pregnancyWeek: user.pregnancyWeek,
-                    role: user.role
+                    role: user.role,
+                    savedWeeks: user.savedWeeks || [],
+                    savedDiseases: user.savedDiseases || [],
+                    savedBabyNames: user.savedBabyNames || []
                 }
             }
         });
@@ -208,50 +211,79 @@ router.put('/health', authMiddleware, async (req, res) => {
     }
 });
 
-// save items (diseases, weeks, baby names)
+// حفظ عنصر (أسبوع، مرض، اسم طفل)
 router.post('/save-item', authMiddleware, async (req, res) => {
   try {
     const { type, data } = req.body;
     const user = await User.findById(req.user._id);
-    
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'المستخدم غير موجود' 
+        message: 'المستخدم غير موجود'
       });
     }
 
     switch (type) {
-      case 'disease':
-        if (!user.savedDiseases) user.savedDiseases = [];
-        user.savedDiseases.push(data);
-        break;
       case 'week':
-        if (!user.savedWeeks) user.savedWeeks = [];
-        if (!user.savedWeeks.find(w => w.week === data.week)) {
-          user.savedWeeks.push(data);
+        // التحقق من عدم وجود الأسبوع مسبقاً
+        const weekExists = user.savedWeeks.some(w => w.week === data.week);
+        if (weekExists) {
+          return res.status(400).json({
+            success: false,
+            message: 'هذا الأسبوع محفوظ مسبقاً'
+          });
         }
+
+        // إضافة الأسبوع الجديد
+        user.savedWeeks.push({
+          week: data.week,
+          title: data.title,
+          description: data.description,
+          date: data.date
+        });
+        break;
+
+      case 'disease':
+        // التحقق من عدم وجود المرض مسبقاً
+        const diseaseExists = user.savedDiseases.some(d => d.name === data.name);
+        if (diseaseExists) {
+          return res.status(400).json({
+            success: false,
+            message: 'هذا المرض محفوظ مسبقاً'
+          });
+        }
+
+        // إضافة المرض الجديد
+        user.savedDiseases.push({
+          name: data.name,
+          details: data.details,
+          date: data.date,
+          risk: data.risk
+        });
         break;
       case 'babyName':
         if (!user.savedBabyNames) user.savedBabyNames = [];
         user.savedBabyNames.push(data);
         break;
       default:
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          message: 'نوع غير صالح' 
+          message: 'نوع غير صالح'
         });
-    } 
+    }
 
     await user.save();
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'تم الحفظ بنجاح',
       data: { user }
     });
+
   } catch (error) {
-    console.error('Error saving item:', error);
-    res.status(500).json({ 
+    console.error('Save item error:', error);
+    res.status(500).json({
       success: false,
       message: 'حدث خطأ في حفظ العنصر'
     });
@@ -273,10 +305,10 @@ router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
 
         switch (type) {
             case 'disease':
-                user.savedDiseases = user.savedDiseases.filter(item => item._id.toString() !== id);
+                user.savedDiseases = user.savedDiseases.filter(item => item.name !== id);
                 break;
             case 'week':
-                user.savedWeeks = user.savedWeeks.filter(item => item._id.toString() !== id);
+                user.savedWeeks = user.savedWeeks.filter(item => item.week !== id);
                 break;
             case 'babyName':
                 user.savedBabyNames = user.savedBabyNames.filter(item => item._id.toString() !== id);
@@ -292,14 +324,13 @@ router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
         res.json({ 
             success: true,
             message: 'تم حذف العنصر بنجاح',
-            user
+            data: { user }
         });
     } catch (error) {
         console.error('Error deleting item:', error);
         res.status(500).json({ 
             success: false,
-            message: 'خطأ في الخادم',
-            error: error.message
+            message: 'حدث خطأ في حذف العنصر'
         });
     }
 });

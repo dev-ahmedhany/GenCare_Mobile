@@ -1,8 +1,9 @@
-import { View, StyleSheet, Text, Dimensions, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import { diseases } from '@/data/diseases';
 import { bgColors } from '@/constants/Colors';
 import { MaterialIcons } from "@expo/vector-icons";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { profileService } from '../(profile-pages-components)/services/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -13,9 +14,59 @@ interface DiseaseDetailsProps {
 
 export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveName = () => {
-    setIsSaved(!isSaved);
+  useEffect(() => {
+    checkIfSaved();
+  }, [disease]);
+
+  const checkIfSaved = async () => {
+    try {
+      const response = await profileService.getProfile();
+      if (response.success) {
+        const savedDiseases = response.data.user.savedDiseases || [];
+        setIsSaved(savedDiseases.some((d: any) => d.name === disease.name));
+      }
+    } catch (error) {
+      console.error('Error checking saved status:', error);
+    }
+  };
+
+  const handleSaveDisease = async () => {
+    try {
+      setIsSaving(true);
+
+      if (isSaved) {
+        // حذف المرض باستخدام الاسم
+        const response = await profileService.deleteItem('disease', disease.name);
+        if (response.success) {
+          setIsSaved(false);
+          Alert.alert('نجاح', 'تم إزالة المرض من المحفوظات');
+        } else {
+          throw new Error(response.message || 'فشل حذف المرض');
+        }
+      } else {
+        // حفظ المرض
+        const diseaseData = {
+          name: disease.name,
+          details: disease.details,
+          date: new Date().toISOString()
+        };
+
+        const response = await profileService.saveItem('disease', diseaseData);
+        if (response.success) {
+          setIsSaved(true);
+          Alert.alert('نجاح', 'تم حفظ المرض بنجاح');
+        } else {
+          throw new Error(response.message || 'فشل حفظ المرض');
+        }
+      }
+    } catch (error) {
+      console.error('Error handling disease:', error);
+      Alert.alert('خطأ', 'حدث خطأ في العملية');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -23,7 +74,8 @@ export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
       <View style={styles.saveButtonContainer}>
         <TouchableOpacity 
           style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={handleSaveName}
+          onPress={handleSaveDisease}
+          disabled={isSaving}
         >
           <MaterialIcons 
             name={isSaved ? "bookmark" : "bookmark-outline"} 
@@ -31,7 +83,7 @@ export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
             color={isSaved ? "#fff" : "#623AA2"} 
           />
           <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-            {isSaved ? 'Saved' : 'Save Disease'}
+            {isSaving ? "جاري المعالجة..." : (isSaved ? 'تم الحفظ' : 'حفظ المرض')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -73,7 +125,7 @@ const styles = StyleSheet.create({
   },
   saveButtonContainer: {
     position: 'absolute',
-    top: SCREEN_HEIGHT * 0.13,
+    top: SCREEN_HEIGHT * 0.20,
     right: 16,
     zIndex: 3,
   },
