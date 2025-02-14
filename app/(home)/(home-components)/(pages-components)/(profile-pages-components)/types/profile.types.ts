@@ -32,6 +32,18 @@ export interface ExpandedCards {
   savedItems: boolean;
 }
 
+interface SavedDisease {
+  id: number;
+  name: string;
+  date: string;
+  details?: string;
+}
+
+interface HealthSectionProps {
+  savedDiseases?: SavedDisease[];
+  onDeleteDisease?: (id: string) => void;
+}
+
 // إضافة مكون افتراضي فارغ
 const ProfileTypes = () => null;
 export default ProfileTypes;

@@ -41,6 +41,7 @@ export default function MainProfile() {
   });
 
   const [savedWeeks, setSavedWeeks] = useState<Array<{ week: string; date: string }>>([]);
+  const [savedDiseases, setSavedDiseases] = useState([]);
 
   const router = useRouter();
 
@@ -56,33 +57,24 @@ export default function MainProfile() {
       setIsLoading(true);
       setIsRefreshing(true);
 
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        Alert.alert('تنبيه', 'الرجاء تسجيل الدخول للوصول إلى الملف الشخصي',
-          [
-            { text: 'إلغاء', onPress: () => router.replace('/(home)/home'), style: 'cancel' },
-            { text: 'تسجيل الدخول', onPress: () => router.replace('/(auth)/login') }
-          ]
-        );
-        return;
-      }
-
       const response = await profileService.getProfile();
       console.log('Profile Response:', response);
 
-      if (response.success) {
+      if (response?.success && response?.data) {
         const { user, healthRecord } = response.data;
         
-        // تحديث البيانات المحلية
-        await AsyncStorage.setItem('userData', JSON.stringify(user));
-        
-        setFormData({
-          fullName: user.fullName || '',
-          age: user.age?.toString() || '',
-          pregnancyWeek: user.pregnancyWeek?.toString() || '',
-          phone: user.phone || '',
-          bloodType: user.bloodType || '',
-        });
+        if (user) {
+          setFormData({
+            fullName: user.fullName || '',
+            age: user.age?.toString() || '',
+            pregnancyWeek: user.pregnancyWeek?.toString() || '',
+            phone: user.phone || '',
+            bloodType: user.bloodType || '',
+          });
+
+          setSavedWeeks(user.savedWeeks || []);
+          setSavedDiseases(user.savedDiseases || []);
+        }
 
         if (healthRecord) {
           setCurrentHealth({
@@ -92,11 +84,12 @@ export default function MainProfile() {
             symptoms: healthRecord.symptoms || '',
           });
         }
-
-        setSavedWeeks(user.savedWeeks || []);
+      } else {
+        console.error('Invalid response format:', response);
+        Alert.alert('خطأ', 'تنسيق البيانات غير صحيح');
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error('Error loading profile data:', error);
       Alert.alert('خطأ', 'حدث خطأ أثناء تحميل البيانات');
     } finally {
       setIsLoading(false);
@@ -204,6 +197,15 @@ export default function MainProfile() {
     }
   };
 
+  const handleDeleteDisease = async (id: string) => {
+    try {
+      await profileService.deleteItem('disease', id);
+      await loadProfileData();
+    } catch (error) {
+      console.error('Error deleting disease:', error);
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       <Navbar scrollY={scrollY} showProfile={false} />
@@ -251,6 +253,16 @@ export default function MainProfile() {
             setExpandedSections={setExpandedSections}
             savedWeeks={savedWeeks}
             onDeleteWeek={handleDeleteWeek}
+            savedDiseases={savedDiseases}
+            onDeleteDisease={async (id) => {
+              try {
+                await handleDeleteDisease(id);
+                // تحديث القائمة بعد الحذف
+                loadProfileData();
+              } catch (error) {
+                console.error('Error deleting disease:', error);
+              }
+            }}
           />
         </ScrollView>
       )}

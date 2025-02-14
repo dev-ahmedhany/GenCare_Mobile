@@ -37,28 +37,24 @@ export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
       setIsSaving(true);
 
       if (isSaved) {
-        // حذف المرض باستخدام الاسم
+        // حذف المرض
         const response = await profileService.deleteItem('disease', disease.name);
         if (response.success) {
           setIsSaved(false);
           Alert.alert('نجاح', 'تم إزالة المرض من المحفوظات');
-        } else {
-          throw new Error(response.message || 'فشل حذف المرض');
         }
       } else {
         // حفظ المرض
         const diseaseData = {
           name: disease.name,
           details: disease.details,
-          date: new Date().toISOString()
+          date: disease.date,
         };
 
         const response = await profileService.saveItem('disease', diseaseData);
         if (response.success) {
           setIsSaved(true);
           Alert.alert('نجاح', 'تم حفظ المرض بنجاح');
-        } else {
-          throw new Error(response.message || 'فشل حفظ المرض');
         }
       }
     } catch (error) {
@@ -83,7 +79,7 @@ export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
             color={isSaved ? "#fff" : "#623AA2"} 
           />
           <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-            {isSaving ? "جاري المعالجة..." : (isSaved ? 'تم الحفظ' : 'حفظ المرض')}
+            {isSaving ? "جاري المعالجة..." : (isSaved ? 'saved' : 'save')}
           </Text>
         </TouchableOpacity>
       </View>

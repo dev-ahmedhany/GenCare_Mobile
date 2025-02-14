@@ -46,10 +46,16 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     },
     savedDiseases: [{
-        name: String,
-        risk: String,
-        symptoms: [String],
-        nextCheckup: String
+        name: {
+            type: String,
+            required: true
+        },
+        details: String,
+        date: {
+            type: String,
+            required: true
+        },
+        risk: String
     }],
     savedWeeks: [{
         week: String,

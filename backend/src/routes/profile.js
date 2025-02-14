@@ -46,54 +46,36 @@ const authMiddleware = async (req, res, next) => {
 // الحصول على الملف الشخصي
 router.get('/', authMiddleware, async (req, res) => {
     try {
-        // التحقق من وجود المستخدم أولاً
-        if (!req.user || !req.user._id) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'غير مصرح به' 
-            });
-        }
-
-        // جلب البيانات
-        const [user, healthRecord] = await Promise.all([
-            User.findById(req.user._id).select('-password'),
-            HealthRecord.findOne({ userId: req.user._id })
-        ]);
+        const user = await User.findById(req.user._id).select('-password');
+        const healthRecord = await HealthRecord.findOne({ userId: req.user._id });
 
         if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'المستخدم غير موجود' 
+            return res.status(404).json({
+                success: false,
+                message: 'المستخدم غير موجود'
             });
         }
 
-        // إرجاع البيانات
-        res.json({ 
-            success: true, 
+        // تأكد من وجود المصفوفات
+        if (!user.savedDiseases) user.savedDiseases = [];
+        if (!user.savedWeeks) user.savedWeeks = [];
+
+        res.json({
+            success: true,
             data: {
                 user: {
-                    _id: user._id,
-                    fullName: user.fullName,
-                    email: user.email,
-                    phone: user.phone,
-                    age: user.age,
-                    bloodType: user.bloodType,
-                    pregnancyWeek: user.pregnancyWeek,
-                    role: user.role,
-                    notifications: user.notifications || [],
-                    savedDiseases: user.savedDiseases || [],
-                    savedWeeks: user.savedWeeks || [],
-                    savedBabyNames: user.savedBabyNames || []
+                    ...user.toObject(),
+                    savedDiseases: user.savedDiseases,
+                    savedWeeks: user.savedWeeks
                 },
                 healthRecord: healthRecord || null
             }
         });
     } catch (error) {
         console.error('Profile fetch error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'حدث خطأ في تحميل البيانات',
-            error: error.message 
+        res.status(500).json({
+            success: false,
+            message: 'حدث خطأ في تحميل البيانات'
         });
     }
 });
@@ -258,7 +240,7 @@ router.post('/save-item', authMiddleware, async (req, res) => {
         user.savedDiseases.push({
           name: data.name,
           details: data.details,
-          date: data.date,
+          date: data.date || new Date().toISOString(),
           risk: data.risk
         });
         break;
@@ -294,6 +276,8 @@ router.post('/save-item', authMiddleware, async (req, res) => {
 router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
     try {
         const { type, id } = req.params;
+        console.log('Deleting item:', { type, id }); // للتأكد من البيانات
+
         const user = await User.findById(req.user._id);
         
         if (!user) {
@@ -305,13 +289,20 @@ router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
 
         switch (type) {
             case 'disease':
-                user.savedDiseases = user.savedDiseases.filter(item => item.name !== id);
+                // تعديل طريقة الحذف لاستخدام _id
+                user.savedDiseases = user.savedDiseases.filter(item => 
+                    item._id.toString() !== id
+                );
                 break;
             case 'week':
-                user.savedWeeks = user.savedWeeks.filter(item => item.week !== id);
+                user.savedWeeks = user.savedWeeks.filter(item => 
+                    item.week !== id
+                );
                 break;
             case 'babyName':
-                user.savedBabyNames = user.savedBabyNames.filter(item => item._id.toString() !== id);
+                user.savedBabyNames = user.savedBabyNames.filter(item => 
+                    item._id.toString() !== id
+                );
                 break;
             default:
                 return res.status(400).json({ 
@@ -321,6 +312,7 @@ router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
         }
 
         await user.save();
+        
         res.json({ 
             success: true,
             message: 'تم حذف العنصر بنجاح',
@@ -330,7 +322,8 @@ router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
         console.error('Error deleting item:', error);
         res.status(500).json({ 
             success: false,
-            message: 'حدث خطأ في حذف العنصر'
+            message: 'حدث خطأ في حذف العنصر',
+            error: error.message
         });
     }
 });

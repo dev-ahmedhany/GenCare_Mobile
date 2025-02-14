@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from 'react';
+import React, { useState, Dispatch, SetStateAction, useEffect } from 'react';
 import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { BlurView } from 'expo-blur';
 import { profileService } from '../services/api';
 import { useRouter } from 'expo-router';
 import { NewsList } from '@/data/pregnancyweeks';
+import { diseases } from '@/data/diseases';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -167,6 +168,31 @@ export default function HealthSection({
     }
   };
 
+  const handleDeleteDisease = async (diseaseId: string) => {
+    try {
+      await profileService.deleteItem('disease', diseaseId);
+      await loadProfileData(true);
+    } catch (error) {
+      console.error('Error deleting disease:', error);
+    }
+  };
+
+  const loadProfileData = async (force = false) => {
+    try {
+      const response = await profileService.getProfile();
+      if (response.data.success) {
+        const { savedDiseases } = response.data;
+        // تحديث واجهة المستخدم حسب الحاجة
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+    }
+  };
+
+  const handleViewDisease = (diseaseId: number) => {
+    router.push(`/(home)/(home-components)/(pages-components)/(diseases-pages-components)/diseases-page?diseaseId=${diseaseId}`);
+  };
+
   const renderEditField = (label: string, value: string, field: keyof HealthData) => {
     if (field === 'bloodPressure') {
       const [systolic, diastolic] = value ? value.split('/') : ['', ''];
@@ -242,6 +268,10 @@ export default function HealthSection({
       </View>
     );
   };
+
+  useEffect(() => {
+    console.log('Current savedDiseases:', savedDiseases);
+  }, [savedDiseases]);
 
   return (
     <View style={styles.container}>
@@ -370,22 +400,50 @@ export default function HealthSection({
         {expandedSections.diseases && (
           <View style={styles.sectionContent}>
             {savedDiseases && savedDiseases.length > 0 ? (
-              savedDiseases.map((disease, index) => (
-                <View key={index} style={styles.savedItem}>
+              savedDiseases.map((disease) => (
+                <View 
+                  key={`disease-${disease._id}`} 
+                  style={styles.savedItem}
+                >
                   <View>
-                    <ThemedText>{disease.name}</ThemedText>
-                    <ThemedText style={styles.dateText}>{disease.date}</ThemedText>
+                    <ThemedText style={styles.diseaseName}>
+                      {disease.name}
+                    </ThemedText>
+                    <ThemedText style={styles.dateText}>
+                      {disease.date ? new Date(disease.date).toLocaleDateString() : 'No date'}
+                    </ThemedText>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteItem('disease', disease.id)}
-                    style={styles.actionButton}
-                  >
-                    <FontAwesome name="trash-o" size={20} color="#FF4444" />
-                  </TouchableOpacity>
+                  <View style={styles.itemActions}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        const diseaseInfo = diseases.find(d => d.name === disease.name);
+                        if (diseaseInfo) {
+                          handleViewDisease(diseaseInfo.id);
+                        }
+                      }}
+                      style={styles.actionButton}
+                    >
+                      <FontAwesome 
+                        name="eye" 
+                        size={20} 
+                        color="#623AA2"
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleDeleteItem('disease', disease._id)}
+                      style={styles.actionButton}
+                    >
+                      <FontAwesome 
+                        name="trash-o" 
+                        size={20} 
+                        color="#FF4444"
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))
             ) : (
-              <ThemedText style={styles.emptyText}>No saved diseases</ThemedText>
+              <ThemedText style={styles.emptyText}>لا توجد أمراض محفوظة</ThemedText>
             )}
           </View>
         )}
@@ -650,5 +708,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     padding: 5,
+  },
+  debugText: {
+    fontSize: 10,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 5,
+  },
+  diseaseName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1F2937',
   },
 });

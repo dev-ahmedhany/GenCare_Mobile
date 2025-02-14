@@ -22,7 +22,7 @@ export default function DiseasesPage() {
       horizontalScrollRef.current?.scrollToIndex({
         index,
         animated: true,
-        viewPosition: 0.5 // 0.5 يعني المنتصف
+        viewPosition: 0.5
       });
     }
   }, [selectedDisease]);
@@ -59,7 +59,7 @@ export default function DiseasesPage() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalScrollContent}
             getItemLayout={(data, index) => ({
-              length: CARD_WIDTH + 15, // العرض + الهامش
+              length: CARD_WIDTH + 15,
               offset: (CARD_WIDTH + 15) * index,
               index,
             })}
