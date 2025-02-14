@@ -20,6 +20,8 @@ const BabyNames = () => {
   const scrollY = new Animated.Value(0);
   const [selectedNames, setSelectedNames] = React.useState<BabyName[]>([]);
   const [savedNamesByLetter, setSavedNamesByLetter] = React.useState<Record<string, BabyName[]>>({});
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [hasChanges, setHasChanges] = React.useState(false);
 
   // جلب الأسماء المحفوظة عند تحميل الصفحة
   React.useEffect(() => {
@@ -65,7 +67,10 @@ const BabyNames = () => {
   const handleNameSelection = async (name: BabyName) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
+      if (!token) {
+        router.push('/auth/login');
+        return;
+      }
 
       const isSelected = selectedNames.includes(name);
       let updatedNames: BabyName[];
@@ -77,8 +82,18 @@ const BabyNames = () => {
       }
 
       setSelectedNames(updatedNames);
+      setHasChanges(true);
+    } catch (error) {
+      console.error('Error updating name selection:', error);
+    }
+  };
 
-      // تحديث في الخادم
+  const saveChanges = async () => {
+    try {
+      setIsUpdating(true);
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) return;
+
       const response = await fetch(`${API_URL}/profile/save-item`, {
         method: 'POST',
         headers: {
@@ -89,21 +104,23 @@ const BabyNames = () => {
           type: 'babyName',
           data: {
             letter: selectedLetter,
-            names: updatedNames
+            names: selectedNames
           }
         }),
       });
 
       const data = await response.json();
       if (data.success) {
-        // تحديث الحالة المحلية
         setSavedNamesByLetter(prev => ({
           ...prev,
-          [selectedLetter]: updatedNames
+          [selectedLetter]: selectedNames
         }));
+        setHasChanges(false);
       }
     } catch (error) {
-      console.error('Error updating name selection:', error);
+      console.error('Error saving changes:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -163,13 +180,16 @@ const BabyNames = () => {
 
   const renderNameItem = ({ item }: { item: BabyName }) => {
     const saved = isNameSaved(item);
+    const isSelected = selectedNames.includes(item);
     
     return (
       <TouchableOpacity 
         onPress={() => handleNameSelection(item)}
         style={[
           styles.nameItem,
-          saved && styles.savedNameItem
+          saved && styles.savedNameItem,
+          isSelected && !saved && styles.selectedNameItem,
+          hasChanges && isSelected && styles.updatingNameItem
         ]}
       >
         <View style={styles.leftContainer}>
@@ -193,6 +213,15 @@ const BabyNames = () => {
             <Ionicons name="checkmark-circle" size={24} color="#623AA2" />
           </View>
         )}
+        {isSelected && !saved && (
+          <View style={styles.checkmark}>
+            <Ionicons 
+              name="add-circle" 
+              size={24} 
+              color={hasChanges ? "#4CAF50" : "#623AA2"} 
+            />
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -201,6 +230,29 @@ const BabyNames = () => {
     section => section.letter === selectedLetter
   )?.names || [];
   
+  const renderSaveButton = () => (
+    <TouchableOpacity 
+      style={[
+        styles.saveButton, 
+        hasChanges && styles.updateButton
+      ]} 
+      onPress={saveChanges}
+      disabled={!hasChanges || isUpdating}
+    >
+      <MaterialIcons 
+        name={hasChanges ? "update" : "bookmark"} 
+        size={24} 
+        color={hasChanges ? "#fff" : "#623AA2"} 
+      />
+      <Text style={[
+        styles.saveButtonText, 
+        hasChanges && styles.updateButtonText
+      ]}>
+        {isUpdating ? 'Updating...' : hasChanges ? 'Update List' : 'Saved Names'}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={[styles.navbarContainer, { opacity: navbarOpacity }]} />
@@ -220,30 +272,7 @@ const BabyNames = () => {
         ListHeaderComponent={() => (
           <>
             <View style={styles.saveButtonContainer}>
-              <TouchableOpacity 
-                style={[
-                  styles.saveButton, 
-                  selectedNames.length > 0 && isNameSaved(selectedNames[0]) && styles.savedButton
-                ]} 
-                onPress={() => {
-                  if (selectedNames.length > 0) {
-                    handleNameSelection(selectedNames[0]);
-                  }
-                }}
-                disabled={selectedNames.length === 0}
-              >
-                <MaterialIcons 
-                  name={selectedNames.length > 0 && isNameSaved(selectedNames[0]) ? "bookmark" : "bookmark-outline"} 
-                  size={24} 
-                  color={selectedNames.length > 0 && isNameSaved(selectedNames[0]) ? "#fff" : "#623AA2"} 
-                />
-                <Text style={[
-                  styles.saveButtonText, 
-                  selectedNames.length > 0 && isNameSaved(selectedNames[0]) && styles.savedButtonText
-                ]}>
-                  {selectedNames.length > 0 && isNameSaved(selectedNames[0]) ? 'Saved' : 'Save'}
-                </Text>
-              </TouchableOpacity>
+              {renderSaveButton()}
             </View>
 
             <ImageBackground
@@ -381,23 +410,29 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   leftContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10, // Space between icon and text
+    gap: 10,
   },
   nameTxt: {
     fontFamily: Font["raleway"],
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   genderIcon: {
     width: 24,
     height: 24,
   },
   defaultBackground: {
-    backgroundColor: theme.colors.secondary, // or any color you prefer
+    backgroundColor: theme.colors.secondary,
   },
   navbarContainer: {
     position: 'absolute',
@@ -455,7 +490,10 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   selectedNameItem: {
-    backgroundColor: 'rgba(98, 58, 162, 0.1)',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    borderColor: '#4CAF50',
+    borderWidth: 1,
+    transform: [{ scale: 1.02 }],
   },
   savedNameItem: {
     backgroundColor: 'rgba(98, 58, 162, 0.1)',
@@ -465,6 +503,19 @@ const styles = StyleSheet.create({
   checkmark: {
     position: 'absolute',
     right: 15,
+    transform: [{ scale: 1.1 }],
+  },
+  updateButton: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  updateButtonText: {
+    color: '#fff',
+  },
+  updatingNameItem: {
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    borderColor: '#4CAF50',
+    borderWidth: 2,
   },
 });
 
