@@ -9,8 +9,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import Navbar from '../../../(navbar)/navbar';
 import { profileService } from '../services/api';
+import { BabyName } from '@/data/babyNames';
 
-
+interface HealthSectionProps {
+  currentHealth: HealthData;
+  setCurrentHealth: (newData: HealthData) => void;
+  expandedCards: ExpandedCards;
+  setExpandedCards: (newCards: ExpandedCards) => void;
+  expandedSections: ExpandedSections;
+  setExpandedSections: (newSections: ExpandedSections) => void;
+  savedWeeks: Array<{ week: string; date: string }>;
+  onDeleteWeek: (weekId: string) => void;
+  savedDiseases: Array<string>;
+  onDeleteDisease: (id: string) => void;
+  savedBabyNames?: Array<{
+    letter: string;
+    names: BabyName[];
+  }>;
+  onUpdateBabyNames: (names: Array<{
+    letter: string;
+    names: BabyName[];
+  }>) => void;
+}
 
 export default function MainProfile() {
   const [formData, setFormData] = useState<FormData>({
@@ -43,6 +63,8 @@ export default function MainProfile() {
   const [savedWeeks, setSavedWeeks] = useState<Array<{ week: string; date: string }>>([]);
   const [savedDiseases, setSavedDiseases] = useState([]);
 
+  const [userData, setUserData] = useState<any>(null);
+
   const router = useRouter();
 
   const scrollY = new Animated.Value(0);
@@ -74,6 +96,7 @@ export default function MainProfile() {
 
           setSavedWeeks(user.savedWeeks || []);
           setSavedDiseases(user.savedDiseases || []);
+          setUserData(user);
         }
 
         if (healthRecord) {
@@ -262,6 +285,13 @@ export default function MainProfile() {
               } catch (error) {
                 console.error('Error deleting disease:', error);
               }
+            }}
+            savedBabyNames={userData?.savedBabyNames || []}
+            onUpdateBabyNames={(updatedNames) => {
+              setUserData((prev: any) => ({
+                ...prev,
+                savedBabyNames: updatedNames
+              }));
             }}
           />
         </ScrollView>

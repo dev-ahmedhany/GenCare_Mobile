@@ -245,8 +245,55 @@ router.post('/save-item', authMiddleware, async (req, res) => {
         });
         break;
       case 'babyName':
-        if (!user.savedBabyNames) user.savedBabyNames = [];
-        user.savedBabyNames.push(data);
+        try {
+          if (!data.letter || !Array.isArray(data.names)) {
+            return res.status(400).json({
+              success: false,
+              message: 'بيانات غير صالحة'
+            });
+          }
+
+          // تحديث أو إضافة مجموعة الحرف
+          await User.findOneAndUpdate(
+            { _id: user._id },
+            {
+              $pull: { savedBabyNames: { letter: data.letter } }
+            }
+          );
+
+          if (data.names.length > 0) {
+            await User.findOneAndUpdate(
+              { _id: user._id },
+              {
+                $push: {
+                  savedBabyNames: {
+                    letter: data.letter,
+                    names: data.names
+                  }
+                }
+              },
+              { new: true }
+            );
+          }
+
+          // جلب البيانات المحدثة
+          const updatedUser = await User.findById(user._id);
+          
+          return res.json({
+            success: true,
+            message: 'تم التحديث بنجاح',
+            data: {
+              savedBabyNames: updatedUser.savedBabyNames
+            }
+          });
+
+        } catch (error) {
+          console.error('Error processing baby names:', error);
+          return res.status(400).json({
+            success: false,
+            message: 'خطأ في معالجة البيانات'
+          });
+        }
         break;
       default:
         return res.status(400).json({

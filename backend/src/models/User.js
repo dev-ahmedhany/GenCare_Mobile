@@ -62,9 +62,21 @@ const userSchema = new mongoose.Schema({
         date: Date
     }],
     savedBabyNames: [{
-        name: String,
-        gender: String,
-        meaning: String
+        letter: {
+            type: String,
+            required: true
+        },
+        names: [{
+            name: {
+                type: String,
+                required: true
+            },
+            gender: {
+                type: String,
+                enum: ['M', 'F'],
+                required: true
+            }
+        }]
     }]
 }, { timestamps: true });
 

@@ -1,5 +1,5 @@
 import React, { useState, Dispatch, SetStateAction, useEffect } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions, Platform, Modal, ScrollView, Alert, Text, FlatList } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { HealthData, ExpandedCards, ExpandedSections, SavedDisease } from '../types/profile.types';
@@ -9,7 +9,9 @@ import { profileService } from '../services/api';
 import { useRouter } from 'expo-router';
 import { NewsList } from '@/data/pregnancyweeks';
 import { diseases } from '@/data/diseases';
-
+import { BabyName } from '@/data/babyNames';
+import { API_URL } from '@/app/config/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface HealthSectionProps {
@@ -23,6 +25,14 @@ interface HealthSectionProps {
   onDeleteWeek?: (week: string) => void;
   savedDiseases?: SavedDisease[];
   onDeleteDisease?: (id: string) => void;
+  savedBabyNames: Array<{
+    letter: string;
+    names: BabyName[];
+  }>;
+  onUpdateBabyNames: (names: Array<{
+    letter: string;
+    names: BabyName[];
+  }>) => void;
 }
 
 interface ValidationErrors {
@@ -43,6 +53,8 @@ export default function HealthSection({
   onDeleteWeek,
   savedDiseases = [],
   onDeleteDisease,
+  savedBabyNames,
+  onUpdateBabyNames,
 }: HealthSectionProps) {
   const [isEditingHealth, setIsEditingHealth] = useState(false);
   const [tempHealthData, setTempHealthData] = useState(currentHealth);
@@ -267,6 +279,95 @@ export default function HealthSection({
         )}
       </View>
     );
+  };
+
+  const renderSavedNameItem = ({ item }: { item: { letter: string; names: BabyName[] } }) => (
+    <View style={styles.letterGroup}>
+      <View style={styles.letterHeaderContainer}>
+        <Text style={styles.letterHeader}>{item.letter}</Text>
+        <View style={styles.letterActions}>
+          <TouchableOpacity
+            onPress={() => router.push({
+              pathname: '/(home)/(home-components)/(pages-components)/BabyNames',
+              params: { selectedLetter: item.letter }
+            })}
+            style={styles.actionButton}
+          >
+            <FontAwesome name="eye" size={20} color="#623AA2" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleDeleteLetterGroup(item.letter)}
+            style={styles.actionButton}
+          >
+            <FontAwesome name="trash-o" size={20} color="#FF4444" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View style={styles.namesContainer}>
+        {item.names.map((name) => (
+          <View key={name.name} style={styles.nameItem}>
+            <View style={styles.nameContent}>
+              <Ionicons 
+                name={name.gender === 'M' ? 'male' : 'female'} 
+                size={16} 
+                color={name.gender === 'M' ? '#95cae4' : '#ffb9cc'} 
+              />
+              <Text style={[
+                styles.nameText,
+                { color: name.gender === 'M' ? '#95cae4' : '#ffb9cc' }
+              ]}>
+                {name.name}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
+  const handleDeleteLetterGroup = async (letter: string) => {
+    try {
+      Alert.alert(
+        'تأكيد الحذف',
+        'هل أنت متأكد من حذف كل الأسماء في هذا الحرف؟',
+        [
+          {
+            text: 'إلغاء',
+            style: 'cancel'
+          },
+          {
+            text: 'حذف',
+            style: 'destructive',
+            onPress: async () => {
+              const response = await fetch(`${API_URL}/profile/save-item`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${await AsyncStorage.getItem('userToken')}`,
+                },
+                body: JSON.stringify({
+                  type: 'babyName',
+                  data: {
+                    letter: letter,
+                    names: []
+                  }
+                }),
+              });
+
+              if (response.ok) {
+                // تحديث الواجهة
+                const updatedNames = savedBabyNames.filter(group => group.letter !== letter);
+                // يجب إضافة prop للتحديث
+                onUpdateBabyNames(updatedNames);
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error deleting letter group:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء حذف المجموعة');
+    }
   };
 
   useEffect(() => {
@@ -511,7 +612,55 @@ export default function HealthSection({
         </TouchableOpacity>
         {expandedSections.babyNames && (
           <View style={styles.sectionContent}>
-            <ThemedText style={styles.emptyText}>No saved baby names</ThemedText>
+            {savedBabyNames.length > 0 ? (
+              <View>
+                {savedBabyNames.map((group) => (
+                  <View key={group.letter} style={styles.letterGroup}>
+                    <View style={styles.letterHeaderContainer}>
+                      <Text style={styles.letterHeader}>{group.letter}</Text>
+                      <View style={styles.letterActions}>
+                        <TouchableOpacity
+                          onPress={() => router.push({
+                            pathname: '/(home)/(home-components)/(pages-components)/BabyNames',
+                            params: { selectedLetter: group.letter }
+                          })}
+                          style={styles.actionButton}
+                        >
+                          <FontAwesome name="eye" size={20} color="#623AA2" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleDeleteLetterGroup(group.letter)}
+                          style={styles.actionButton}
+                        >
+                          <FontAwesome name="trash-o" size={20} color="#FF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View style={styles.namesContainer}>
+                      {group.names.map((name) => (
+                        <View key={name.name} style={styles.nameItem}>
+                          <View style={styles.nameContent}>
+                            <Ionicons 
+                              name={name.gender === 'M' ? 'male' : 'female'} 
+                              size={16} 
+                              color={name.gender === 'M' ? '#95cae4' : '#ffb9cc'} 
+                            />
+                            <Text style={[
+                              styles.nameText,
+                              { color: name.gender === 'M' ? '#95cae4' : '#ffb9cc' }
+                            ]}>
+                              {name.name}
+                            </Text>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <ThemedText style={styles.emptyText}>لا توجد أسماء محفوظة</ThemedText>
+            )}
           </View>
         )}
       </View>
@@ -722,5 +871,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#1F2937',
+  },
+  letterGroup: {
+    marginBottom: 20,
+  },
+  letterHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  letterActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  letterHeader: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#623AA2',
+  },
+  namesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  nameItem: {
+    backgroundColor: 'rgba(98, 58, 162, 0.1)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  nameContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  nameText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  listContainer: {
+    paddingVertical: 10,
   },
 });

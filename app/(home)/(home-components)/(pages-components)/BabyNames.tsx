@@ -8,6 +8,8 @@ import { theme } from "../../../../constants/Colors1";
 import { getLetterGif } from 'data/BabyGifs';
 import { bgColors } from "@/constants/Colors";
 import Navbar from '../(navbar)/navbar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@/app/config/config';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;
@@ -16,6 +18,38 @@ const BabyNames = () => {
   const [selectedLetter, setSelectedLetter] = React.useState('A');
   const [isSaved, setIsSaved] = React.useState(false);
   const scrollY = new Animated.Value(0);
+  const [selectedNames, setSelectedNames] = React.useState<BabyName[]>([]);
+  const [savedNamesByLetter, setSavedNamesByLetter] = React.useState<Record<string, BabyName[]>>({});
+
+  // جلب الأسماء المحفوظة عند تحميل الصفحة
+  React.useEffect(() => {
+    fetchSavedNames();
+  }, []);
+
+  const fetchSavedNames = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      
+      if (data.success && data.data.user.savedBabyNames) {
+        const savedNames = data.data.user.savedBabyNames.reduce((acc: Record<string, BabyName[]>,
+           group: { letter: string; names: BabyName[] }) => {
+          acc[group.letter] = group.names;
+          return acc;
+        }, {});
+        setSavedNamesByLetter(savedNames);
+      }
+    } catch (error) {
+      console.error('Error fetching saved names:', error);
+    }
+  };
 
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
@@ -28,8 +62,62 @@ const BabyNames = () => {
     extrapolate: 'clamp',
   });
 
-  const handleSaveName = () => {
-    setIsSaved(!isSaved);
+  const handleNameSelection = async (name: BabyName) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) return;
+
+      const isSelected = selectedNames.includes(name);
+      let updatedNames: BabyName[];
+
+      if (isSelected) {
+        updatedNames = selectedNames.filter(n => n !== name);
+      } else {
+        updatedNames = [...selectedNames, name];
+      }
+
+      setSelectedNames(updatedNames);
+
+      // تحديث في الخادم
+      const response = await fetch(`${API_URL}/profile/save-item`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 'babyName',
+          data: {
+            letter: selectedLetter,
+            names: updatedNames
+          }
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // تحديث الحالة المحلية
+        setSavedNamesByLetter(prev => ({
+          ...prev,
+          [selectedLetter]: updatedNames
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating name selection:', error);
+    }
+  };
+
+  // تحديث الواجهة عند تغيير الحرف
+  const handleLetterChange = (letter: string) => {
+    setSelectedLetter(letter);
+    setSelectedNames(savedNamesByLetter[letter] || []);
+  };
+
+  // تحقق ما إذا كان الاسم محفوظاً
+  const isNameSaved = (name: BabyName) => {
+    return savedNamesByLetter[selectedLetter]?.some(
+      saved => saved.name === name.name
+    );
   };
 
   type AlphabetSection = {
@@ -43,7 +131,7 @@ const BabyNames = () => {
 
     return (
       <TouchableOpacity
-        onPress={() => setSelectedLetter(item.letter)}
+        onPress={() => handleLetterChange(item.letter)}
         style={[
           styles.letterItem,
           isSelected && styles.selectedLetter,
@@ -73,28 +161,43 @@ const BabyNames = () => {
     );
   };
 
-  const renderNameItem = ({ item }: { item: BabyName }) => (
-    <View style={styles.nameItem}>
-      <View style={styles.leftContainer}>
-        <Image
-          source={item.gender === 'M' 
-            ? require('../../../../assets/images/babyNames/man.png')
-            : require('../../../../assets/images/babyNames/woman.png')
-          }
-          style={styles.genderIcon}
-          resizeMode="contain"
-        />
-        <Text style={[
-          styles.nameTxt,
-          { color: item.gender === 'M' ? '#95cae4' : '#ffb9cc' }
-        ]}>
-          {item.name}
-        </Text>
-      </View>
-    </View>
-  );
+  const renderNameItem = ({ item }: { item: BabyName }) => {
+    const saved = isNameSaved(item);
+    
+    return (
+      <TouchableOpacity 
+        onPress={() => handleNameSelection(item)}
+        style={[
+          styles.nameItem,
+          saved && styles.savedNameItem
+        ]}
+      >
+        <View style={styles.leftContainer}>
+          <Image
+            source={item.gender === 'M' 
+              ? require('../../../../assets/images/babyNames/man.png')
+              : require('../../../../assets/images/babyNames/woman.png')
+            }
+            style={styles.genderIcon}
+            resizeMode="contain"
+          />
+          <Text style={[
+            styles.nameTxt,
+            { color: item.gender === 'M' ? '#95cae4' : '#ffb9cc' }
+          ]}>
+            {item.name}
+          </Text>
+        </View>
+        {saved && (
+          <View style={styles.checkmark}>
+            <Ionicons name="checkmark-circle" size={24} color="#623AA2" />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
-  const selectedNames = alphabetData.find(
+  const names = alphabetData.find(
     section => section.letter === selectedLetter
   )?.names || [];
   
@@ -118,16 +221,27 @@ const BabyNames = () => {
           <>
             <View style={styles.saveButtonContainer}>
               <TouchableOpacity 
-                style={[styles.saveButton, isSaved && styles.savedButton]} 
-                onPress={handleSaveName}
+                style={[
+                  styles.saveButton, 
+                  selectedNames.length > 0 && isNameSaved(selectedNames[0]) && styles.savedButton
+                ]} 
+                onPress={() => {
+                  if (selectedNames.length > 0) {
+                    handleNameSelection(selectedNames[0]);
+                  }
+                }}
+                disabled={selectedNames.length === 0}
               >
                 <MaterialIcons 
-                  name={isSaved ? "bookmark" : "bookmark-outline"} 
+                  name={selectedNames.length > 0 && isNameSaved(selectedNames[0]) ? "bookmark" : "bookmark-outline"} 
                   size={24} 
-                  color={isSaved ? "#fff" : "#623AA2"} 
+                  color={selectedNames.length > 0 && isNameSaved(selectedNames[0]) ? "#fff" : "#623AA2"} 
                 />
-                <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-                  {isSaved ? 'Saved' : 'Save Names'}
+                <Text style={[
+                  styles.saveButtonText, 
+                  selectedNames.length > 0 && isNameSaved(selectedNames[0]) && styles.savedButtonText
+                ]}>
+                  {selectedNames.length > 0 && isNameSaved(selectedNames[0]) ? 'Saved' : 'Save'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -154,7 +268,7 @@ const BabyNames = () => {
 
               <View style={styles.namesContainer}>
                 <FlatList
-                  data={selectedNames}
+                  data={names}
                   renderItem={renderNameItem}
                   keyExtractor={item => item.name}
                   numColumns={2}
@@ -340,4 +454,17 @@ const styles = StyleSheet.create({
   savedButtonText: {
     color: '#fff',
   },
+  selectedNameItem: {
+    backgroundColor: 'rgba(98, 58, 162, 0.1)',
+  },
+  savedNameItem: {
+    backgroundColor: 'rgba(98, 58, 162, 0.1)',
+    borderColor: '#623AA2',
+    borderWidth: 1,
+  },
+  checkmark: {
+    position: 'absolute',
+    right: 15,
+  },
 });
+
