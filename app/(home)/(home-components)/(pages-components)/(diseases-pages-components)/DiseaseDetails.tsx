@@ -10,9 +10,10 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface DiseaseDetailsProps {
   disease: typeof diseases[number];
+  updateSavedDiseases?: (callback: (prevDiseases: any[]) => any[]) => void;
 }
 
-export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
+export default function DiseaseDetails({ disease, updateSavedDiseases }: DiseaseDetailsProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -32,34 +33,37 @@ export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
     }
   };
 
-  const handleSaveDisease = async () => {
+  const handleToggleSave = async () => {
     try {
       setIsSaving(true);
-
       if (isSaved) {
-        // حذف المرض
+        // إذا كان المرض محفوظ، نقوم بحذفه باستخدام اسم المرض
         const response = await profileService.deleteItem('disease', disease.name);
         if (response.success) {
           setIsSaved(false);
-          Alert.alert('نجاح', 'تم إزالة المرض من المحفوظات');
+          if (updateSavedDiseases) {
+            updateSavedDiseases(prevDiseases => 
+              prevDiseases.filter(d => d.name !== disease.name)
+            );
+          }
         }
       } else {
-        // حفظ المرض
-        const diseaseData = {
+        const response = await profileService.saveItem('disease', {
           name: disease.name,
           details: disease.details,
-          date: disease.date,
-        };
+          date: new Date().toISOString()
+        });
 
-        const response = await profileService.saveItem('disease', diseaseData);
         if (response.success) {
           setIsSaved(true);
-          Alert.alert('نجاح', 'تم حفظ المرض بنجاح');
+          if (updateSavedDiseases) {
+            updateSavedDiseases(prevDiseases => [...prevDiseases, response.data.disease]);
+          }
         }
       }
     } catch (error) {
-      console.error('Error handling disease:', error);
-      Alert.alert('خطأ', 'حدث خطأ في العملية');
+      console.error('Error toggling save:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء تحديث المحفوظات');
     } finally {
       setIsSaving(false);
     }
@@ -70,7 +74,7 @@ export default function DiseaseDetails({ disease }: DiseaseDetailsProps) {
       <View style={styles.saveButtonContainer}>
         <TouchableOpacity 
           style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={handleSaveDisease}
+          onPress={handleToggleSave}
           disabled={isSaving}
         >
           <MaterialIcons 

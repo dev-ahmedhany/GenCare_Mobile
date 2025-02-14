@@ -223,9 +223,10 @@ export default function MainProfile() {
   const handleDeleteDisease = async (id: string) => {
     try {
       await profileService.deleteItem('disease', id);
-      await loadProfileData();
+      setSavedDiseases(prev => prev.filter((disease: any) => disease.id !== id));
     } catch (error) {
       console.error('Error deleting disease:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء حذف المرض');
     }
   };
 
@@ -243,6 +244,7 @@ export default function MainProfile() {
           <ProfileInfo 
             formData={formData}
             setFormData={handleUpdateProfile}
+            avatar={userData?.avatar}
           />
           
           <PregnancySection 

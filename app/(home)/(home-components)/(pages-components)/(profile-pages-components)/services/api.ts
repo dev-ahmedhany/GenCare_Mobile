@@ -94,6 +94,16 @@ export const profileService = {
       const response = await api.delete(`/profile/saved-item/${type}/${id}`);
       return response.data;
     } catch (error) {
+      console.error('Delete item error:', error);
+      throw error;
+    }
+  },
+
+  updateAvatar: async (avatarName: string) => {
+    try {
+      const response = await api.put('/profile/update-avatar', { avatarName });
+      return response.data;
+    } catch (error) {
       throw error;
     }
   }

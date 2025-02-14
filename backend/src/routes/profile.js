@@ -319,58 +319,57 @@ router.post('/save-item', authMiddleware, async (req, res) => {
   }
 });
 
-// delete saved items
+// حذف العناصر المحفوظة
 router.delete('/saved-item/:type/:id', authMiddleware, async (req, res) => {
     try {
         const { type, id } = req.params;
-        console.log('Deleting item:', { type, id }); // للتأكد من البيانات
-
         const user = await User.findById(req.user._id);
-        
+
         if (!user) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'المستخدم غير موجود' 
+                message: 'المستخدم غير موجود'
             });
         }
 
         switch (type) {
             case 'disease':
-                // تعديل طريقة الحذف لاستخدام _id
-                user.savedDiseases = user.savedDiseases.filter(item => 
-                    item._id.toString() !== id
+                // حذف المرض باستخدام الاسم
+                user.savedDiseases = user.savedDiseases.filter(
+                    disease => disease.name !== id  // هنا id هو اسم المرض
                 );
                 break;
+
             case 'week':
-                user.savedWeeks = user.savedWeeks.filter(item => 
-                    item.week !== id
+                // حذف الأسبوع من المصفوفة
+                user.savedWeeks = user.savedWeeks.filter(
+                    week => week.week !== id
                 );
                 break;
-            case 'babyName':
-                user.savedBabyNames = user.savedBabyNames.filter(item => 
-                    item._id.toString() !== id
-                );
-                break;
+
             default:
-                return res.status(400).json({ 
+                return res.status(400).json({
                     success: false,
-                    message: 'نوع غير صالح' 
+                    message: 'نوع غير صالح'
                 });
         }
 
         await user.save();
-        
-        res.json({ 
+
+        res.json({
             success: true,
             message: 'تم حذف العنصر بنجاح',
-            data: { user }
+            data: {
+                savedDiseases: user.savedDiseases,
+                savedWeeks: user.savedWeeks
+            }
         });
+
     } catch (error) {
-        console.error('Error deleting item:', error);
-        res.status(500).json({ 
+        console.error('Delete item error:', error);
+        res.status(500).json({
             success: false,
-            message: 'حدث خطأ في حذف العنصر',
-            error: error.message
+            message: 'حدث خطأ في حذف العنصر'
         });
     }
 });
@@ -398,5 +397,37 @@ router.get('/health-record', authMiddleware, async (req, res) => {
         });
     }
 });
- 
+
+// تحديث الأفاتار
+router.put('/update-avatar', authMiddleware, async (req, res) => {
+  try {
+    const { avatarName } = req.body;
+    
+    if (!avatarName) {
+      return res.status(400).json({
+        success: false,
+        message: 'يرجى اختيار صورة'
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatar: avatarName },
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      success: true,
+      message: 'تم تحديث الصورة بنجاح',
+      user
+    });
+  } catch (error) {
+    console.error('Avatar update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'حدث خطأ في تحديث الصورة'
+    });
+  }
+});
+
 module.exports = router;

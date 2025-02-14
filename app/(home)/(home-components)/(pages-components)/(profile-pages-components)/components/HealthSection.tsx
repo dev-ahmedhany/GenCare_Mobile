@@ -180,12 +180,17 @@ export default function HealthSection({
     }
   };
 
-  const handleDeleteDisease = async (diseaseId: string) => {
+  const handleDeleteDisease = async (id: string) => {
     try {
-      await profileService.deleteItem('disease', diseaseId);
-      await loadProfileData(true);
+      const response = await profileService.deleteItem('disease', id);
+      if (response.success) {
+        onDeleteDisease?.(id);
+      } else {
+        Alert.alert('خطأ', 'فشل في حذف المرض');
+      }
     } catch (error) {
       console.error('Error deleting disease:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء حذف المرض');
     }
   };
 

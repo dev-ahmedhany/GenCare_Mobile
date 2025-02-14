@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions, Modal, Animated, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions, Modal, Animated, ScrollView, Platform, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -8,12 +8,14 @@ import MainButton from '@/constants/MainButton';
 import { BlurView } from 'expo-blur';
 import PregnancyWeekPicker from './PregnancyWeekPicker';
 import { Picker } from '@react-native-picker/picker';
+import { profileService } from '../services/api';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ProfileInfoProps {
   formData: FormData;
   setFormData: (data: FormData) => void;
+  avatar?: string;
 }
 
 interface ValidationErrors {
@@ -27,18 +29,18 @@ interface ValidationErrors {
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
 // إضافة مصفوفة الصور الافتراضية (قم باستبدالها بمسارات الصور SVG الخاصة بك)
-const avatarImages = [
-  require('@/assets/profile_images/default.png'),
-  require('@/assets/profile_images/avatar1.jpeg'),
-  require('@/assets/profile_images/avatar2.jpeg'),
-  require('@/assets/profile_images/avatar3.jpeg'),
-  require('@/assets/profile_images/avatar4.jpeg'),
-  require('@/assets/profile_images/avatar5.jpeg'),
-  require('@/assets/profile_images/avatar6.jpg'),
-  require('@/assets/profile_images/avatar7.jpg'),
-];
+const avatarImages: { [key: string]: any } = {
+  default: require('@/assets/profile_images/default.png'),
+  avatar1: require('@/assets/profile_images/avatar1.jpeg'),
+  avatar2: require('@/assets/profile_images/avatar2.jpeg'),
+  avatar3: require('@/assets/profile_images/avatar3.jpeg'),
+  avatar4: require('@/assets/profile_images/avatar4.jpeg'),
+  avatar5: require('@/assets/profile_images/avatar5.jpeg'),
+  avatar6: require('@/assets/profile_images/avatar6.jpg'),
+  avatar7: require('@/assets/profile_images/avatar7.jpg'),
+};
 
-export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps) {
+export default function ProfileInfo({ formData, setFormData, avatar }: ProfileInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempFormData, setTempFormData] = useState(formData);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
@@ -46,6 +48,12 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
     require('@/assets/profile_images/default.png')
   );
   const [errors, setErrors] = useState<ValidationErrors>({});
+
+  useEffect(() => {
+    if (avatar && avatarImages[avatar]) {
+      setProfileImage(avatarImages[avatar]);
+    }
+  }, [avatar]);
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
@@ -183,6 +191,19 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
     );
   };
 
+  const handleAvatarSelect = async (avatarName: string) => {
+    try {
+      const response = await profileService.updateAvatar(avatarName);
+      if (response.success) {
+        setProfileImage(avatarImages[avatarName]);
+        setImagePickerVisible(false);
+      }
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      Alert.alert('خطأ', 'حدث خطأ في تحديث الصورة');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -278,36 +299,22 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
         animationType="slide"
         onRequestClose={() => setImagePickerVisible(false)}
       >
-        <View style={styles.bottomSheetContainer}>
-          <View style={styles.bottomSheet}>
-            <View style={styles.bottomSheetHeader}>
-              <ThemedText style={styles.bottomSheetTitle}>اختر صورة شخصية</ThemedText>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <ThemedText style={styles.modalTitle}>اختر صورة</ThemedText>
               <TouchableOpacity onPress={() => setImagePickerVisible(false)}>
                 <Ionicons name="close" size={24} color="#623AA2" />
               </TouchableOpacity>
             </View>
-            
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.avatarList}
-            >
-              {avatarImages.map((avatar, index) => (
+            <ScrollView contentContainerStyle={styles.avatarGrid}>
+              {Object.entries(avatarImages).map(([name, image]) => (
                 <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.avatarItem,
-                    profileImage === avatar && styles.selectedAvatar
-                  ]}
-                  onPress={() => {
-                    setProfileImage(avatar);
-                    setImagePickerVisible(false);
-                  }}
+                  key={name}
+                  style={styles.avatarItem}
+                  onPress={() => handleAvatarSelect(name)}
                 >
-                  <Image 
-                    source={avatar} 
-                    style={styles.avatarImage}
-                  />
+                  <Image source={image} style={styles.avatarImage} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -398,10 +405,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 20,
-    width: SCREEN_WIDTH * 0.9,
-    maxHeight: SCREEN_HEIGHT * 0.85,
+    maxHeight: SCREEN_HEIGHT * 0.4,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -485,44 +492,27 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  bottomSheetContainer: {
+  modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  bottomSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: SCREEN_HEIGHT * 0.4,
-  },
-  bottomSheetHeader: {
+  avatarGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  bottomSheetTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#623AA2',
-  },
-  avatarList: {
-    paddingVertical: 10,
-    gap: 15,
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    padding: 10
   },
   avatarItem: {
-    borderRadius: SCREEN_WIDTH * 0.1,
-    padding: 2,
-  },
-  selectedAvatar: {
-    borderWidth: 2,
-    borderColor: '#623AA2',
+    width: SCREEN_WIDTH * 0.25,
+    height: SCREEN_WIDTH * 0.25,
+    margin: 5,
+    borderRadius: 10,
+    overflow: 'hidden'
   },
   avatarImage: {
-    width: SCREEN_WIDTH * 0.2,
-    height: SCREEN_WIDTH * 0.2,
-    borderRadius: SCREEN_WIDTH * 0.1,
-  },
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
+  }
 });

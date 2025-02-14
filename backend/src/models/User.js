@@ -77,7 +77,11 @@ const userSchema = new mongoose.Schema({
                 required: true
             }
         }]
-    }]
+    }],
+    avatar: {
+        type: String,
+        default: 'default.png'
+    }
 }, { timestamps: true });
 
 // password hashing before saving
