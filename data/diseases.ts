@@ -13,7 +13,7 @@ export const diseases: Disease[] = [
         name: "Arachnoid Cyst",
         date: "Weeks 10-12",
         summary: "A fluid-filled sac that forms in the brain or spinal cord, within the arachnoid membrane surrounding the central nervous system.",
-        image: require('@/assets/diseases/Arachnoid_Cyst_Treated_using_a_VP_Shunt.png'),
+        image: require('@/assets/diseases/arachnoid_cyst_treated_using_a_vp_shunt.png'),
         details: `Arachnoid Cyst is a fluid-filled sac that usually forms in the brain or spinal cord, within the arachnoid membrane surrounding the central nervous system. Often, it is congenital (present from birth), but it can also develop due to brain injury or infection.
 
 Symptoms:

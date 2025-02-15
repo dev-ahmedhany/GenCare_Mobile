@@ -5,7 +5,6 @@ import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { FormData } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
-import { BlurView } from 'expo-blur';
 import PregnancyWeekPicker from './PregnancyWeekPicker';
 import { Picker } from '@react-native-picker/picker';
 import { profileService } from '../services/api';
@@ -241,7 +240,7 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
         animationType="fade"
         onRequestClose={() => setIsEditing(false)}
       >
-        <BlurView intensity={10} style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(255,255,255,0.8)' }]}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <ThemedText style={styles.modalTitle}>Edit Profile</ThemedText>
@@ -289,7 +288,7 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
               />
             </View>
           </View>
-        </BlurView>
+        </View>
       </Modal>
 
       {/* Image Picker Modal - يمكن إضافة تصميم مشابه */}
@@ -398,7 +397,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(255,255,255,0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,

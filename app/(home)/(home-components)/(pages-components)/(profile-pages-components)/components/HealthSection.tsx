@@ -4,7 +4,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { HealthData, ExpandedCards, ExpandedSections, SavedDisease } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
-import { BlurView } from 'expo-blur';
 import { profileService } from '../services/api';
 import { useRouter } from 'expo-router';
 import { NewsList } from '@/data/pregnancyweeks';
@@ -380,7 +379,7 @@ export default function HealthSection({
   }, [savedDiseases]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: 'rgba(255,255,255,0.8)' }]}>
       {/* Health Predictor Card */}
       <View style={styles.card}>
         <TouchableOpacity 
@@ -442,7 +441,7 @@ export default function HealthSection({
         animationType="fade"
         onRequestClose={() => setIsEditingHealth(false)}
       >
-        <BlurView intensity={10} style={styles.modalOverlay}>
+        <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <ThemedText style={styles.modalTitle}>Edit Health Information</ThemedText>
@@ -484,7 +483,7 @@ export default function HealthSection({
               />
             </View>
           </View>
-        </BlurView>
+        </View>
       </Modal>
 
       {/* Saved Items Section */}
@@ -676,6 +675,7 @@ export default function HealthSection({
 const styles = StyleSheet.create({
   container: {
     padding: SCREEN_WIDTH * 0.04,
+    backgroundColor: 'rgba(255,255,255,0.8)',
   },
   card: {
     backgroundColor: '#fff',

@@ -3,43 +3,31 @@ export default {
     name: 'GenCare',
     slug: 'gencare',
     version: '1.0.0',
-    scheme: 'gencare',
-    icon: "./assets/Logo/Mob-Logo-removebg-preview.png",
+    icon: "./assets/Logo/baby-boy.png",
     extra: {
       apiUrl: 'http://192.168.122.1:5000',
       eas: {
-        projectId: "492afcaf-713b-4b0c-b955-f70442f2acdb"
+        projectId: "806cd55a-e5b4-48df-acf8-e9d0cb13847a"
       }
     },
-    newArchEnabled: true,
     android: {
-      package: "com.ahmed_shams2.gencare",
-      compileSdk: 34,
-      targetSdk: 34,
-      buildToolsVersion: "34.0.0",
-      adaptiveIcon: {
-        foregroundImage: "./assets/Logo/Mob-Logo-removebg-preview.png",
-        backgroundColor: "#ffffff"
-      },
-      ndkVersion: "25.1.8937393",
-      minSdkVersion: 21,
-      buildConfigExtra: {
-        repositories: [
-          "maven { url 'https://www.jitpack.io' }"
-        ]
-      }
+      package: "com.ahmed_shams2.gencare"
     },
     ios: {
-      bundleIdentifier: "com.ahmed-shams2.gencare",
-      supportsTablet: true
+      bundleIdentifier: "com.ahmed-shams2.gencare"
     },
+    owner: "ahmed_shams2",
+    runtimeVersion: {
+      policy: "sdkVersion"
+    },
+    updates: {
+      url: "https://u.expo.dev/806cd55a-e5b4-48df-acf8-e9d0cb13847a"
+    },
+    assetBundlePatterns: [
+      "assets/**/*"
+    ],
     plugins: [
-      [
-        'expo-blur',
-        {
-          enabled: false
-        }
-      ]
+      "expo-router"
     ]
-  },
-}; 
+  }
+};

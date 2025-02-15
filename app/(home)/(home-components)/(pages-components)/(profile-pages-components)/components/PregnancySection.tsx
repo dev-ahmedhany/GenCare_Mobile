@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, Alert, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, Dimensions, Alert, TouchableOpacity, Text, Modal } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -20,13 +20,25 @@ interface PregnancySectionProps {
 export default function PregnancySection({ pregnancyWeek, onWeekChange, onSaveWeek }: PregnancySectionProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const progress = (parseInt(pregnancyWeek) || 0) / 40;
   const weekInfo = NewsList.find(item => item.id === parseInt(pregnancyWeek));
 
-  
-
   return (
     <View style={styles.container}>
+      <Modal
+        visible={isEditing}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsEditing(false)}
+      >
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(255,255,255,0.8)' }]}>
+          <View style={styles.modalContent}>
+            {/* محتوى Modal */}
+          </View>
+        </View>
+      </Modal>
+
       <ThemedText style={styles.cardTitle}>Pregnancy Tracker</ThemedText>
       <View style={styles.progressContainer}>
         <LinearGradient
@@ -91,6 +103,19 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     marginHorizontal: SCREEN_WIDTH * 0.04,
     marginBottom: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    width: '90%',
   },
   cardTitle: {
     fontSize: SCREEN_WIDTH * 0.045,

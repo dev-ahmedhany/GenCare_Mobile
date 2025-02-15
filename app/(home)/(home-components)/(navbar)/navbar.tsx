@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Animated, Text, Dimensions, Platform, StatusBar, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { BlurView } from 'expo-blur';
 import { bgColors } from '@/constants/Colors';
 import MenuModal from './MenuModal';
 import NotificationsModal from './NotificationsModal';
@@ -163,7 +162,7 @@ export default function Navbar({
 
   return (
     <Animated.View style={[styles.mainContainer, { transform: [{ translateY: navbarTranslateY }] }]}>
-      <BlurView intensity={100} tint="default" style={styles.navbar}>
+      <View style={styles.navbar}>
         <View style={styles.container}>
           {/* القائمة - تظهر فقط في النمط الافتراضي */}
           {variant === 'default' && (
@@ -231,7 +230,7 @@ export default function Navbar({
             )}
           </View>
         </View>
-      </BlurView>
+      </View>
 
       {/* القائمة المنسدلة */}
       <MenuModal 
