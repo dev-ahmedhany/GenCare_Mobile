@@ -41,6 +41,8 @@ interface ValidationErrors {
   symptoms?: string;
 }
 
+// const healthIcon = require('@/assets/icons/health.jpg');
+
 export default function HealthSection({
   currentHealth,
   setCurrentHealth,
@@ -375,7 +377,7 @@ export default function HealthSection({
   };
 
   useEffect(() => {
-    console.log('Current savedDiseases:', savedDiseases);
+    // console.log('Current savedDiseases:', savedDiseases);
   }, [savedDiseases]);
 
   return (

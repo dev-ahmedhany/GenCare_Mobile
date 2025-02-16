@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 router.post('/signup', async (req, res) => {
-    console.log('Received signup request:', req.body);
+    // console.log('Received signup request:', req.body);
     try {
         const { fullName, email, password, phone } = req.body;
         
@@ -56,7 +56,7 @@ router.post('/signup', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    console.log('Received login request:', req.body);
+    // console.log('Received login request:', req.body);
     try {
         const { identifier, password } = req.body;
         
@@ -71,7 +71,7 @@ router.post('/login', async (req, res) => {
         }
 
         // البحث عن المستخدم
-        console.log('Searching for user...');
+        // console.log('Searching for user...');
         const user = await User.findOne({
             $or: [
                 { email: identifier },

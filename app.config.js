@@ -11,7 +11,11 @@ export default {
       }
     },
     android: {
-      package: "com.ahmed_shams2.gencare"
+      package: "com.ahmed_shams2.gencare",
+      adaptiveIcon: {
+        foregroundImage: "./assets/Logo/baby-boy.png",
+        backgroundColor: "#ffffff"
+      }
     },
     ios: {
       bundleIdentifier: "com.ahmed-shams2.gencare"
@@ -24,10 +28,14 @@ export default {
       url: "https://u.expo.dev/806cd55a-e5b4-48df-acf8-e9d0cb13847a"
     },
     assetBundlePatterns: [
-      "assets/**/*"
+      "assets/Logo/*",
+      "assets/diseases/*",
+      "assets/gif/*"
     ],
     plugins: [
       "expo-router"
-    ]
+    ],
+    newArchEnabled: true, 
+    scheme: "gencare"
   }
 };

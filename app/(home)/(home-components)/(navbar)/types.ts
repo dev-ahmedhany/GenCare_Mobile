@@ -30,8 +30,12 @@ export interface Notification {
 
 export type ScrollHandler = (event: any) => void;
 
-// حذف هذا الجزء نهائياً
-// const types = {
-//   Notification,
-// };
-// export default types; 
+// تصدير كل الأنواع في كائن واحد
+const types = {
+  // NavbarProps,
+  // MenuItem,
+  // Notification,
+  // ScrollHandler,
+};
+
+export default types; 

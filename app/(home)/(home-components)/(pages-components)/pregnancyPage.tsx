@@ -76,7 +76,7 @@ const PregnancyPage = () => {
             (savedWeek: any) => String(savedWeek.week) === String(weekData.id)
           );
           setIsSaved(isWeekSaved);
-          console.log('حالة الحفظ:', isWeekSaved, 'للأسبوع:', weekData.id);
+          // console.log('حالة الحفظ:', isWeekSaved, 'للأسبوع:', weekData.id);
         } else {
           setIsSaved(false);
         }

@@ -47,3 +47,8 @@ app-example
 /ios/*
 /ios
 !/ios/Podfile
+
+# تأكد من عدم تجاهل مجلد الأيقونات
+!assets/icons/
+!assets/icon.png
+!assets/adaptive-icon.png

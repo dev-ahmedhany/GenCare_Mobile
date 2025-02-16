@@ -13,7 +13,7 @@ export const diseases: Disease[] = [
         name: "Arachnoid Cyst",
         date: "Weeks 10-12",
         summary: "A fluid-filled sac that forms in the brain or spinal cord, within the arachnoid membrane surrounding the central nervous system.",
-        image: require('@/assets/diseases/arachnoid_cyst_treated_using_a_vp_shunt.png'),
+        image: require('@/assets/diseases/arachnoid_cyst.jpg'),
         details: `Arachnoid Cyst is a fluid-filled sac that usually forms in the brain or spinal cord, within the arachnoid membrane surrounding the central nervous system. Often, it is congenital (present from birth), but it can also develop due to brain injury or infection.
 
 Symptoms:
@@ -37,7 +37,7 @@ Awareness:
         name: "Cerebellar Hypoplasia",
         date: "Weeks 10-12",
         summary: "A condition where the cerebellum does not develop properly, affecting coordination, balance, and motor control.",
-        image: require('@/assets/diseases/Clinical-impression-of-siblings-of-family-1-a-patient-1-b-patient-2.png'),
+        image: require('@/assets/diseases/arachnoid_cyst.jpg'),
         details: `Cerebellar Hypoplasia is a condition where the cerebellum (the part of the brain responsible for coordination, balance, and motor control) does not develop properly. It can be congenital (present at birth) or acquired (due to brain damage after birth).
 
 Causes:

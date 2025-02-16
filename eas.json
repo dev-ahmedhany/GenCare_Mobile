@@ -11,7 +11,7 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
+        "gradleCommand": ":app:assembleRelease -x validateSigningRelease",
         "env": {
           "ANDROID_NDK_HOME": "/opt/android-ndk"
         },

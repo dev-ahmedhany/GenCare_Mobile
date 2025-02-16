@@ -80,7 +80,7 @@ export default function MainProfile() {
       setIsRefreshing(true);
 
       const response = await profileService.getProfile();
-      console.log('Profile Response:', response);
+      // console.log('Profile Response:', response);
 
       if (response?.success && response?.data) {
         const { user, healthRecord } = response.data;

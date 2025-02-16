@@ -44,7 +44,7 @@ export const profileService = {
   getProfile: async () => {
     try {
       const response = await api.get('/profile');
-      console.log('Profile API response:', response.data); // للتأكد من البيانات
+      // console.log('Profile API response:', response.data); // للتأكد من البيانات
       return response.data;
     } catch (error) {
       console.error('Profile API error:', error);
@@ -55,9 +55,9 @@ export const profileService = {
   // تحديث البيانات الشخصية
   updateProfile: async (data: any) => {
     try {
-      console.log('Updating profile with data:', data);
+      // console.log('Updating profile with data:', data);
       const response = await api.put('/profile/update', data);
-      console.log('Update response:', response.data);
+      // console.log('Update response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Profile update error:', error);
@@ -68,9 +68,9 @@ export const profileService = {
   // تحديث البيانات الصحية
   updateHealth: async (data: any) => {
     try {
-      console.log('Updating health data:', data);
+      // console.log('Updating health data:', data);
       const response = await api.put('/profile/health', data);
-      console.log('Health update response:', response.data);
+      // console.log('Health update response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Health update error:', error);
@@ -107,4 +107,7 @@ export const profileService = {
       throw error;
     }
   }
-}; 
+};
+
+// إضافة default export
+export default profileService; 
