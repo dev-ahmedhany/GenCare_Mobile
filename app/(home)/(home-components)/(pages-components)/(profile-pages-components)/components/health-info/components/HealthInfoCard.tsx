@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import MainButton from '@/constants/MainButton';
 import { HealthData, ExpandedCards } from '../../../types/profile.types';
-import  styles  from '../HealthSectionStyles';
+import styles from '../HealthSectionStyles';
 
 interface HealthInfoCardProps {
   expandedCards: ExpandedCards;
@@ -19,6 +19,18 @@ export const HealthInfoCard: React.FC<HealthInfoCardProps> = ({
   tempHealthData,
   handleEditHealthInfo
 }) => {
+  // تحويل النص إلى مصفوفة إذا كان نصًا
+  const getSymptomsList = () => {
+    if (!tempHealthData.symptoms) return [];
+    
+    if (Array.isArray(tempHealthData.symptoms)) {
+      return tempHealthData.symptoms;
+    }
+    
+    // إذا كان نصًا، قم بتقسيمه بناءً على الفواصل أو الأسطر الجديدة
+    return tempHealthData.symptoms.split(/[,\n]+/).map(s => s.trim()).filter(s => s);
+  };
+
   return (
     <View style={styles.card}>
       <TouchableOpacity 
@@ -39,7 +51,7 @@ export const HealthInfoCard: React.FC<HealthInfoCardProps> = ({
             <View style={styles.infoField}>
               <ThemedText style={styles.fieldLabel}>Blood Pressure</ThemedText>
               <ThemedText style={styles.fieldValue}>
-                {tempHealthData.bloodPressure ? tempHealthData.bloodPressure.split('/').join('   /   ') : '—'}
+                {tempHealthData.bloodPressure ? tempHealthData.bloodPressure : '—'}
               </ThemedText>
             </View>
             <View style={styles.infoField}>
@@ -57,11 +69,11 @@ export const HealthInfoCard: React.FC<HealthInfoCardProps> = ({
             <View style={styles.infoField}>
               <ThemedText style={styles.fieldLabel}>Symptoms</ThemedText>
               <View style={styles.symptomsList}>
-                {Array.isArray(tempHealthData.symptoms) ? (
-                  tempHealthData.symptoms.map((symptom: string, index: number) => (
-                    <ThemedText key={index} style={styles.fieldValue}>
-                      {symptom || '—'}
-                    </ThemedText>
+                {getSymptomsList().length > 0 ? (
+                  getSymptomsList().map((symptom, index) => (
+                    <View key={index} style={styles.nameItem}>
+                      <ThemedText style={styles.nameText}>{symptom}</ThemedText>
+                    </View>
                   ))
                 ) : (
                   <ThemedText style={styles.fieldValue}>—</ThemedText>
@@ -72,7 +84,7 @@ export const HealthInfoCard: React.FC<HealthInfoCardProps> = ({
 
           <View style={styles.buttonContainer}>
             <MainButton
-              title="Edit "
+              title="Edit"
               onPress={handleEditHealthInfo}
               backgroundColor="#623AA2"
             />

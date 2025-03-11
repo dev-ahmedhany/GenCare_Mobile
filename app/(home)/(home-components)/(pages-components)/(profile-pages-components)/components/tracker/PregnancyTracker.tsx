@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, Dimensions, Alert, TouchableOpacity, Text, Modal } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { NewsList } from '@/data/pregnancyweeks';
 import MainButton from '@/constants/MainButton';
 import { useRouter } from 'expo-router';
-import { getPersonalInfo } from '../../api/PersonalInfo';
+import { getPersonalInfo, updatePersonalInfo } from '../profile-info/api/PersonalInfo';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -21,29 +21,48 @@ export default function PregnancySection({ onWeekChange, onSaveWeek }: Pregnancy
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [currentWeek, setCurrentWeek] = useState('');
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await getPersonalInfo();
-      const data = await response.json();
-      const weekFromData = data.pregnancyWeek;
-      console.log("data",data);
-      console.log("weekFromData",weekFromData);
-      setCurrentWeek(weekFromData);
+      try {
+        const response = await getPersonalInfo();
+        if (!response) {
+          console.error("No response received from getPersonalInfo");
+          return;
+        }
+        
+        const data = typeof response === 'object' ? response : await response.json();
+        
+        if (data && data.pregnancyWeek) {
+          setCurrentWeek(data.pregnancyWeek.toString());
+          setInitialDataLoaded(true);
+        }
+      } catch (error) {
+        console.error("Error fetching pregnancy week:", error);
+      }
     };
 
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (initialDataLoaded && onWeekChange && currentWeek) {
+      onWeekChange(currentWeek);
+    }
+  }, [initialDataLoaded, currentWeek]);
+
   const progress = (parseInt(currentWeek) || 0) / 40;
   const weekInfo = NewsList.find(item => item.id === parseInt(currentWeek));
 
-  const handleWeekChange = (newWeek: string) => {
+  const handleWeekChange = useCallback((newWeek: string) => {
     setCurrentWeek(newWeek);
-    if (onWeekChange) {
-      onWeekChange(newWeek);
-    }
-  };
+    
+    updatePersonalInfo({ pregnancyWeek: newWeek })
+      .then(() => console.log("Pregnancy week updated successfully"))
+      .catch(err => console.error("Error updating pregnancy week:", err));
+    
+  }, []);
 
   return (
     <View style={styles.container}>

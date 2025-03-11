@@ -12,12 +12,10 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bgColors } from '@/constants/Colors';
-import ProfileInfo from './components/profile-info/ProfileInfo';
 import Checkbox from 'expo-checkbox';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
-const pagesColors = bgColors.light;
 const slides = [
   {
     id: '1',
@@ -56,13 +54,24 @@ export default function ProfileSplash() {
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
+  React.useEffect(() => {
+    checkSplashStatus();
+  }, []);
+
+  const checkSplashStatus = async () => {
+    try {
+      const splashShown = await AsyncStorage.getItem('profileSplashShown');
+      if (splashShown === 'false') {
+        router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
+      }
+    } catch (error) {
+      console.error('Error checking splash status:', error);
+    }
+  };
+
   const handleNavigation = async () => {
     try {
-      if (showAgain) {
-        await AsyncStorage.setItem('profileSplashShown', 'false');
-      } else {
-        await AsyncStorage.setItem('profileSplashShown', 'true');
-      }
+      await AsyncStorage.setItem('profileSplashShown', showAgain ? 'false' : 'true');
       router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
     } catch (error) {
       console.error('Error saving splash screen preference:', error);

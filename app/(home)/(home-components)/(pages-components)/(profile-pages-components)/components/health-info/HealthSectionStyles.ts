@@ -253,6 +253,11 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
     flexWrap: 'wrap',
     gap: 10,
   },
+  bpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
 }); 
 
 export default  styles ;

@@ -22,8 +22,8 @@ export interface Disease {
 }
 
 export interface ExpandedSections {
-  diseases: boolean;
   weeks: boolean;
+  diseases: boolean;
   babyNames: boolean;
 }
 
@@ -36,9 +36,7 @@ export interface ExpandedCards {
 export interface SavedDisease {
   _id: string;
   name: string;
-  date: string;
-  details?: string;
-  risk?: string;
+  date?: string;
 }
 
 // إضافة مكون افتراضي فارغ

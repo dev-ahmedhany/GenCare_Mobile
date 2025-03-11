@@ -1,9 +1,10 @@
-import { View, StyleSheet, Text, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { diseases } from '@/data/diseases';
 import { bgColors } from '@/constants/Colors';
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState, useEffect } from 'react';
-import profileService from '../(profile-pages-components)/api/PersonalInfo';
+import { saveDisease, deleteDisease, getSavedDiseases } from '@/app/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/saved-items/api/savedDisaeas';
+import * as SecureStore from 'expo-secure-store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -16,14 +17,91 @@ interface DiseaseDetailsProps {
 export default function DiseaseDetails({ disease, updateSavedDiseases }: DiseaseDetailsProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        setIsLoading(true);
+        const storedToken = await SecureStore.getItemAsync('token');
+        setToken(storedToken);
+        
+        if (storedToken) {
+          try {
+            const savedDiseases = await getSavedDiseases(storedToken);
+            console.log('Checking if disease is saved:', disease.id);
+            console.log('Saved diseases:', savedDiseases);
+            
+            const isAlreadySaved = savedDiseases.some((d: any) => 
+              d.diseaseId === disease.id.toString() || d._id === disease.id.toString()
+            );
+            
+            console.log('Is disease saved:', isAlreadySaved);
+            setIsSaved(isAlreadySaved);
+          } catch (error) {
+            console.error('Error checking if disease is saved:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting token:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    getToken();
+  }, [disease.id]);
 
+  const handleSave = async () => {
+    if (!token) {
+      Alert.alert('Alert', 'Please login first');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      if (!isSaved) {
+        await saveDisease(token, { name: disease.name, _id: disease.id.toString() });
+        if (updateSavedDiseases) {
+          updateSavedDiseases(prev => [...prev, disease]);
+        }
+        setIsSaved(true);
+        Alert.alert('Success', 'Disease saved successfully');
+      } else {
+        await deleteDisease(token, disease.id.toString());
+        if (updateSavedDiseases) {
+          updateSavedDiseases(prev => prev.filter(d => d.id !== disease.id));
+        }
+        setIsSaved(false);
+        Alert.alert('Success', 'Disease removed from saved items');
+      }
+    } catch (error: any) {
+      console.error('Error saving/deleting disease:', error);
+      Alert.alert(
+        'Error', 
+        error.response?.data?.error || 'Error processing your request. Please try again.'
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#623AA2" />
+        <Text style={{ marginTop: 10, color: '#623AA2' }}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.saveButtonContainer}>
         <TouchableOpacity 
           style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={ (a) => (1) }
+          onPress={handleSave}
           disabled={isSaving}
         >
           <MaterialIcons 
@@ -32,7 +110,7 @@ export default function DiseaseDetails({ disease, updateSavedDiseases }: Disease
             color={isSaved ? "#fff" : "#623AA2"} 
           />
           <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-            {isSaving ? "جاري المعالجة..." : (isSaved ? 'saved' : 'save')}
+            {isSaving ? "Saving..." : (isSaved ? 'saved' : 'save')}
           </Text>
         </TouchableOpacity>
       </View>

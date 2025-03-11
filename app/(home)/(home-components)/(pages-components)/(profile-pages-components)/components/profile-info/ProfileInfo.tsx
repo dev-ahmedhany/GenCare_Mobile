@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, Text } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { ProfileFormData } from '../../types/profile.types';
@@ -9,6 +9,7 @@ import ProfileField from './components/ProfileField';
 import EditProfileModal from './components/EditProfileModal';
 import AvatarPickerModal from './components/AvatarPickerModal';
 import MainButton from '@/constants/MainButton';
+import { getPersonalInfo, updatePersonalInfo } from './api/PersonalInfo';
 
 interface ProfileInfoProps {
   formData: ProfileFormData;
@@ -22,6 +23,28 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
   const [profileImage, setProfileImage] = useState(require('@/assets/profile_images/default.png'));
   const [errors, setErrors] = useState<ValidationErrors>({});
 
+  useEffect(() => {
+    const fetchPersonalInfo = async () => {
+      try {
+        const data = await getPersonalInfo();
+        console.log('Fetched data:', data);
+        
+        // تعيين البيانات المستلمة
+        setFormData(data);
+        setTempFormData(data);
+        
+        // تعيين صورة الملف الشخصي إذا كانت موجودة
+        if (data.avatar && avatarImages[data.avatar]) {
+          setProfileImage(avatarImages[data.avatar]);
+        }
+      } catch (error) {
+        console.error('Error in ProfileInfo component:', error);
+      }
+    };
+
+    fetchPersonalInfo();
+  }, []);
+
   const validateForm = (): boolean => {
     const { isValid, errors: validationErrors } = validateProfileForm(tempFormData);
     setErrors(validationErrors);
@@ -31,12 +54,38 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
   const handleAvatarSelect = (avatarName: string) => {
     setProfileImage(avatarImages[avatarName]);
     setImagePickerVisible(false);
+    
+    // تحديث البيانات المؤقتة لتشمل اسم الصورة الجديدة
+    setTempFormData({
+      ...tempFormData,
+      avatar: avatarName
+    });
+    
+    // حفظ التغييرات مباشرة في قاعدة البيانات
+    updatePersonalInfo({
+      ...tempFormData,
+      avatar: avatarName
+    }).then(() => {
+      // تحديث البيانات الرئيسية بعد الحفظ
+      setFormData({
+        ...formData,
+        avatar: avatarName
+      });
+    }).catch(error => {
+      console.error('Error updating avatar:', error);
+    });
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (validateForm()) {
-      setFormData(tempFormData);
-      setIsEditing(false);
+      try {
+        await updatePersonalInfo(tempFormData);
+        setFormData(tempFormData);
+        setIsEditing(false);
+      } catch (error) {
+        console.error('Error updating personal info:', error);
+        // يمكنك إضافة معالجة الأخطاء هنا
+      }
     }
   };
 
@@ -93,6 +142,7 @@ export default function ProfileInfo({ formData, setFormData }: ProfileInfoProps)
         onClose={() => setImagePickerVisible(false)}
         onSelectAvatar={handleAvatarSelect}
         avatarImages={avatarImages}
+        currentAvatar={tempFormData.avatar}
       />
     </View>
   );

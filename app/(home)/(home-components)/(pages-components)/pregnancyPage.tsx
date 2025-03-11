@@ -1,10 +1,12 @@
-import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Animated, Dimensions, Alert } from "react-native";
+import { SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, StyleSheet, Animated, Dimensions, Alert, ActivityIndicator } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useLocalSearchParams, router } from 'expo-router';
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { bgColors } from "@/constants/Colors";
 import Navbar from '../(navbar)/navbar';
-import profileService from "./(profile-pages-components)/api/PersonalInfo";
+import { saveWeek, deleteWeek, getSavedWeeks } from '@/app/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/saved-items/api/savedWeeks';
+import * as SecureStore from 'expo-secure-store';
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;
 
@@ -14,6 +16,69 @@ const PregnancyPage = () => {
   const scrollY = new Animated.Value(0);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        setIsLoading(true);
+        const storedToken = await SecureStore.getItemAsync('token');
+        setToken(storedToken);
+        
+        if (storedToken) {
+          try {
+            const savedWeeks = await getSavedWeeks(storedToken);
+            console.log('Checking if week is saved:', weekData.id);
+            console.log('Saved weeks:', savedWeeks);
+            
+            const isAlreadySaved = savedWeeks.some((w: any) => 
+              w.week === weekData.id.toString()
+            );
+            
+            console.log('Is week saved:', isAlreadySaved);
+            setIsSaved(isAlreadySaved);
+          } catch (error) {
+            console.error('Error checking if week is saved:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting token:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    getToken();
+  }, [weekData.id]);
+
+  const handleSave = async () => {
+    if (!token) {
+      Alert.alert('Alert', 'Please login first');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      if (!isSaved) {
+        await saveWeek(token, weekData.id.toString());
+        setIsSaved(true);
+        Alert.alert('Success', 'Week saved successfully');
+      } else {
+        await deleteWeek(token, weekData.id.toString());
+        setIsSaved(false);
+        Alert.alert('Success', 'Week removed from saved items');
+      }
+    } catch (error: any) {
+      console.error('Error saving/deleting week:', error);
+      Alert.alert(
+        'Error', 
+        error.response?.data?.error || 'Error processing your request. Please try again.'
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
@@ -36,28 +101,31 @@ const PregnancyPage = () => {
       />
 
       <ScrollView
-      
         style={styles.scrollView}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
         {/* Title and Subtitle */}
         <View style={styles.saveButtonContainer}>
-        <TouchableOpacity 
-          style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={() => (1)}
-          disabled={isSaving}
-        >
-          <MaterialIcons 
-            name={isSaved ? "bookmark" : "bookmark-outline"} 
-            size={24} 
-            color={isSaved ? "#fff" : "#623AA2"} 
-          />
-          <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
-            {isSaving ? "جاري الحفظ..." : (isSaved ? 'Saved' : 'Save Week')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#623AA2" />
+          ) : (
+            <TouchableOpacity 
+              style={[styles.saveButton, isSaved && styles.savedButton]} 
+              onPress={handleSave}
+              disabled={isSaving}
+            >
+              <MaterialIcons 
+                name={isSaved ? "bookmark" : "bookmark-outline"} 
+                size={24} 
+                color={isSaved ? "#fff" : "#623AA2"} 
+              />
+              <Text style={[styles.saveButtonText, isSaved && styles.savedButtonText]}>
+                {isSaving ? "Saving..." : (isSaved ? 'Saved' : 'Save Week')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{weekData.title}</Text>
           <Text style={styles.subtitle}>{weekData.author}</Text>

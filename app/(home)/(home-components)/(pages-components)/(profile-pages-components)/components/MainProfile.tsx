@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ScrollView, StyleSheet, Animated, Dimensions, View, NativeSyntheticEvent, NativeScrollEvent, RefreshControl } from 'react-native';
 import { bgColors } from '@/constants/Colors';
 import ProfileInfo from './profile-info/ProfileInfo';
@@ -7,6 +7,8 @@ import HealthSection from './health-info/HealthSection';
 import { HealthData, ExpandedSections, ExpandedCards, ProfileFormData } from '../types/profile.types';
 import Navbar from '../../../(navbar)/navbar';
 import SavedItems from './saved-items/SavedItems';
+import { getHealthInfo } from './health-info/api/HealthInfo';
+import { getPersonalInfo } from './profile-info/api/PersonalInfo';
 
 export default function MainProfile() {
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -38,27 +40,50 @@ export default function MainProfile() {
 
   // حالة البطاقات المفتوحة
   const [expandedCards, setExpandedCards] = useState<ExpandedCards>({
-    healthPredictor: false,
-    savedDiseases: false,
-    savedItems: false,
+    healthPredictor: true,
+    savedDiseases: true,
+    savedItems: true,
   });
 
   // إضافة حالة التحديث
   const [refreshing, setRefreshing] = useState(false);
+  const [pregnancyWeek, setPregnancyWeek] = useState('');
+  
+  // جلب البيانات عند تحميل الصفحة
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  // دالة لجلب جميع البيانات
+  const fetchAllData = async () => {
+    try {
+      // جلب البيانات الشخصية
+      const personalData = await getPersonalInfo();
+      if (personalData) {
+        setFormData(personalData);
+        if (personalData.pregnancyWeek) {
+          setPregnancyWeek(personalData.pregnancyWeek.toString());
+        }
+      }
+      
+      // جلب البيانات الصحية
+      const healthData = await getHealthInfo();
+      if (healthData) {
+        setCurrentHealth(healthData);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   // دالة التحديث عند السحب
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     
-    // هنا يمكنك إضافة أي عمليات تحديث للبيانات
-    // مثال: إعادة تحميل البيانات من الخادم
-    
-    // محاكاة وقت التحميل
-    setTimeout(() => {
-      // إعادة تعيين البيانات أو تحديثها هنا
-      
+    // إعادة تحميل جميع البيانات
+    fetchAllData().finally(() => {
       setRefreshing(false);
-    }, 1000);
+    });
   }, []);
 
   // معالجة حدث التمرير
@@ -66,6 +91,11 @@ export default function MainProfile() {
     const offsetY = event.nativeEvent.contentOffset.y;
     scrollY.setValue(offsetY);
   };
+  
+  // استخدام useCallback لتجنب إعادة إنشاء الدالة في كل تصيير
+  const handleWeekChange = useCallback((week: string) => {
+    setPregnancyWeek(week);
+  }, []);
 
   return (
     <View style={styles.mainContainer}>
@@ -90,13 +120,8 @@ export default function MainProfile() {
         />
         
         <PregnancySection 
-          pregnancyWeek={formData.pregnancyWeek}
-          onWeekChange={(week) => {
-            setFormData(prev => ({
-              ...prev,
-              pregnancyWeek: week
-            }));
-          }}
+          pregnancyWeek={pregnancyWeek} 
+          onWeekChange={handleWeekChange} 
         />
         
         <HealthSection 
@@ -110,7 +135,7 @@ export default function MainProfile() {
           savedBabyNames={[]}
           onUpdateBabyNames={() => {}}
         />
-      <SavedItems />
+        <SavedItems />
       </ScrollView>
     </View>
   );

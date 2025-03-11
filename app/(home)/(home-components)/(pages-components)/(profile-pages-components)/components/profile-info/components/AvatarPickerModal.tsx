@@ -9,13 +9,15 @@ interface AvatarPickerModalProps {
   onClose: () => void;
   onSelectAvatar: (avatarName: string) => void;
   avatarImages: { [key: string]: any };
+  currentAvatar?: string;
 }
 
 const AvatarPickerModal = ({
   isVisible,
   onClose,
   onSelectAvatar,
-  avatarImages
+  avatarImages,
+  currentAvatar = 'default'
 }: AvatarPickerModalProps) => {
   return (
     <Modal
@@ -27,7 +29,7 @@ const AvatarPickerModal = ({
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <ThemedText style={styles.modalTitle}>Choose Profile Image</ThemedText>
+            <ThemedText style={styles.modalTitle}>اختر صورة الملف الشخصي</ThemedText>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#623AA2" />
             </TouchableOpacity>
@@ -36,10 +38,18 @@ const AvatarPickerModal = ({
             {Object.entries(avatarImages).map(([name, image]) => (
               <TouchableOpacity
                 key={name}
-                style={styles.avatarItem}
+                style={[
+                  styles.avatarItem,
+                  name === currentAvatar && styles.selectedAvatarItem
+                ]}
                 onPress={() => onSelectAvatar(name)}
               >
                 <Image source={image} style={styles.avatarImage} />
+                {name === currentAvatar && (
+                  <View style={styles.selectedAvatarOverlay}>
+                    <Ionicons name="checkmark-circle" size={24} color="#623AA2" />
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </ScrollView>

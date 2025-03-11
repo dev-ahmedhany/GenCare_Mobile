@@ -6,14 +6,7 @@ export const MENU_ITEMS: MenuItem[] = [
         title: 'Home',
         description: 'Return to home page',
         route: '/(home)/home',
-    },
-    {
-        icon: 'settings',
-        title: 'Admin Dashboard',
-        description: 'admin management',
-        route: '/(management)/management',
-        adminOnly: true,
-    },
+    }
 ];
 
 export const NAVBAR_HEIGHT = 60;
@@ -43,7 +36,6 @@ const mockNotifications = [
     time: '3h ago',
     isRead: true
   },
-  // يمكنك إضافة المزيد من الإشعارات حسب احتياجات التطبيق
 ];
 
 export default {

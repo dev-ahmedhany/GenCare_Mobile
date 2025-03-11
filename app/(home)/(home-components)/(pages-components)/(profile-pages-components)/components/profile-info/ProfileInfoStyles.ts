@@ -179,7 +179,20 @@ export const styles = StyleSheet.create({
     height: SCREEN_WIDTH * 0.25,
     margin: 5,
     borderRadius: 10,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  selectedAvatarItem: {
+    borderWidth: 2,
+    borderColor: '#623AA2',
+  },
+  selectedAvatarOverlay: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 12,
+    padding: 2,
   },
   avatarImage: {
     width: '100%',
