@@ -6,14 +6,12 @@ import { useRouter } from "expo-router";
 import {Animated} from 'react-native'
 import { useFocusEffect } from '@react-navigation/native';
 import MainButton from "@/constants/MainButton";
-import config, { API_URL } from '@/app/config/config';
-import axios from "axios";
-import { authAPI } from '@/app/services/api';
-
-
+import { signup } from "./api/signup";
+import validateSignup from "@/validation/signup";
+import alert from "@/errors/alert";
 
 const SignupScreen = () => {
-    const router = useRouter();
+    const router = useRouter(); 
     const [username, setUsername] = React.useState('');
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -93,45 +91,18 @@ const SignupScreen = () => {
                 scaleAnim.stopAnimation();
                 floatAnim.stopAnimation();
             };
-        }, []) // Empty dependency array means this effect runs on every focus
+        }, [])
     );
 
     const handleSignUp = async () => {
-        // التحقق من إدخال جميع البيانات المطلوبة
-        if (!username || !email || !password || !phone) {
-            Alert.alert('تنبيه', 'الرجاء إدخال جميع البيانات المطلوبة');
-            return;
-        }
-
-        // التحقق من صحة البريد الإلكتروني
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            Alert.alert('خطأ', 'الرجاء إدخال بريد إلكتروني صحيح');
+        if(!validateSignup(username, phone, email, password)) {
             return;
         }
 
         try {
-            const response = await authAPI.signup({
-                fullName: username,
-                email,
-                password,
-                phone
-            });
-
-            if (response.status === 201) {
-                Alert.alert('نجاح', 'تم إنشاء الحساب بنجاح');
-                router.push('/(auth)/login');
-            }
+            await signup(username, phone, email, password);
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                Alert.alert(
-                    'خطأ',
-                    error.response?.data?.message || 'حدث خطأ في الاتصال'
-                );
-            } else {
-                Alert.alert('خطأ', 'حدث خطأ غير متوقع');
-                console.error(error);
-            }
+            console.log("error from signup",error);
         }
     };  
 
@@ -167,7 +138,7 @@ const SignupScreen = () => {
                 <FontAwesome name="user" size={24} color="#9A9A9A" style={styles.inputIcon} />
                 <TextInput 
                     style={styles.textInput} 
-                    placeholder="Username" 
+                    placeholder="Name" 
                     value={username}
                     onChangeText={setUsername}
                 />

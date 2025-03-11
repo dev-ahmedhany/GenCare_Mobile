@@ -3,7 +3,7 @@ import { diseases } from '@/data/diseases';
 import { bgColors } from '@/constants/Colors';
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState, useEffect } from 'react';
-import { profileService } from '../(profile-pages-components)/services/api';
+import profileService from '../(profile-pages-components)/api/PersonalInfo';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -17,64 +17,13 @@ export default function DiseaseDetails({ disease, updateSavedDiseases }: Disease
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    checkIfSaved();
-  }, [disease]);
-
-  const checkIfSaved = async () => {
-    try {
-      const response = await profileService.getProfile();
-      if (response.success) {
-        const savedDiseases = response.data.user.savedDiseases || [];
-        setIsSaved(savedDiseases.some((d: any) => d.name === disease.name));
-      }
-    } catch (error) {
-      console.error('Error checking saved status:', error);
-    }
-  };
-
-  const handleToggleSave = async () => {
-    try {
-      setIsSaving(true);
-      if (isSaved) {
-        // إذا كان المرض محفوظ، نقوم بحذفه باستخدام اسم المرض
-        const response = await profileService.deleteItem('disease', disease.name);
-        if (response.success) {
-          setIsSaved(false);
-          if (updateSavedDiseases) {
-            updateSavedDiseases(prevDiseases => 
-              prevDiseases.filter(d => d.name !== disease.name)
-            );
-          }
-        }
-      } else {
-        const response = await profileService.saveItem('disease', {
-          name: disease.name,
-          details: disease.details,
-          date: new Date().toISOString()
-        });
-
-        if (response.success) {
-          setIsSaved(true);
-          if (updateSavedDiseases) {
-            updateSavedDiseases(prevDiseases => [...prevDiseases, response.data.disease]);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling save:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء تحديث المحفوظات');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <View style={styles.container}>
       <View style={styles.saveButtonContainer}>
         <TouchableOpacity 
           style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={handleToggleSave}
+          onPress={ (a) => (1) }
           disabled={isSaving}
         >
           <MaterialIcons 

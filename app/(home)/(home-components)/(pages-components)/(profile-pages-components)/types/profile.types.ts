@@ -1,9 +1,10 @@
-export interface FormData {
+export interface ProfileFormData {
   fullName: string;
   age: string;
   pregnancyWeek: string;
   phone: string;
   bloodType: string;
+  avatar: string;
 }
 
 export interface HealthData {
@@ -40,10 +41,7 @@ export interface SavedDisease {
   risk?: string;
 }
 
-interface HealthSectionProps {
-  savedDiseases?: SavedDisease[];
-  onDeleteDisease?: (id: string) => void;
-}
+
 
 // إضافة مكون افتراضي فارغ
 const ProfileTypes = () => null;

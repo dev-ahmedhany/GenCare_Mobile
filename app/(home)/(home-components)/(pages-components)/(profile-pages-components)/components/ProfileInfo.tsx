@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions, Modal, Animated, ScrollView, Platform, Alert } from 'react-native';
+import { View, StyleSheet, Image, TextInput, TouchableOpacity, Dimensions, Modal, Animated, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { FormData } from '../types/profile.types';
+import { ProfileFormData } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
 import PregnancyWeekPicker from './PregnancyWeekPicker';
 import { Picker } from '@react-native-picker/picker';
-import { profileService } from '../services/api';
+import { getPersonalInfo, updatePersonalInfo } from '../api/PersonalInfo';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ProfileInfoProps {
-  formData: FormData;
-  setFormData: (data: FormData) => void;
+  formData: ProfileFormData;
+  setFormData: (data: ProfileFormData) => void;
   avatar?: string;
 }
 
@@ -43,16 +42,31 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
   const [isEditing, setIsEditing] = useState(false);
   const [tempFormData, setTempFormData] = useState(formData);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
-  const [profileImage, setProfileImage] = useState(
-    require('@/assets/profile_images/default.png')
-  );
+  const [profileImage, setProfileImage] = useState(require('@/assets/profile_images/default.png'));
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (avatar && avatarImages[avatar]) {
-      setProfileImage(avatarImages[avatar]);
-    }
-  }, [avatar]);
+    const fetchPersonalInfo = async () => {
+      try {
+        const personalInfo = await getPersonalInfo(); 
+        setTempFormData({
+          fullName: personalInfo.personalInfo.fullName,
+          age: personalInfo.personalInfo.age.toString(),
+          phone: personalInfo.personalInfo.phone,
+          bloodType: personalInfo.personalInfo.bloodType,
+          pregnancyWeek: personalInfo.personalInfo.pregnancyWeek.toString(),
+          avatar: personalInfo.personalInfo.avatar || 'default.png',
+        });
+      } catch (error) {
+        Alert.alert('Error', 'Error fetching personal info');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPersonalInfo();
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
@@ -101,13 +115,6 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
     return isValid;
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      setFormData(tempFormData);
-      setIsEditing(false);
-      setErrors({});
-    }
-  };
 
   const renderProfileField = (label: string, value: string, icon: string) => (
     <View style={styles.fieldContainer}>
@@ -121,7 +128,7 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
     </View>
   );
 
-  const renderEditField = (label: string, value: string, field: keyof FormData) => {
+  const renderEditField = (label: string, value: string, field: keyof ProfileFormData) => {
     if (field === 'bloodType') {
       return (
         <View style={styles.editFieldContainer}>
@@ -148,8 +155,8 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
               ))}
             </Picker>
           </View>
-          {errors[field] && (
-            <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+          {errors[field as keyof ValidationErrors] && (
+            <ThemedText style={styles.errorText}>{errors[field as keyof ValidationErrors]}</ThemedText>
           )}
         </View>
       );
@@ -161,7 +168,7 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
         <TextInput
           style={[
             styles.editInput,
-            errors[field] ? styles.inputError : null
+            errors[field as keyof ValidationErrors] ? styles.inputError : null
           ]}
           value={tempFormData[field]}
           onChangeText={(text) => {
@@ -183,55 +190,71 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
           keyboardType={field === 'phone' || field === 'age' ? 'numeric' : 'default'}
           maxLength={field === 'phone' ? 11 : undefined}
         />
-        {errors[field] && (
-          <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+        {errors[field as keyof ValidationErrors] && (
+          <ThemedText style={styles.errorText}>{errors[field as keyof ValidationErrors]}</ThemedText>
         )}
       </View>
     );
   };
 
   const handleAvatarSelect = async (avatarName: string) => {
-    try {
-      const response = await profileService.updateAvatar(avatarName);
-      if (response.success) {
-        setProfileImage(avatarImages[avatarName]);
-        setImagePickerVisible(false);
-      }
-    } catch (error) {
-      console.error('Error updating avatar:', error);
-      Alert.alert('خطأ', 'حدث خطأ في تحديث الصورة');
+
+  };
+
+  const handleUpdatePersonalInfo = async () => {
+    if (validateForm()) {
+        try {
+            const requiredFields: (keyof ProfileFormData)[] = ['fullName', 'age', 'phone', 'bloodType', 'pregnancyWeek'];
+            const dataToUpdate: Partial<ProfileFormData> = {};
+
+            requiredFields.forEach(field => {
+                if (tempFormData[field]) {
+                    dataToUpdate[field] = tempFormData[field];
+                }
+            });
+
+            await updatePersonalInfo(dataToUpdate);
+            Alert.alert('Success', 'Personal information updated successfully');
+            setIsEditing(false);
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update personal information');
+        }
     }
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.profileCard}>
-        <View style={styles.imageContainer}>
-          <Image source={profileImage} style={styles.profileImage} />
-          <TouchableOpacity 
-            style={styles.editImageButton}
-            onPress={() => setImagePickerVisible(true)}
-          >
-            <FontAwesome6 name="camera" size={16} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#623AA2" />
+      ) : (
+        <View style={styles.profileCard}>
+          <View style={styles.imageContainer}>
+            <Image source={profileImage} style={styles.profileImage} />
+            <TouchableOpacity 
+              style={styles.editImageButton}
+              onPress={() => setImagePickerVisible(true)}
+            >
+              <FontAwesome6 name="camera" size={16} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.infoContainer}>
-          {renderProfileField('Full Name', formData.fullName, 'user')}
-          {renderProfileField('Age', formData.age, 'calendar')}
-          {renderProfileField('Phone', formData.phone, 'phone')}
-          {renderProfileField('Blood Type', formData.bloodType, 'droplet')}
-          {renderProfileField('Pregnancy Week', formData.pregnancyWeek, 'baby')}
+          <View style={styles.infoContainer}>
+            {renderProfileField('Full Name', tempFormData.fullName, 'user')}
+            {renderProfileField('Age', tempFormData.age, 'calendar')}
+            {renderProfileField('Phone', tempFormData.phone, 'phone')}
+            {renderProfileField('Blood Type', tempFormData.bloodType, 'droplet')}
+            {renderProfileField('Pregnancy Week', tempFormData.pregnancyWeek, 'baby')}
 
-          <View style={styles.buttonContainer}>
-            <MainButton 
-              title="Edit Profile"
-              onPress={() => setIsEditing(true)}
-              backgroundColor="#623AA2"
-            />
+            <View style={styles.buttonContainer}>
+              <MainButton 
+                title="Edit Profile"
+                onPress={() => setIsEditing(true)}
+                backgroundColor="#623AA2"
+              />
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* Edit Modal */}
       <Modal
@@ -274,7 +297,7 @@ export default function ProfileInfo({ formData, setFormData, avatar }: ProfileIn
             <View style={styles.modalButtons}>
               <MainButton 
                 title="Save Changes"
-                onPress={handleSave}
+                onPress={handleUpdatePersonalInfo}
                 backgroundColor="#623AA2"
               />
               <MainButton 

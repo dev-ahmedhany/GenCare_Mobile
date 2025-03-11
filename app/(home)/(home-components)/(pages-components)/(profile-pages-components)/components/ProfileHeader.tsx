@@ -1,7 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import Navbar from '../../../(navbar)/navbar';
 import { bgColors } from '@/constants/Colors';

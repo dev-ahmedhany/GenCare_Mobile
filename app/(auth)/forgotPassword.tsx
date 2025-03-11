@@ -4,7 +4,7 @@ import React from "react";
 import { useNavigation } from "expo-router";
 import { useFocusEffect } from '@react-navigation/native';
 import MainButton from "@/constants/MainButton";
-import { config } from "@/app/config/config";
+import { config } from "@/config/config";
 
 
 const { width, height } = Dimensions.get('window');

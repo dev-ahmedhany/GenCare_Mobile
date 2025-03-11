@@ -6,7 +6,7 @@ export default function SavedItems() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <ThemedText style={styles.title}>العناصر المحفوظة</ThemedText>
+        <ThemedText style={styles.title}>saved items</ThemedText>
         {/* محتوى العناصر المحفوظة سيضاف لاحقاً */}
       </View>
     </ScrollView>

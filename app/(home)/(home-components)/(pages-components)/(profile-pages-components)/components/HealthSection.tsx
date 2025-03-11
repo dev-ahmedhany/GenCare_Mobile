@@ -4,14 +4,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { HealthData, ExpandedCards, ExpandedSections, SavedDisease } from '../types/profile.types';
 import MainButton from '@/constants/MainButton';
-import { profileService } from '../services/api';
 import { useRouter } from 'expo-router';
 import { NewsList } from '@/data/pregnancyweeks';
 import { diseases } from '@/data/diseases';
 import { BabyName } from '@/data/babyNames';
-import { API_URL } from '@/app/config/config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { getHealthInfo, updateHealthInfo } from '../api/HealthInfo';
 
 interface HealthSectionProps {
   currentHealth: HealthData;
@@ -41,11 +39,8 @@ interface ValidationErrors {
   symptoms?: string;
 }
 
-// const healthIcon = require('@/assets/icons/health.jpg');
-
 export default function HealthSection({
   currentHealth,
-  setCurrentHealth,
   expandedCards,
   setExpandedCards,
   expandedSections,
@@ -58,7 +53,7 @@ export default function HealthSection({
   onUpdateBabyNames,
 }: HealthSectionProps) {
   const [isEditingHealth, setIsEditingHealth] = useState(false);
-  const [tempHealthData, setTempHealthData] = useState(currentHealth);
+  const [tempHealthData, setTempHealthData] = useState<HealthData>(currentHealth);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -72,6 +67,32 @@ export default function HealthSection({
     'Thyroid Disorders',
     'Mental Health Conditions',
   ];
+
+  useEffect(() => {
+    const fetchHealthInfo = async () => {
+      try {
+        const healthInfo = await getHealthInfo();
+        console.log('Fetched health info:', healthInfo);
+        setTempHealthData({
+          bloodPressure: Array.isArray(healthInfo.healthInfo.bloodPressure) 
+            ? healthInfo.healthInfo.bloodPressure.join('/')
+            : healthInfo.healthInfo.bloodPressure || '',
+          bloodSugar: healthInfo.healthInfo.bloodSugar || '',
+          weight: healthInfo.healthInfo.weight || '',
+          symptoms: Array.isArray(healthInfo.healthInfo.symptoms) 
+            ? healthInfo.healthInfo.symptoms 
+            : healthInfo.healthInfo.symptoms ? [healthInfo.healthInfo.symptoms] : [],
+        });
+      } catch (error) {
+        console.error('Error fetching health info:', error);
+      }
+    };
+    fetchHealthInfo();
+  }, []);
+
+  useEffect(() => {
+    setTempHealthData(currentHealth);
+  }, [currentHealth]);
 
   const toggleCard = (card: keyof ExpandedCards) => {
     setExpandedCards((prev: ExpandedCards) => ({
@@ -122,264 +143,54 @@ export default function HealthSection({
     return isValid;
   };
 
-  const handleSaveHealth = async () => {
+  const renderEditField = (label: string, value: string, field: keyof HealthData) => {
+    return (
+        <View style={styles.editFieldContainer}>
+            <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
+            <TextInput
+                style={[
+                    styles.editInput,
+                    errors[field] && styles.inputError,
+                ]}
+                value={value}
+                onChangeText={(text) => setTempHealthData(prev => ({...prev, [field]: text}))}
+                placeholder={`Enter your ${label.toLowerCase()}`}
+                placeholderTextColor="#9CA3AF"
+                keyboardType={field === 'bloodSugar' || field === 'weight' ? 'numeric' : 'default'}
+                multiline={field === 'symptoms'}
+            />
+            {errors[field] && (
+                <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
+            )}
+        </View>
+    );
+  };
+
+  const handleEditHealthInfo = () => {
+    console.log('Current Health Data:', currentHealth);
+    setTempHealthData(currentHealth);
+    setIsEditingHealth(true);
+  };
+
+  const handleSaveHealthInfo = async () => {
     try {
-        if (validateForm()) {
-            setIsLoading(true);
-            const response = await profileService.updateHealth(tempHealthData);
-            
-            if (response.success) {
-                const { healthRecord } = response.data;
-                setCurrentHealth({
-                    bloodPressure: healthRecord.bloodPressure || '',
-                    bloodSugar: healthRecord.bloodSugar || '',
-                    weight: healthRecord.weight || '',
-                    symptoms: healthRecord.symptoms || ''
-                });
-                setIsEditingHealth(false);
-                setErrors({});
-                Alert.alert('نجاح', response.message || 'تم تحديث البيانات الصحية بنجاح');
-            } else {
-                throw new Error(response.message || 'فشل تحديث البيانات');
-            }
-        }
+        setIsLoading(true);
+        console.log('Saving health info:', tempHealthData);
+        const response = await updateHealthInfo({
+            ...tempHealthData,
+            symptoms: Array.isArray(tempHealthData.symptoms) 
+                ? tempHealthData.symptoms.join(', ')
+                : tempHealthData.symptoms,
+        });
+        console.log('Health info updated:', response);
+        setIsEditingHealth(false);  
     } catch (error) {
-        console.error('Error saving health data:', error);
-        Alert.alert(
-            'خطأ',
-            error instanceof Error ? error.message : 'حدث خطأ أثناء حفظ البيانات'
-        );
+        console.error('Error updating health info:', error);
     } finally {
         setIsLoading(false);
     }
   };
-
-  const handleSaveItem = async (type: string, data: any) => {
-    try {
-      await profileService.saveItem(type, data);
-      Alert.alert('نجاح', 'تم حفظ العنصر بنجاح');
-      // تحديث واجهة المستخدم حسب الحاجة
-    } catch (error) {
-      Alert.alert('خطأ', 'حدث خطأ أثناء حفظ العنصر');
-    }
-  };
-
-  const handleDeleteItem = async (type: string, id: string) => {
-    try {
-      const response = await profileService.deleteItem(type, id);
-      if (response.success) {
-        if (type === 'week') {
-          onDeleteWeek?.(id);
-        } else if (type === 'disease') {
-          onDeleteDisease?.(id);
-        }
-        Alert.alert('نجاح', 'تم حذف العنصر بنجاح');
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء حذف العنصر');
-    }
-  };
-
-  const handleDeleteDisease = async (id: string) => {
-    try {
-      const response = await profileService.deleteItem('disease', id);
-      if (response.success) {
-        onDeleteDisease?.(id);
-      } else {
-        Alert.alert('خطأ', 'فشل في حذف المرض');
-      }
-    } catch (error) {
-      console.error('Error deleting disease:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء حذف المرض');
-    }
-  };
-
-  const loadProfileData = async (force = false) => {
-    try {
-      const response = await profileService.getProfile();
-      if (response.data.success) {
-        const { savedDiseases } = response.data;
-        // تحديث واجهة المستخدم حسب الحاجة
-      }
-    } catch (error) {
-      console.error('Error loading profile data:', error);
-    }
-  };
-
-  const handleViewDisease = (diseaseId: number) => {
-    router.push(`/(home)/(home-components)/(pages-components)/(diseases-pages-components)/diseases-page?diseaseId=${diseaseId}`);
-  };
-
-  const renderEditField = (label: string, value: string, field: keyof HealthData) => {
-    if (field === 'bloodPressure') {
-      const [systolic, diastolic] = value ? value.split('/') : ['', ''];
-      
-      return (
-        <View style={styles.editFieldContainer}>
-          <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
-          <View style={styles.bloodPressureContainer}>
-            <View style={styles.bpFieldContainer}>
-              <ThemedText style={styles.bpLabel}>High</ThemedText>
-              <TextInput
-                style={[styles.bpInput, errors[field] && styles.inputError]}
-                value={systolic}
-                onChangeText={(text) => {
-                  const newText = text.replace(/[^0-9]/g, '');
-                  setTempHealthData(prev => ({
-                    ...prev,
-                    bloodPressure: `${newText}/${diastolic || ''}`
-                  }));
-                }}
-                placeholder="120"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
-                maxLength={3}
-              />
-            </View>
-            <ThemedText style={styles.bpSeparator}>/</ThemedText>
-            <View style={styles.bpFieldContainer}>
-              <ThemedText style={styles.bpLabel}>Low</ThemedText>
-              <TextInput
-                style={[styles.bpInput, errors[field] && styles.inputError]}
-                value={diastolic}
-                onChangeText={(text) => {
-                  const newText = text.replace(/[^0-9]/g, '');
-                  setTempHealthData(prev => ({
-                    ...prev,
-                    bloodPressure: `${systolic || ''}/${newText}`
-                  }));
-                }}
-                placeholder="80"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
-                maxLength={3}
-              />
-            </View>
-          </View>
-          {errors[field] && (
-            <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
-          )}
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.editFieldContainer}>
-        <ThemedText style={styles.fieldLabel}>{label}</ThemedText>
-        <TextInput
-          style={[
-            styles.editInput,
-            errors[field] && styles.inputError,
-            field === 'symptoms' && styles.symptomsInput
-          ]}
-          value={value}
-          onChangeText={(text) => setTempHealthData(prev => ({...prev, [field]: text}))}
-          placeholder={`Enter your ${label.toLowerCase()}`}
-          placeholderTextColor="#9CA3AF"
-          keyboardType={field === 'bloodSugar' || field === 'weight' ? 'numeric' : 'default'}
-          multiline={field === 'symptoms'}
-        />
-        {errors[field] && (
-          <ThemedText style={styles.errorText}>{errors[field]}</ThemedText>
-        )}
-      </View>
-    );
-  };
-
-  const renderSavedNameItem = ({ item }: { item: { letter: string; names: BabyName[] } }) => (
-    <View style={styles.letterGroup}>
-      <View style={styles.letterHeaderContainer}>
-        <Text style={styles.letterHeader}>{item.letter}</Text>
-        <View style={styles.letterActions}>
-          <TouchableOpacity
-            onPress={() => router.push({
-              pathname: '/(home)/(home-components)/(pages-components)/BabyNames',
-              params: { selectedLetter: item.letter }
-            })}
-            style={styles.actionButton}
-          >
-            <FontAwesome name="eye" size={20} color="#623AA2" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleDeleteLetterGroup(item.letter)}
-            style={styles.actionButton}
-          >
-            <FontAwesome name="trash-o" size={20} color="#FF4444" />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={styles.namesContainer}>
-        {item.names.map((name) => (
-          <View key={name.name} style={styles.nameItem}>
-            <View style={styles.nameContent}>
-              <Ionicons 
-                name={name.gender === 'M' ? 'male' : 'female'} 
-                size={16} 
-                color={name.gender === 'M' ? '#95cae4' : '#ffb9cc'} 
-              />
-              <Text style={[
-                styles.nameText,
-                { color: name.gender === 'M' ? '#95cae4' : '#ffb9cc' }
-              ]}>
-                {name.name}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-
-  const handleDeleteLetterGroup = async (letter: string) => {
-    try {
-      Alert.alert(
-        'تأكيد الحذف',
-        'هل أنت متأكد من حذف كل الأسماء في هذا الحرف؟',
-        [
-          {
-            text: 'إلغاء',
-            style: 'cancel'
-          },
-          {
-            text: 'حذف',
-            style: 'destructive',
-            onPress: async () => {
-              const response = await fetch(`${API_URL}/profile/save-item`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${await AsyncStorage.getItem('userToken')}`,
-                },
-                body: JSON.stringify({
-                  type: 'babyName',
-                  data: {
-                    letter: letter,
-                    names: []
-                  }
-                }),
-              });
-
-              if (response.ok) {
-                // تحديث الواجهة
-                const updatedNames = savedBabyNames.filter(group => group.letter !== letter);
-                // يجب إضافة prop للتحديث
-                onUpdateBabyNames(updatedNames);
-              }
-            }
-          }
-        ]
-      );
-    } catch (error) {
-      console.error('Error deleting letter group:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء حذف المجموعة');
-    }
-  };
-
-  useEffect(() => {
-    // console.log('Current savedDiseases:', savedDiseases);
-  }, [savedDiseases]);
-
+  
   return (
     <View style={[styles.container, { backgroundColor: 'rgba(255,255,255,0.8)' }]}>
       {/* Health Predictor Card */}
@@ -402,33 +213,41 @@ export default function HealthSection({
               <View style={styles.infoField}>
                 <ThemedText style={styles.fieldLabel}>Blood Pressure</ThemedText>
                 <ThemedText style={styles.fieldValue}>
-                  {currentHealth.bloodPressure || '—'}
+                  {tempHealthData.bloodPressure ? tempHealthData.bloodPressure.split('/').join('   /   ') : '—'}
                 </ThemedText>
               </View>
               <View style={styles.infoField}>
                 <ThemedText style={styles.fieldLabel}>Blood Sugar (mg/dL)</ThemedText>
                 <ThemedText style={styles.fieldValue}>
-                  {currentHealth.bloodSugar || '—'}
+                  {tempHealthData.bloodSugar || '—'}
                 </ThemedText>
               </View>
               <View style={styles.infoField}>
                 <ThemedText style={styles.fieldLabel}>Weight (kg)</ThemedText>
                 <ThemedText style={styles.fieldValue}>
-                  {currentHealth.weight || '—'}
+                  {tempHealthData.weight || '—'}
                 </ThemedText>
               </View>
               <View style={styles.infoField}>
                 <ThemedText style={styles.fieldLabel}>Symptoms</ThemedText>
-                <ThemedText style={styles.fieldValue}>
-                  {currentHealth.symptoms || '—'}
-                </ThemedText>
+                <View style={styles.symptomsList}>
+                  {Array.isArray(tempHealthData.symptoms) ? (
+                    tempHealthData.symptoms.map((symptom: string, index: number) => (
+                      <ThemedText key={index} style={styles.fieldValue}>
+                        {symptom || '—'}
+                      </ThemedText>
+                    ))
+                  ) : (
+                    <ThemedText style={styles.fieldValue}>—</ThemedText>
+                  )}
+                </View>
               </View>
             </View>
 
             <View style={styles.buttonContainer}>
               <MainButton
                 title="Edit Health Info"
-                onPress={() => setIsEditingHealth(true)}
+                onPress={handleEditHealthInfo}
                 backgroundColor="#623AA2"
               />
             </View>
@@ -471,14 +290,14 @@ export default function HealthSection({
             <View style={styles.modalButtons}>
               <MainButton 
                 title={isLoading ? "Saving..." : "Save"}
-                onPress={handleSaveHealth}
                 backgroundColor="#623AA2"
+                onPress={ handleSaveHealthInfo }
               />
               <MainButton 
                 title="Cancel"
                 onPress={() => {
-                    setTempHealthData(currentHealth);
                     setIsEditingHealth(false);
+                    setTempHealthData(currentHealth);
                     setErrors({});
                 }}
                 backgroundColor="#9CA3AF"
@@ -540,7 +359,7 @@ export default function HealthSection({
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => handleDeleteItem('disease', disease._id)}
+                      onPress={() =>(disease._id)}
                       style={styles.actionButton}
                     >
                       <FontAwesome 
@@ -553,7 +372,7 @@ export default function HealthSection({
                 </View>
               ))
             ) : (
-              <ThemedText style={styles.emptyText}>لا توجد أمراض محفوظة</ThemedText>
+              <ThemedText style={styles.emptyText}>no saved diseases</ThemedText>
             )}
           </View>
         )}
@@ -589,7 +408,7 @@ export default function HealthSection({
                         <FontAwesome name="eye" size={20} color="#623AA2" />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => handleDeleteItem('week', item.week)}
+                        onPress={() => ( 1 )}
                         style={styles.actionButton}
                       >
                         <FontAwesome name="trash-o" size={20} color="#FF4444" />
@@ -635,7 +454,7 @@ export default function HealthSection({
                           <FontAwesome name="eye" size={20} color="#623AA2" />
                         </TouchableOpacity>
                         <TouchableOpacity
-                          onPress={() => handleDeleteLetterGroup(group.letter)}
+                          onPress={() => ( 1 )}
                           style={styles.actionButton}
                         >
                           <FontAwesome name="trash-o" size={20} color="#FF4444" />
@@ -665,7 +484,7 @@ export default function HealthSection({
                 ))}
               </View>
             ) : (
-              <ThemedText style={styles.emptyText}>لا توجد أسماء محفوظة</ThemedText>
+              <ThemedText style={styles.emptyText}>no saved names</ThemedText>
             )}
           </View>
         )}
@@ -919,5 +738,10 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingVertical: 10,
+  },
+  symptomsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
 });

@@ -4,7 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { bgColors } from "@/constants/Colors";
 import Navbar from '../(navbar)/navbar';
-import { profileService } from "./(profile-pages-components)/services/api";
+import profileService from "./(profile-pages-components)/api/PersonalInfo";
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;
 
@@ -26,71 +26,6 @@ const PregnancyPage = () => {
     extrapolate: 'clamp',
   });
 
-  const handleSaveWeek = async () => {
-    try {
-      setIsSaving(true);
-      
-      if (!weekData?.id) {
-        Alert.alert('خطأ', 'لم يتم العثور على معلومات الأسبوع');
-        return;
-      }
-
-      if (isSaved) {
-        const response = await profileService.deleteItem('week', String(weekData.id));
-        if (response.success) {
-          setIsSaved(false);
-          Alert.alert('نجاح', 'تم إزالة الأسبوع من المحفوظات');
-        } else {
-          throw new Error(response.message || 'فشل حذف الأسبوع');
-        }
-      } else {
-        const weekDataToSave = {
-          week: String(weekData.id),
-          title: weekData.title,
-          description: weekData.body1Title,
-          date: new Date().toISOString()
-        };
-
-        const response = await profileService.saveItem('week', weekDataToSave);
-        if (response.success) {
-          setIsSaved(true);
-          Alert.alert('نجاح', 'تم حفظ الأسبوع بنجاح');
-        } else {
-          throw new Error(response.message || 'فشل حفظ الأسبوع');
-        }
-      }
-    } catch (error) {
-      console.error('Error handling week:', error);
-      Alert.alert('خطأ', 'حدث خطأ في العملية');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  useEffect(() => {
-    const checkIfSaved = async () => {
-      try {
-        const response = await profileService.getProfile();
-        if (response.success && response.data?.user?.savedWeeks) {
-          const isWeekSaved = response.data.user.savedWeeks.some(
-            (savedWeek: any) => String(savedWeek.week) === String(weekData.id)
-          );
-          setIsSaved(isWeekSaved);
-          // console.log('حالة الحفظ:', isWeekSaved, 'للأسبوع:', weekData.id);
-        } else {
-          setIsSaved(false);
-        }
-      } catch (error) {
-        console.error('خطأ في التحقق من حالة الحفظ:', error);
-        setIsSaved(false);
-      }
-    };
-
-    if (weekData?.id) {
-      checkIfSaved();
-    }
-  }, [weekData]);
-
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={[styles.navbarContainer, { opacity: navbarOpacity }]} />
@@ -110,7 +45,7 @@ const PregnancyPage = () => {
         <View style={styles.saveButtonContainer}>
         <TouchableOpacity 
           style={[styles.saveButton, isSaved && styles.savedButton]} 
-          onPress={handleSaveWeek}
+          onPress={() => (1)}
           disabled={isSaving}
         >
           <MaterialIcons 

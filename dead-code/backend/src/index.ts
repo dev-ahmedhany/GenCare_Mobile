@@ -3,8 +3,8 @@ import cors from 'cors';
 import { connectDB } from './config/db';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
-import profileRoutes from './routes/profile';
-import navbarRoutes from './routes/navbar';
+import profileRoutes from './routes/profile'; 
+import navbarRoutes from './routes/navbar'; 
 
 const app = express();
 

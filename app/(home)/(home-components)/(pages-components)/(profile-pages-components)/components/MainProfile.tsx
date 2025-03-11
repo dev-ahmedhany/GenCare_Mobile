@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Animated, Dimensions, View, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator, Alert } from 'react-native';
 import { bgColors } from '@/constants/Colors';
 import ProfileInfo from './ProfileInfo';
 import PregnancySection from './PregnancySection';
 import HealthSection from './HealthSection';
-import { FormData, HealthData, ExpandedSections, ExpandedCards } from '../types/profile.types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { HealthData, ExpandedSections, ExpandedCards, ProfileFormData } from '../types/profile.types';
 import Navbar from '../../../(navbar)/navbar';
-import { profileService } from '../services/api';
 import { BabyName } from '@/data/babyNames';
+import { getHealthInfo } from '../api/HealthInfo';
 
 interface HealthSectionProps {
   currentHealth: HealthData;
@@ -33,20 +31,48 @@ interface HealthSectionProps {
 }
 
 export default function MainProfile() {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<ProfileFormData>({
     fullName: '',
     age: '',
-    pregnancyWeek: '',
     phone: '',
     bloodType: '',
+    pregnancyWeek: '',
+    avatar: 'default.png',
   });
-
   const [currentHealth, setCurrentHealth] = useState<HealthData>({
     bloodPressure: '',
     bloodSugar: '',
     weight: '',
     symptoms: '',
   });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHealthInfo = async () => {
+        try {
+            const healthInfo = await getHealthInfo();
+            console.log('Fetched health info:', healthInfo);
+            setCurrentHealth({
+                bloodPressure: Array.isArray(healthInfo.healthInfo.bloodPressure) 
+                    ? healthInfo.healthInfo.bloodPressure.join('/')
+                    : healthInfo.healthInfo.bloodPressure || '',
+                bloodSugar: healthInfo.healthInfo.bloodSugar || '',
+                weight: healthInfo.healthInfo.weight || '',
+                symptoms: Array.isArray(healthInfo.healthInfo.symptoms) 
+                    ? healthInfo.healthInfo.symptoms 
+                    : healthInfo.healthInfo.symptoms ? [healthInfo.healthInfo.symptoms] : [],
+            });
+        } catch (error) {
+            console.error('Error fetching health info:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    fetchHealthInfo();
+  }, []);
+
+  const scrollY = new Animated.Value(0);
 
   const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
     diseases: false,
@@ -60,174 +86,9 @@ export default function MainProfile() {
     savedItems: false,
   });
 
-  const [savedWeeks, setSavedWeeks] = useState<Array<{ week: string; date: string }>>([]);
-  const [savedDiseases, setSavedDiseases] = useState([]);
-
-  const [userData, setUserData] = useState<any>(null);
-
-  const router = useRouter();
-
-  const scrollY = new Animated.Value(0);
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const loadProfileData = async (force = false) => {
-    try {
-      if (!force && isRefreshing) return;
-      
-      setIsLoading(true);
-      setIsRefreshing(true);
-
-      const response = await profileService.getProfile();
-      // console.log('Profile Response:', response);
-
-      if (response?.success && response?.data) {
-        const { user, healthRecord } = response.data;
-        
-        if (user) {
-          setFormData({
-            fullName: user.fullName || '',
-            age: user.age?.toString() || '',
-            pregnancyWeek: user.pregnancyWeek?.toString() || '',
-            phone: user.phone || '',
-            bloodType: user.bloodType || '',
-          });
-
-          setSavedWeeks(user.savedWeeks || []);
-          setSavedDiseases(user.savedDiseases || []);
-          setUserData(user);
-        }
-
-        if (healthRecord) {
-          setCurrentHealth({
-            bloodPressure: healthRecord.bloodPressure || '',
-            bloodSugar: healthRecord.bloodSugar || '',
-            weight: healthRecord.weight || '',
-            symptoms: healthRecord.symptoms || '',
-          });
-        }
-      } else {
-        console.error('Invalid response format:', response);
-        Alert.alert('خطأ', 'تنسيق البيانات غير صحيح');
-      }
-    } catch (error) {
-      console.error('Error loading profile data:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء تحميل البيانات');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    const initializeProfile = async () => {
-      try {
-        // التحقق من ProfileSplash أولاً
-        const splashShown = await AsyncStorage.getItem('profileSplashShown');
-        if (!splashShown) {
-          router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/ProfileSplash');
-          return;
-        }
-
-        // التحقق من التوكن وتحميل البيانات
-        const token = await AsyncStorage.getItem('userToken');
-        if (!token) {
-          router.replace('/(auth)/login');
-          return;
-        }
-
-        // تحميل البيانات
-        await loadProfileData();
-      } catch (error) {
-        console.error('Error initializing profile:', error);
-      }
-    };
-
-    initializeProfile();
-  }, []); // تشغيل مرة واحدة فقط عند تحميل المكون
-
-  const handleUpdateProfile = async (newData: FormData) => {
-    try {
-      setIsLoading(true);
-      const response = await profileService.updateProfile(newData);
-      
-      if (response.success) {
-        const { user } = response.data;
-        
-        // تحديث كل البيانات
-        setFormData({
-          fullName: user.fullName || '',
-          age: user.age?.toString() || '',
-          pregnancyWeek: user.pregnancyWeek?.toString() || '',
-          phone: user.phone || '',
-          bloodType: user.bloodType || '',
-        });
-        
-        // تحديث الأسابيع المحفوظة
-        setSavedWeeks(user.savedWeeks || []);
-        
-        Alert.alert('نجاح', 'تم تحديث البيانات الشخصية بنجاح');
-        
-        // تحديث البيانات المخزنة محلياً
-        await AsyncStorage.setItem('userData', JSON.stringify(user));
-      }
-    } catch (error) {
-      console.error('Update profile error:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء تحديث البيانات');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUpdateHealth = async (newData: HealthData) => {
-    try {
-      await profileService.updateHealth(newData);
-      setCurrentHealth(newData);
-      Alert.alert('نجاح', 'تم تحديث البيانات الصحية بنجاح');
-    } catch (error) {
-      Alert.alert('خطأ', 'حدث خطأ أثناء تحديث البيانات الصحية');
-    }
-  };
-
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     scrollY.setValue(offsetY);
-  };
-
-  const handleDeleteWeek = async (weekId: string) => {
-    try {
-      await profileService.deleteItem('week', weekId);
-      await loadProfileData(true);
-    } catch (error) {
-      console.error('Error deleting week:', error);
-    }
-  };
-
-  const handleSaveWeek = async (week: string) => {
-    try {
-      const response = await profileService.saveItem('week', {
-        week,
-        date: new Date().toISOString()
-      });
-      
-      if (response.success) {
-        const { user } = response.data;
-        setSavedWeeks(user.savedWeeks || []);
-      }
-    } catch (error) {
-      console.error('Error saving week:', error);
-    }
-  };
-
-  const handleDeleteDisease = async (id: string) => {
-    try {
-      await profileService.deleteItem('disease', id);
-      setSavedDiseases(prev => prev.filter((disease: any) => disease.id !== id));
-    } catch (error) {
-      console.error('Error deleting disease:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء حذف المرض');
-    }
   };
 
   return (
@@ -243,8 +104,8 @@ export default function MainProfile() {
         >
           <ProfileInfo 
             formData={formData}
-            setFormData={handleUpdateProfile}
-            avatar={userData?.avatar}
+            setFormData={setFormData}
+            avatar={formData.avatar}
           />
           
           <PregnancySection 
@@ -255,46 +116,21 @@ export default function MainProfile() {
                 pregnancyWeek: week
               }));
             }}
-            onSaveWeek={async (weekData) => {
-              try {
-                const response = await profileService.saveItem('week', weekData);
-                if (response.success) {
-                  // تحديث قائمة الأسابيع المحفوظة مباشرة
-                  setSavedWeeks(response.data.user.savedWeeks || []);
-                }
-              } catch (error) {
-                console.error('Error saving week:', error);
-                throw error; // إعادة رمي الخطأ ليتم معالجته في PregnancySection
-              }
-            }}
           />
           
-          <HealthSection 
-            currentHealth={currentHealth}
-            setCurrentHealth={handleUpdateHealth}
+          <HealthSection
+            currentHealth={currentHealth} 
+            setCurrentHealth={setCurrentHealth}
             expandedCards={expandedCards}
             setExpandedCards={setExpandedCards}
             expandedSections={expandedSections}
             setExpandedSections={setExpandedSections}
-            savedWeeks={savedWeeks}
-            onDeleteWeek={handleDeleteWeek}
-            savedDiseases={savedDiseases}
-            onDeleteDisease={async (id) => {
-              try {
-                await handleDeleteDisease(id);
-                // تحديث القائمة بعد الحذف
-                loadProfileData();
-              } catch (error) {
-                console.error('Error deleting disease:', error);
-              }
-            }}
-            savedBabyNames={userData?.savedBabyNames || []}
-            onUpdateBabyNames={(updatedNames) => {
-              setUserData((prev: any) => ({
-                ...prev,
-                savedBabyNames: updatedNames
-              }));
-            }}
+            savedWeeks={[]}
+            onDeleteWeek={() => {}}
+            savedDiseases={[]}
+            onDeleteDisease={() => {}}
+            savedBabyNames={[]}
+            onUpdateBabyNames={() => {}}
           />
         </ScrollView>
       )}

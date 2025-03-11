@@ -5,17 +5,8 @@ import React from "react";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from '@react-navigation/native';
 import MainButton from "@/constants/MainButton";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { API_URL } from '@/app/config/config';
-
-// Create axios instance
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+import { login } from './api/login';
+import { isAuthenticated } from "@/utils/auth";
 
 const LoginScreen = () => {
     const router = useRouter();
@@ -28,6 +19,19 @@ const LoginScreen = () => {
     const slideTopAnim = React.useRef(new Animated.Value(-100)).current;
     const slideBottomAnim = React.useRef(new Animated.Value(100)).current;
     const scaleAnim = React.useRef(new Animated.Value(0.3)).current;
+
+    // check if the user is logged in and redirect to the home page
+    const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+    React.useEffect(() => {
+        const checkAuth = async () => {
+            const isLoggedIn = await isAuthenticated();
+            setIsLoggedIn(isLoggedIn);
+            if (isLoggedIn) {
+                router.push('/(home)/home');
+            }
+        };
+        checkAuth();
+    }, []);
 
     const startAnimations = () => {
         // Reset animations
@@ -70,7 +74,6 @@ const LoginScreen = () => {
         React.useCallback(() => {
             startAnimations();
             return () => {
-                // Cleanup animations
                 fadeAnim.stopAnimation();
                 slideTopAnim.stopAnimation();
                 slideBottomAnim.stopAnimation();
@@ -80,29 +83,17 @@ const LoginScreen = () => {
     );
 
     const handleLogin = async () => {
-        if (!identifier || !password) {
-            Alert.alert('خطأ', 'الرجاء إدخال جميع البيانات المطلوبة');
-            return;
-        }
-
-        setIsLoading(true);
         try {
-            const response = await api.post('/auth/login', {
-                identifier,
-                password
-            });
-
-            if (response.data.token) {
-                await AsyncStorage.setItem('userToken', response.data.token);
-                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-                router.replace('/(home)/home');
-            }
+            setIsLoading(true);
+            await login(identifier, password);
         } catch (error) {
-            Alert.alert('خطأ', 'فشل تسجيل الدخول. الرجاء التحقق من البيانات المدخلة');
+            console.log(error);
         } finally {
             setIsLoading(false);
         }
     };
+
+
 
     const handleRegister = () => {
         router.push('/(auth)/signup');

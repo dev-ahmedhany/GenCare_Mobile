@@ -9,7 +9,7 @@ import { getLetterGif } from 'data/BabyGifs';
 import { bgColors } from "@/constants/Colors";
 import Navbar from '../(navbar)/navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '@/app/config/config';
+import { API_URL } from '@/config/config';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const NAVBAR_HEIGHT = SCREEN_HEIGHT * 0.12;

@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Dimensions, Alert, TouchableOpacity, Text, Modal } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { NewsList } from '@/data/pregnancyweeks';
 import MainButton from '@/constants/MainButton';
-import { profileService } from '../services/api';
 import { useRouter } from 'expo-router';
+import { getPersonalInfo } from '../api/PersonalInfo';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -17,12 +17,33 @@ interface PregnancySectionProps {
   onSaveWeek?: (weekData: { week: string; date: string }) => Promise<void>;
 }
 
-export default function PregnancySection({ pregnancyWeek, onWeekChange, onSaveWeek }: PregnancySectionProps) {
+export default function PregnancySection({ onWeekChange, onSaveWeek }: PregnancySectionProps) {
   const router = useRouter();
-  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const progress = (parseInt(pregnancyWeek) || 0) / 40;
-  const weekInfo = NewsList.find(item => item.id === parseInt(pregnancyWeek));
+  const [currentWeek, setCurrentWeek] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getPersonalInfo();
+      const data = await response.json();
+      const weekFromData = data.pregnancyWeek;
+      console.log("data",data);
+      console.log("weekFromData",weekFromData);
+      setCurrentWeek(weekFromData);
+    };
+
+    fetchData();
+  }, []);
+
+  const progress = (parseInt(currentWeek) || 0) / 40;
+  const weekInfo = NewsList.find(item => item.id === parseInt(currentWeek));
+
+  const handleWeekChange = (newWeek: string) => {
+    setCurrentWeek(newWeek);
+    if (onWeekChange) {
+      onWeekChange(newWeek);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -40,6 +61,7 @@ export default function PregnancySection({ pregnancyWeek, onWeekChange, onSaveWe
       </Modal>
 
       <ThemedText style={styles.cardTitle}>Pregnancy Tracker</ThemedText>
+
       <View style={styles.progressContainer}>
         <LinearGradient
           colors={['#9370DB', '#F78DA7']}
@@ -49,7 +71,7 @@ export default function PregnancySection({ pregnancyWeek, onWeekChange, onSaveWe
         />
       </View>
       <ThemedText style={styles.weekText}>
-        Week {pregnancyWeek || '0'} of 40
+        Week {currentWeek || '0'} of 40
       </ThemedText>
 
       {weekInfo && (
@@ -77,7 +99,7 @@ export default function PregnancySection({ pregnancyWeek, onWeekChange, onSaveWe
           
           <View style={styles.buttonContainer}>
             <MainButton 
-              title={`View Week ${pregnancyWeek}`}
+              title={`View Week ${currentWeek}`}
               onPress={() => router.push({
                 pathname: '/(home)/(home-components)/(pages-components)/pregnancyPage',
                 params: { news: JSON.stringify(weekInfo) }

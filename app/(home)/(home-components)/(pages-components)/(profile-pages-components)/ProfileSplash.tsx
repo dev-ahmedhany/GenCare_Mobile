@@ -78,6 +78,23 @@ export default function ProfileSplash() {
     }
   };
 
+  const scrollToNextSlide = () => {
+    if (currentIndex < slides.length - 1) {
+      slidesRef.current?.scrollToIndex({
+        index: currentIndex + 1,
+        animated: true
+      });
+    }
+  };
+
+  const handleButtonPress = () => {
+    if (currentIndex === slides.length - 1) {
+      handleNavigation();
+    } else {
+      scrollToNextSlide();
+    }
+  };
+
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const inputRange = [
       (index - 1) * width,
@@ -201,7 +218,7 @@ export default function ProfileSplash() {
           <Text style={styles.checkboxLabel}>Don't show again</Text>
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleNavigation}>
+        <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
           <Text style={styles.buttonText}>
             {currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
           </Text>

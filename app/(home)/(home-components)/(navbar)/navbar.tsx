@@ -8,9 +8,8 @@ import NotificationsModal from './NotificationsModal';
 import { DIMENSIONS } from './styles';
 import { NavbarProps, ScrollHandler, Notification, MenuItem } from './types';
 import constants, { MENU_ITEMS } from './constants';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '@/app/config/config';
-
+import { isAuthenticated } from '@/utils/auth';
+import * as SecureStore from 'expo-secure-store';
 const { mockNotifications } = constants;
 
 export default function Navbar({ 
@@ -25,48 +24,32 @@ export default function Navbar({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState(mockNotifications);
   const [isAdmin, setIsAdmin] = useState(true);
   
-  // تحسين الأنيميشن باستخدام useRef
   const animations = useRef({
     rotate: new Animated.Value(0),
     scale: new Animated.Value(1),
     menu: new Animated.Value(0)
   }).current;
 
-  // التحقق من حالة تسجيل الدخول عند تحميل المكون
   useEffect(() => {
     const loadAuthState = async () => {
+      // check if the user is logged in
       try {
-        const token = await AsyncStorage.getItem('userToken');
-        const userDataStr = await AsyncStorage.getItem('userData');
-        
-        if (token && userDataStr) {
-          const userData = JSON.parse(userDataStr);
-          setIsLoggedIn(true);
-          setUserData(userData);
-          setIsAdmin(userData.role === 'admin');
-        } else {
-          setIsLoggedIn(false);
-          setUserData(null);
-          setIsAdmin(false);
-        }
+        const isLoggedIn = await isAuthenticated();
+        setIsLoggedIn(isLoggedIn);
       } catch (error) {
         console.error('Error loading auth state:', error);
       }
     };
-
     loadAuthState();
   }, []);
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userToken');
-      await AsyncStorage.removeItem('userData');
+      await SecureStore.deleteItemAsync('token');
       setIsLoggedIn(false);
-      setUserData(null);
       setIsMenuOpen(false);
       router.replace('/(home)/home');
     } catch (error) {
@@ -90,14 +73,9 @@ export default function Navbar({
         }
       ];
 
-  // إضافة حالة للإشعارات
+  // add the notification count
   const [notificationCount, setNotificationCount] = useState(5);
 
-  // تحسين أداء معالجات الأحداث باستخدام useCallback
-  const handleAuth = useCallback((type: 'login' | 'signup') => {
-    router.push(`/(auth)/${type}`);
-    setIsMenuOpen(false);
-  }, [router]);
 
   const handleMenuPress = useCallback((route?: string) => {
     if (route) {
