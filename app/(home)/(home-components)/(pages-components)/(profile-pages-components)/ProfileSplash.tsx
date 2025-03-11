@@ -12,7 +12,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bgColors } from '@/constants/Colors';
-import ProfileInfo from './components/ProfileInfo';
+import ProfileInfo from './components/profile-info/ProfileInfo';
 import Checkbox from 'expo-checkbox';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -65,7 +65,8 @@ export default function ProfileSplash() {
       }
       router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
     } catch (error) {
-      console.error('Error handling navigation:', error);
+      console.error('Error saving splash screen preference:', error);
+      router.replace('/(home)/(home-components)/(pages-components)/(profile-pages-components)/components/MainProfile');
     }
   };
 

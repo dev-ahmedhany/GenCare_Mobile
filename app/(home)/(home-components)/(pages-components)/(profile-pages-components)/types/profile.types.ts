@@ -41,8 +41,6 @@ export interface SavedDisease {
   risk?: string;
 }
 
-
-
 // إضافة مكون افتراضي فارغ
 const ProfileTypes = () => null;
 export default ProfileTypes;

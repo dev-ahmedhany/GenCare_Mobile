@@ -8,7 +8,6 @@ export default function ProfilePagesLayout() {
       <Stack.Screen name="components/ProfileInfo" />
       <Stack.Screen name="components/PregnancySection" />
       <Stack.Screen name="components/HealthSection" />
-      <Stack.Screen name="components/ProfileHeader" />
       <Stack.Screen name="components/SavedItems" />
       <Stack.Screen name="components/MainProfile" />
     </Stack>

@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { NewsList } from '@/data/pregnancyweeks';
 import MainButton from '@/constants/MainButton';
 import { useRouter } from 'expo-router';
-import { getPersonalInfo } from '../api/PersonalInfo';
+import { getPersonalInfo } from '../../api/PersonalInfo';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
